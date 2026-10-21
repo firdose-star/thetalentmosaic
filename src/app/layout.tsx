@@ -1,33 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Manrope, Playfair_Display } from "next/font/google";
+import { DM_Sans, JetBrains_Mono } from "next/font/google";
 
 import { Providers } from "@/providers";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
 /**
- * Manrope for body text, Playfair Display for headings (PRD §5).
+ * DM Sans is the global typeface, for body text and headings alike.
  *
- * `next/font` self-hosts both at build time: no request to fonts.googleapis.com
+ * `next/font` self-hosts it at build time: no request to fonts.googleapis.com
  * at runtime, no layout shift from a late swap, and no privacy hop to Google.
- * Both are variable fonts, so no weight list is needed.
+ * It is a variable font, so no weight list is needed.
  *
- * The `variable` options expose `--font-manrope` and `--font-playfair`;
- * `globals.css` binds them to Tailwind's `--font-sans` and `--font-heading` in
- * the `@theme inline` block — no per-component font classes.
+ * The `variable` option exposes `--font-dm-sans`; `globals.css` binds it to
+ * Tailwind's `--font-sans` and `--font-heading` in the `@theme inline` block —
+ * no per-component font classes, and one line to swap the typeface later.
  */
-const manrope = Manrope({
-  variable: "--font-manrope",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
   display: "swap",
   fallback: ["system-ui", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
-  fallback: ["Georgia", "serif"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -71,7 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // next-themes writes the theme class before hydration; without this React
       // reports a mismatch on every load.
       suppressHydrationWarning
-      className={`${manrope.variable} ${playfair.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <Providers>{children}</Providers>

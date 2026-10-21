@@ -99,7 +99,7 @@ src/
       health/route.ts
       auth/session/route.ts
       proxy/[...path]/route.ts
-    layout.tsx                  # root: Poppins, metadata, <Providers>
+    layout.tsx                  # root: DM Sans, metadata, <Providers>
     page.tsx                    # public landing / status page
     error.tsx · not-found.tsx
     globals.css                 # Tailwind v4 @theme + brand tokens
@@ -285,8 +285,8 @@ Other shell rules:
 
 ## Styling & branding
 
-- **Poppins** is the global typeface, self-hosted by `next/font` in
-  `app/layout.tsx` as `--font-poppins`, bound to Tailwind's `--font-sans` and
+- **DM Sans** is the global typeface, self-hosted by `next/font` in
+  `app/layout.tsx` as `--font-dm-sans`, bound to Tailwind's `--font-sans` and
   `--font-heading` in `globals.css`. Change the font in `layout.tsx` only.
 - **Brand colours** are the `--primary` / `--sidebar-*` / `--chart-*` tokens in
   `globals.css` (`:root` and `.dark`). Never hardcode a colour in a component.

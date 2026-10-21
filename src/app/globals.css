@@ -8,13 +8,13 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Manrope for body, Playfair Display for headings (PRD §5). Both variables
-     are injected on <html> by next/font in app/layout.tsx; binding them here
-     makes `font-sans`, `font-heading`, the base html rule, and every shadcn
-     primitive resolve automatically. Change typefaces in layout.tsx. */
-  --font-sans: var(--font-manrope), system-ui, -apple-system, "Segoe UI",
+  /* DM Sans is the global typeface. `--font-dm-sans` is injected on <html> by
+     next/font in app/layout.tsx; binding it here makes `font-sans`,
+     `font-heading`, the base html rule, and every shadcn primitive resolve to
+     DM Sans automatically. Change the typeface in layout.tsx — not here. */
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI",
     sans-serif;
-  --font-heading: var(--font-playfair), Georgia, serif;
+  --font-heading: var(--font-dm-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular,
     monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -145,7 +145,7 @@
   html {
     @apply font-sans;
   }
-  /* Playfair Display at display sizes reads loose — pull headings in slightly. */
+  /* Pulling headings in slightly keeps large type from looking loose. */
   h1,
   h2,
   h3,
