@@ -107,7 +107,7 @@ export function RecentMembersPanel({
       title="Recently joined"
       description="We can’t wait to see the magic you add here."
       actions={
-        <Button variant="ghost" size="sm" render={<Link href={ROUTES.people} />}>
+        <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={ROUTES.people} />}>
           Directory
           <ArrowRight data-icon="inline-end" />
         </Button>

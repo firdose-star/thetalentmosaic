@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { Stagger, StaggerItem } from "@/components/shared/motion";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/lib/constants";
@@ -54,28 +55,29 @@ export function SnapshotStats({ summary }: { summary: OverviewSummary }) {
   ];
 
   return (
-    <div className={GRID}>
+    <Stagger className={GRID}>
       {tiles.map(({ label, value, hint, icon: Icon, href, tone }) => (
-        <Link
-          key={label}
-          href={href}
-          className="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          <Card className="h-full flex-row items-center gap-3 p-4 transition-colors group-hover:border-primary/40">
-            <span
-              className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", tone)}
-            >
-              <Icon className="size-5" aria-hidden />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-xs text-muted-foreground">{label}</p>
-              <p className="text-2xl leading-tight font-semibold tabular-nums">{value}</p>
-              <p className="truncate text-xs text-muted-foreground">{hint}</p>
-            </div>
-          </Card>
-        </Link>
+        <StaggerItem key={label} whileHover={{ y: -2 }}>
+          <Link
+            href={href}
+            className="group block h-full rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <Card className="h-full flex-row items-center gap-3 p-4 transition-colors group-hover:border-primary/40">
+              <span
+                className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", tone)}
+              >
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-xs text-muted-foreground">{label}</p>
+                <p className="text-2xl leading-tight font-semibold tabular-nums">{value}</p>
+                <p className="truncate text-xs text-muted-foreground">{hint}</p>
+              </div>
+            </Card>
+          </Link>
+        </StaggerItem>
       ))}
-    </div>
+    </Stagger>
   );
 }
 

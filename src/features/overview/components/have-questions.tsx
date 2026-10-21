@@ -24,12 +24,13 @@ export function HaveQuestions() {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Button render={<a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" />}>
+        <Button nativeButton={false} render={<a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" />}>
           <MessageCircle data-icon="inline-start" />
           WhatsApp
         </Button>
         <Button
           variant="outline"
+          nativeButton={false}
           render={<a href={contact.linkedinUrl} target="_blank" rel="noopener noreferrer" />}
         >
           <ExternalLink data-icon="inline-start" />

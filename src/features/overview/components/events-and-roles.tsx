@@ -17,7 +17,7 @@ import type { OverviewSummary } from "../types";
 
 function SeeAll({ href }: { href: string }) {
   return (
-    <Button variant="ghost" size="sm" render={<Link href={href} />}>
+    <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={href} />}>
       See all
       <ArrowRight data-icon="inline-end" />
     </Button>

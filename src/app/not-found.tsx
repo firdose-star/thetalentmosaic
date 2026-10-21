@@ -18,7 +18,7 @@ export default function NotFound() {
         <p className="mt-2 text-sm text-muted-foreground text-pretty">
           That link doesn&apos;t point anywhere in The Talent Mosaic.
         </p>
-        <Button className="mt-6" render={<Link href={ROUTES.home} />}>
+        <Button className="mt-6" nativeButton={false} render={<Link href={ROUTES.home} />}>
           Back to home
         </Button>
       </div>

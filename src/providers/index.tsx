@@ -12,6 +12,7 @@
  * Everything below this is still a Server Component unless it declares 'use client'
  * itself — passing Server Components as `children` keeps them off the client bundle.
  */
+import { MotionConfig } from "framer-motion";
 import type { ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/toast";
@@ -23,13 +24,16 @@ import { ThemeProvider } from "./theme-provider";
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <QueryProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster>{children}</Toaster>
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryProvider>
+      {/* reducedMotion="user": every Framer animation honours the OS setting. */}
+      <MotionConfig reducedMotion="user">
+        <QueryProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster>{children}</Toaster>
+            </TooltipProvider>
+          </AuthProvider>
+        </QueryProvider>
+      </MotionConfig>
     </ThemeProvider>
   );
 }

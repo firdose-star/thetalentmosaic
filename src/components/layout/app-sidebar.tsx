@@ -4,9 +4,10 @@
  * The workspace sidebar. Every tab renders from `lib/config/navigation.ts` —
  * to add a link you edit that config, never this component.
  *
- * The active item gets an accent tint plus a left accent bar, both reading
- * `--sidebar-primary`, so it recolors with the workspace theme automatically.
+ * The active item gets green text (`--sidebar-primary`) over a highlight that
+ * slides between tabs on navigation (Framer Motion `layoutId`).
  */
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -64,16 +65,23 @@ export function AppSidebar() {
                   const active = isNavItemActive(item, pathname);
                   return (
                     <SidebarMenuItem key={item.href}>
+                      {/* One shared layoutId: Framer slides the highlight
+                          from the old tab to the new one on navigation. */}
+                      {active && (
+                        <motion.span
+                          layoutId="sidebar-active"
+                          aria-hidden
+                          className="absolute inset-0 rounded-md bg-sidebar-accent"
+                          transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                        />
+                      )}
                       <SidebarMenuButton
                         isActive={active}
                         tooltip={item.title}
                         className={cn(
                           "relative",
                           active &&
-                            "bg-sidebar-primary/10 font-medium text-sidebar-primary hover:bg-sidebar-primary/15 hover:text-sidebar-primary",
-                          // Accent bar on the active tab, hidden in the icon rail.
-                          active &&
-                            "before:absolute before:inset-y-1 before:-left-2 before:w-0.5 before:rounded-full before:bg-sidebar-primary group-data-[collapsible=icon]:before:hidden",
+                            "font-medium text-sidebar-primary data-active:bg-transparent hover:text-sidebar-primary",
                         )}
                         render={
                           <Link href={item.href}>
