@@ -52,7 +52,7 @@ export function NavUser() {
               <SidebarMenuButton size="lg">
                 <Avatar className="size-8 rounded-lg">
                   <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
-                  <AvatarFallback className="rounded-lg">
+                  <AvatarFallback className="rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground">
                     {initials(user.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -60,7 +60,7 @@ export function NavUser() {
                   <span className="truncate text-sm font-medium">
                     {user.name}
                   </span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="truncate text-xs text-sidebar-foreground/60">
                     {ROLE_LABELS[user.role]}
                   </span>
                 </div>
