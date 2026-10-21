@@ -11,28 +11,20 @@
  *     its content height, the page scrolls as a whole, and the sidebar and
  *     topbar scroll away with it. This is *the* classic app-shell bug.
  *
- * `workspace` puts a `theme-*` class on the wrapper, which rebinds `--primary`
- * and `--sidebar-primary` (see globals.css). Every component downstream reads
- * those variables, so a second workspace recolors the entire shell with zero
- * per-component branching.
+ * Members and admins share this one shell (PRD §5: navigation is identical
+ * across sections); the sidebar filters admin items by role.
  */
 import type { ReactNode } from "react";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppTopbar } from "@/components/layout/app-topbar";
+import { BuiltByMesa } from "@/components/layout/brand";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 
-export function AppShell({
-  children,
-  workspace = "admin",
-}: {
-  children: ReactNode;
-  workspace?: "admin";
-}) {
+export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider className={cn(`theme-${workspace}`, "h-svh overflow-hidden")}>
+    <SidebarProvider className="h-svh overflow-hidden">
       <AppSidebar />
       <SidebarInset className="min-h-0 overflow-hidden">
         <AppTopbar />
@@ -43,6 +35,9 @@ export function AppShell({
           <main className="@container/main flex flex-col gap-6 p-4 md:p-6 lg:p-8">
             {children}
           </main>
+          <footer className="border-t px-4 py-5">
+            <BuiltByMesa />
+          </footer>
         </ScrollArea>
       </SidebarInset>
     </SidebarProvider>

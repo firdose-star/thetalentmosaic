@@ -6,16 +6,23 @@
  * what a user sees; that is a UI convenience, not authorization (the API still
  * enforces access).
  *
- * Adding a second workspace later means adding a `workspace` field and filtering
- * on it too — the shell itself needs no changes.
+ * Structure follows the PRD (§5): the same five community sections for
+ * everyone, Health right after Events for admins, then the admin menu.
  */
 import {
-  Activity,
-  BarChart3,
-  FileText,
+  BookOpen,
+  Briefcase,
+  CalendarDays,
+  DatabaseZap,
+  HeartPulse,
+  House,
+  Inbox,
+  KeyRound,
   LayoutDashboard,
-  Settings,
+  ScrollText,
+  BellRing,
   Users,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,7 +35,7 @@ export interface NavItem {
   icon: LucideIcon;
   /** Omit to show for every signed-in role. */
   roles?: readonly Role[];
-  /** Match child routes too (`/admin/users/123` keeps `/admin/users` active). */
+  /** Match child routes too (`/people/123` keeps `/people` active). */
   matchNested?: boolean;
   badge?: string;
 }
@@ -38,56 +45,80 @@ export interface NavSection {
   items: NavItem[];
 }
 
+const ADMIN_ONLY: readonly Role[] = ["admin"];
+
 export const navigation: NavSection[] = [
   {
-    title: "Overview",
+    title: "Community",
+    items: [
+      { title: "Overview", href: ROUTES.overview, icon: House },
+      { title: "People", href: ROUTES.people, icon: Users, matchNested: true },
+      { title: "Library", href: ROUTES.library, icon: BookOpen, matchNested: true },
+      {
+        title: "Opportunities",
+        href: ROUTES.opportunities,
+        icon: Briefcase,
+        matchNested: true,
+      },
+      { title: "Events", href: ROUTES.events, icon: CalendarDays, matchNested: true },
+      {
+        title: "Health",
+        href: ROUTES.health,
+        icon: HeartPulse,
+        roles: ADMIN_ONLY,
+        matchNested: true,
+      },
+    ],
+  },
+  {
+    title: "Admin",
     items: [
       {
-        title: "Dashboard",
-        href: ROUTES.adminDashboard,
+        title: "Admin Overview",
+        href: ROUTES.admin,
         icon: LayoutDashboard,
+        roles: ADMIN_ONLY,
       },
       {
-        title: "Analytics",
-        href: ROUTES.adminAnalytics,
-        icon: BarChart3,
-        matchNested: true,
-      },
-    ],
-  },
-  {
-    title: "Manage",
-    items: [
-      {
-        title: "Users",
-        href: ROUTES.adminUsers,
-        icon: Users,
-        roles: ["admin", "manager"],
+        title: "Member Management",
+        href: ROUTES.adminMembers,
+        icon: UsersRound,
+        roles: ADMIN_ONLY,
         matchNested: true,
       },
       {
-        title: "Reports",
-        href: ROUTES.adminReports,
-        icon: FileText,
+        title: "Submissions & Approvals",
+        href: ROUTES.adminApprovals,
+        icon: Inbox,
+        roles: ADMIN_ONLY,
         matchNested: true,
       },
       {
-        title: "Activity",
-        href: ROUTES.adminActivity,
-        icon: Activity,
+        title: "Data & Integrations",
+        href: ROUTES.adminData,
+        icon: DatabaseZap,
+        roles: ADMIN_ONLY,
         matchNested: true,
-        badge: "New",
       },
-    ],
-  },
-  {
-    title: "Workspace",
-    items: [
       {
-        title: "Settings",
-        href: ROUTES.adminSettings,
-        icon: Settings,
-        roles: ["admin"],
+        title: "Automations",
+        href: ROUTES.adminAutomations,
+        icon: BellRing,
+        roles: ADMIN_ONLY,
+        matchNested: true,
+      },
+      {
+        title: "User Access",
+        href: ROUTES.adminAccess,
+        icon: KeyRound,
+        roles: ADMIN_ONLY,
+        matchNested: true,
+      },
+      {
+        title: "Activity Logs",
+        href: ROUTES.adminLogs,
+        icon: ScrollText,
+        roles: ADMIN_ONLY,
         matchNested: true,
       },
     ],
@@ -120,19 +151,24 @@ export function isNavItemActive(item: NavItem, pathname: string): boolean {
     : pathname === item.href;
 }
 
-/** The nav item matching the current pathname, for the topbar and breadcrumb. */
+/**
+ * The nav item matching the current pathname, for the topbar and breadcrumb.
+ * Exact matches win, then the longest nested prefix — so `/admin/members`
+ * resolves to Member Management, not Admin Overview.
+ */
 export function findNavItem(pathname: string): NavItem | undefined {
   return (
     allNavItems.find((item) => item.href === pathname) ??
-    allNavItems.find((item) => pathname.startsWith(`${item.href}/`))
+    allNavItems
+      .filter((item) => pathname.startsWith(`${item.href}/`))
+      .sort((a, b) => b.href.length - a.href.length)[0]
   );
 }
 
 /** The section a nav item belongs to — the middle crumb in the breadcrumb. */
 export function findNavSection(pathname: string): NavSection | undefined {
-  return navigation.find((section) =>
-    section.items.some(
-      (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
-    ),
-  );
+  const item = findNavItem(pathname);
+  return item
+    ? navigation.find((section) => section.items.includes(item))
+    : undefined;
 }

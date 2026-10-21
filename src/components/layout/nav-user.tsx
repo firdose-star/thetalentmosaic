@@ -78,11 +78,11 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link href={ROUTES.adminSettings} />}>
+            <DropdownMenuItem render={<Link href={ROUTES.profile} />}>
               <UserIcon />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.adminSettings} />}>
+            <DropdownMenuItem render={<Link href={ROUTES.profile} />}>
               <Settings />
               Settings
             </DropdownMenuItem>

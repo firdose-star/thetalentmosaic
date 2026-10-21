@@ -6,6 +6,7 @@
  * smell — it couples callers to internals you should be free to refactor.
  */
 export { LoginForm } from "./components/login-form";
+export { PreviewSignIn } from "./components/preview-sign-in";
 export { useForgotPassword, useLogin, useLogout } from "./hooks/use-login";
 export {
   forgotPasswordSchema,

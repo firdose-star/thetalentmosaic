@@ -20,7 +20,7 @@ const publicSchema = z.object({
   NEXT_PUBLIC_API_BASE_URL: z.url().default("http://localhost:4000/api/v1"),
   /** Optional explicit Swagger/Redoc URL. Falls back to API base minus /api/v1. */
   NEXT_PUBLIC_API_DOCS_URL: z.url().optional(),
-  NEXT_PUBLIC_APP_NAME: z.string().min(1).default("AI CTO"),
+  NEXT_PUBLIC_APP_NAME: z.string().min(1).default("The Talent Mosaic"),
   /**
    * Master switch for the auth gate.
    *

@@ -39,7 +39,7 @@ export function proxy(request: NextRequest) {
 
   // Signed in, but sitting on the login page → send them into the workspace.
   if (hasSession && isAuthRoute) {
-    return NextResponse.redirect(new URL(ROUTES.adminDashboard, request.url));
+    return NextResponse.redirect(new URL(ROUTES.overview, request.url));
   }
 
   // Signed out on a protected route → login, remembering where they wanted to go.

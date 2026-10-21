@@ -1,29 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Manrope, Playfair_Display } from "next/font/google";
 
 import { Providers } from "@/providers";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
 /**
- * Poppins is the global typeface.
+ * Manrope for body text, Playfair Display for headings (PRD §5).
  *
- * `next/font` self-hosts it at build time: no request to fonts.googleapis.com at
- * runtime, no layout shift from a late swap, and no privacy hop to Google.
- * Poppins is not a variable font, so the weights must be listed explicitly —
- * keep this list tight, every weight is another file to download.
+ * `next/font` self-hosts both at build time: no request to fonts.googleapis.com
+ * at runtime, no layout shift from a late swap, and no privacy hop to Google.
+ * Both are variable fonts, so no weight list is needed.
  *
- * The `variable` option exposes it as `--font-poppins`; `globals.css` binds that
- * to Tailwind's `--font-sans` (and `--font-heading`) in the `@theme inline`
- * block. So `font-sans` and the base `html` rule resolve to Poppins everywhere —
- * no per-component font classes, and one line to swap the typeface later.
+ * The `variable` options expose `--font-manrope` and `--font-playfair`;
+ * `globals.css` binds them to Tailwind's `--font-sans` and `--font-heading` in
+ * the `@theme inline` block — no per-component font classes.
  */
-const poppins = Poppins({
-  variable: "--font-poppins",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
   fallback: ["system-ui", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  display: "swap",
+  fallback: ["Georgia", "serif"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -35,13 +39,13 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — by MSL Team`,
+    default: `${siteConfig.name} — Mentor Platform`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
-  authors: [{ name: "MSL Team" }],
-  creator: "MSL Team",
+  authors: [{ name: siteConfig.name }],
+  creator: siteConfig.name,
   openGraph: {
     type: "website",
     locale: siteConfig.locale,
@@ -67,7 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // next-themes writes the theme class before hydration; without this React
       // reports a mismatch on every load.
       suppressHydrationWarning
-      className={`${poppins.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${manrope.variable} ${playfair.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <Providers>{children}</Providers>

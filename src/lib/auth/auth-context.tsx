@@ -29,7 +29,12 @@ import { api, refreshAccessToken } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { isApiError } from "@/lib/api/http-error";
 import { clearAuth, setAccessToken } from "@/lib/auth/token-store";
-import { PREVIEW_USER } from "@/lib/auth/preview-user";
+import {
+  PREVIEW_USERS,
+  readPreviewRole,
+  writePreviewRole,
+  type PreviewRole,
+} from "@/lib/auth/preview-user";
 import { env } from "@/lib/config/env";
 import type { AuthSession, CurrentUser } from "@/types/models";
 
@@ -42,6 +47,11 @@ export interface AuthContextValue {
   logout: () => Promise<void>;
   /** Re-read `/auth/me`, e.g. after the user edits their own profile. */
   refreshUser: () => Promise<void>;
+  /**
+   * Sign in as a sample member or admin. Only works while
+   * `NEXT_PUBLIC_AUTH_ENABLED=false` — the login screen's prototype buttons.
+   */
+  enterPreview: (role: PreviewRole) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -49,17 +59,27 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
-  // With the gate off, start signed in as the preview user so every screen is
-  // browsable before a backend exists — and skip the restore entirely.
-  const [user, setUser] = useState<CurrentUser | null>(
-    env.NEXT_PUBLIC_AUTH_ENABLED ? null : PREVIEW_USER,
-  );
-  const [isLoading, setIsLoading] = useState(env.NEXT_PUBLIC_AUTH_ENABLED);
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Restore the session once, on mount.
   useEffect(() => {
-    if (!env.NEXT_PUBLIC_AUTH_ENABLED) return;
     let cancelled = false;
+
+    // With the gate off, restore whichever preview role was picked on the
+    // login screen. Deferred a tick so state is never set synchronously in the
+    // effect, and so server and first client render agree (both signed out).
+    if (!env.NEXT_PUBLIC_AUTH_ENABLED) {
+      void Promise.resolve().then(() => {
+        if (cancelled) return;
+        const role = readPreviewRole();
+        setUser(role ? PREVIEW_USERS[role] : null);
+        setIsLoading(false);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
 
     (async () => {
       try {
@@ -99,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback<AuthContextValue["logout"]>(async () => {
     if (!env.NEXT_PUBLIC_AUTH_ENABLED) {
+      writePreviewRole(null);
       setUser(null); // lets you see the signed-out UI without a backend
       queryClient.clear();
       return;
@@ -119,6 +140,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me);
   }, []);
 
+  const enterPreview = useCallback<AuthContextValue["enterPreview"]>(
+    (role) => {
+      if (env.NEXT_PUBLIC_AUTH_ENABLED) return;
+      writePreviewRole(role);
+      queryClient.clear();
+      setUser(PREVIEW_USERS[role]);
+    },
+    [queryClient],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -127,8 +158,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
       refreshUser,
+      enterPreview,
     }),
-    [user, isLoading, login, logout, refreshUser],
+    [user, isLoading, login, logout, refreshUser, enterPreview],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;

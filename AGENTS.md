@@ -61,18 +61,24 @@ server — a value that "isn't picked up" is almost always this.
 ### What ships
 
 ```
-/                    landing
-/admin/login         sign-in
-/admin/dashboard     stats, activity feed, throughput chart
-/admin/users         users table
-/admin/activity  /admin/analytics  /admin/reports  /admin/settings
+/                    → redirects to /login (private community, no public landing)
+/login               sign-in; "Prototype: enter as" member/admin while auth is off
+/overview            community snapshot (PRD §6.1)
+/people  /library  /opportunities  /events      member sections (PRD §6)
+/health              Community Health — admin only (PRD §8)
+/profile             profile and settings
+/admin               Admin Overview; /admin/{members,approvals,data,automations,access,logs}
 /api/health          liveness + backend reachability
 /api/auth/session    login → first-party refresh cookie
 /api/proxy/[...path] opt-in transparent passthrough
 ```
 
-The admin pages are a **working shell with placeholder panels**, not invented data. Fill
-them from real queries as you build; do not add fake numbers to make them look finished.
+The product spec is **`docs/plan.md`** (the PRD). Sections not built yet render a
+`<PlaceholderPanel>` listing what building them means.
+
+Data comes from **`src/lib/sample-data/`** (ported from the prototype) until MongoDB is
+wired up. Only feature *services* import it; every metric is computed from the records,
+never typed in. To go live, swap a service body for an `api.get(...)` call.
 
 ### Two modes — know which one you are in
 

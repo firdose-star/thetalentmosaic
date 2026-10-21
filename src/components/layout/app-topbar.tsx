@@ -41,8 +41,8 @@ export function AppTopbar() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden sm:block">
-            <BreadcrumbLink render={<Link href={ROUTES.adminDashboard} />}>
-              Admin
+            <BreadcrumbLink render={<Link href={ROUTES.overview} />}>
+              The Talent Mosaic
             </BreadcrumbLink>
           </BreadcrumbItem>
 

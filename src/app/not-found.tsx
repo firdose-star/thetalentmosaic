@@ -16,7 +16,7 @@ export default function NotFound() {
           Page not found
         </h1>
         <p className="mt-2 text-sm text-muted-foreground text-pretty">
-          That link doesn&apos;t point anywhere in Mesa AI CTO.
+          That link doesn&apos;t point anywhere in The Talent Mosaic.
         </p>
         <Button className="mt-6" render={<Link href={ROUTES.home} />}>
           Back to home

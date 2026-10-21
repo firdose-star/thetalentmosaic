@@ -1,6 +1,6 @@
-# Mesa AI CTO — Frontend Boilerplate
+# The Talent Mosaic — Frontend
 
-> **Built by the MSL Team.**
+> **The Talent Mosaic mentor platform.**
 > Next.js 16 (App Router, RSC, Turbopack) · React 19.2 + React Compiler ·
 > TypeScript strict · Tailwind v4 · shadcn/ui · TanStack Query v5 · Zod 4 ·
 > react-hook-form · self-issued JWT auth.

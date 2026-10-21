@@ -30,14 +30,14 @@ export default function GlobalError({
     <div className="grid min-h-svh place-items-center px-6">
       <div className="max-w-md text-center">
         <p className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Mesa AI CTO
+          The Talent Mosaic
         </p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight">
           Something broke on our side
         </h1>
         <p className="mt-2 text-sm text-muted-foreground text-pretty">
           The error has been logged. Try again — if it keeps happening, send the
-          reference below to the MSL Team.
+          reference below to the team.
         </p>
         {error.digest && (
           <p className="mt-4 font-mono text-xs text-muted-foreground">

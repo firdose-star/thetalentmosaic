@@ -6,9 +6,9 @@ import { env } from "./env";
 
 export const siteConfig = {
   name: env.NEXT_PUBLIC_APP_NAME,
-  shortName: "AI CTO",
+  shortName: "Talent Mosaic",
   description:
-    "Production-grade Next.js application scaffold with a typed API layer, JWT auth, and feature-sliced architecture.",
+    "Recruit, onboard and manage mentors, book sessions, and capture what happened in each one.",
   url: env.NEXT_PUBLIC_APP_URL,
   locale: "en_US",
   themeColor: {
@@ -18,6 +18,15 @@ export const siteConfig = {
   links: {
     docs: "/docs",
     support: "mailto:support@example.com",
+  },
+  /**
+   * "Have questions?" contact on Overview (PRD §1). The WhatsApp number and
+   * LinkedIn URL are placeholders — an open question in PRD §13.
+   */
+  communityContact: {
+    name: "Firdose",
+    whatsappUrl: "https://wa.me/910000000000",
+    linkedinUrl: "https://www.linkedin.com/in/firdose",
   },
 } as const;
 

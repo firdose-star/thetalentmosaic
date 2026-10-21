@@ -36,6 +36,11 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
   },
 
+  overview: {
+    all: ["overview"] as const,
+    summary: () => [...queryKeys.overview.all, "summary"] as const,
+  },
+
   // ── Add one block per feature. Mirror the API resources. ──
 } as const;
 

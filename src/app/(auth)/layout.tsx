@@ -6,28 +6,31 @@
  */
 import type { ReactNode } from "react";
 
-import { BrandMark, BuiltByMsl } from "@/components/layout/brand";
+import {
+  BRAND_NAME,
+  BrandMark,
+  BrandTagline,
+  BuiltByMesa,
+} from "@/components/layout/brand";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-svh place-items-center bg-background px-6 py-12">
-      <div className="w-full max-w-sm">
+    <div className="flex min-h-svh flex-col bg-background px-6 py-12">
+      <div className="mx-auto grid w-full max-w-sm flex-1 content-center">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <BrandMark className="size-10 rounded-xl" />
+          <BrandMark className="size-12 rounded-xl" />
           <div>
-            <p className="font-heading text-lg font-semibold tracking-tight">
-              Mesa <span className="text-primary">AI CTO</span>
+            <p className="font-heading text-2xl font-bold tracking-tight">
+              {BRAND_NAME}
             </p>
-            <p className="mt-1 text-[0.625rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              by MSL Team
-            </p>
+            <BrandTagline className="mt-1 block" />
           </div>
         </div>
 
         {children}
-
-        <BuiltByMsl className="mt-10 text-center" />
       </div>
+
+      <BuiltByMesa className="mt-10" />
     </div>
   );
 }

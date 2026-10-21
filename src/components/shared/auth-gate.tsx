@@ -31,19 +31,23 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Enforced in preview mode too: there, "signed in" means a role was picked
+  // on the login screen, so a signed-out visitor lands on login, not on an
+  // empty shell.
   useEffect(() => {
-    if (!env.NEXT_PUBLIC_AUTH_ENABLED) return;
     if (isLoading || isAuthenticated) return;
     const next = encodeURIComponent(pathname);
     router.replace(`${ROUTES.login}?${REDIRECT_PARAM}=${next}`);
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  if (!env.NEXT_PUBLIC_AUTH_ENABLED) return <>{children}</>;
-
   if (isLoading) {
     return (
       <div className="grid min-h-svh place-items-center">
-        <LoadingState label="Restoring your session…" />
+        <LoadingState
+          label={
+            env.NEXT_PUBLIC_AUTH_ENABLED ? "Restoring your session…" : "Loading…"
+          }
+        />
       </div>
     );
   }

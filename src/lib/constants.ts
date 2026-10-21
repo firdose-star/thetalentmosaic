@@ -7,24 +7,33 @@ import type { Role } from "@/types/enums";
 /**
  * Every internal route the app links to. Add here before you link to it.
  *
- * The admin workspace is namespaced under `/admin/*`. Adding a second workspace
- * later (e.g. `/finance/*`) means adding keys here, entries in
- * `lib/config/navigation.ts`, and a `layout.tsx` under `(app)/<workspace>/` —
- * the shell and nav machinery are already role-driven.
+ * Mirrors the PRD's information architecture (§5): five sections shared by
+ * every member, Community Health for admins, and the admin menu under
+ * `/admin/*`. Navigation renders from `lib/config/navigation.ts`.
  */
 export const ROUTES = {
   home: "/",
 
   /** Canonical sign-in screen. `proxy.ts` and `<AuthGate>` both redirect here. */
-  login: "/admin/login",
+  login: "/login",
 
-  adminRoot: "/admin",
-  adminDashboard: "/admin/dashboard",
-  adminUsers: "/admin/users",
-  adminAnalytics: "/admin/analytics",
-  adminReports: "/admin/reports",
-  adminActivity: "/admin/activity",
-  adminSettings: "/admin/settings",
+  overview: "/overview",
+  people: "/people",
+  library: "/library",
+  opportunities: "/opportunities",
+  events: "/events",
+  /** Community Health and Engagement — admin only. */
+  health: "/health",
+  /** Profile and settings — every signed-in user. */
+  profile: "/profile",
+
+  admin: "/admin",
+  adminMembers: "/admin/members",
+  adminApprovals: "/admin/approvals",
+  adminData: "/admin/data",
+  adminAutomations: "/admin/automations",
+  adminAccess: "/admin/access",
+  adminLogs: "/admin/logs",
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
@@ -37,9 +46,9 @@ export const PUBLIC_ROUTES: readonly string[] = [
 
 /** Where a user lands after login, by role. */
 export const ROLE_HOME: Record<Role, string> = {
-  admin: ROUTES.adminDashboard,
-  manager: ROUTES.adminDashboard,
-  member: ROUTES.adminDashboard,
+  admin: ROUTES.overview,
+  manager: ROUTES.overview,
+  member: ROUTES.overview,
 };
 
 /** Query-string key used to bounce a user back after login. */
