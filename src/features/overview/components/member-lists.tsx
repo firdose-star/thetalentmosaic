@@ -1,10 +1,12 @@
 "use client";
 
 /**
- * Member-centred panels: birthdays (today + next 10 days) and recent joiners.
+ * Member-centred panels for the right rail: birthdays (today + next 10 days)
+ * and recent joiners. Compact rows so a list of ten fits without scrolling.
  */
-import { Cake } from "lucide-react";
+import { ArrowRight, Cake, Sparkles } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { MemberAvatar } from "@/components/shared/member-avatar";
 import { Section } from "@/components/shared/section";
@@ -22,24 +24,24 @@ function MemberRow({
   className,
 }: {
   member: MemberCard;
-  trailing?: React.ReactNode;
+  trailing?: ReactNode;
   className?: string;
 }) {
   return (
     <Link
       href={`${ROUTES.people}/${member.id}`}
       className={cn(
-        "flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors outline-none hover:border-primary/40 focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "-mx-2 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-[3px] focus-visible:ring-ring/50",
         className,
       )}
     >
-      <MemberAvatar name={member.name} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold">{member.name}</p>
-        <p className="truncate text-xs text-muted-foreground">
+      <MemberAvatar name={member.name} className="size-8" />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium">{member.name}</span>
+        <span className="block truncate text-xs text-muted-foreground">
           {member.designation}, {member.startup}
-        </p>
-      </div>
+        </span>
+      </span>
       {trailing}
     </Link>
   );
@@ -56,42 +58,37 @@ export function BirthdaysPanel({
       ? `Happy birthday, ${names.slice(0, -1).join(", ")} and ${names.at(-1)}!`
       : names.length === 1
         ? `Happy birthday, ${names[0]}!`
-        : "No birthdays today. Here is who is coming up.";
+        : "No birthdays today — here is who is coming up.";
 
   return (
-    <Section title="We’re celebrating you today" description={greeting}>
-      <div id="birthdays" className="flex scroll-mt-20 flex-col gap-4">
-        {birthdays.today.length > 0 && (
-          <div className="grid gap-2 @xl/main:grid-cols-2 @4xl/main:grid-cols-3">
-            {birthdays.today.map((m) => (
-              <MemberRow
-                key={m.id}
-                member={m}
-                className="border-chart-3/50 bg-chart-3/10"
-                trailing={<Cake className="size-4 text-chart-3" aria-hidden />}
-              />
-            ))}
-          </div>
-        )}
-        {birthdays.upcoming.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Coming up in the next 10 days
-            </p>
-            <div className="grid gap-2 @xl/main:grid-cols-2 @4xl/main:grid-cols-3">
-              {birthdays.upcoming.map((m) => (
-                <MemberRow
-                  key={m.id}
-                  member={m}
-                  trailing={<Badge variant="secondary">{shortDate(m.date)}</Badge>}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          birthdays.today.length === 0 && (
-            <EmptyState icon={Cake} title="No birthdays in the next 10 days" />
-          )
+    <Section title="Birthdays" description={greeting} contentClassName="flex flex-col">
+      <div id="birthdays" className="flex scroll-mt-20 flex-col">
+        {birthdays.today.map((m) => (
+          <MemberRow
+            key={m.id}
+            member={m}
+            className="bg-chart-3/10 hover:bg-chart-3/20"
+            trailing={
+              <Badge className="shrink-0 bg-chart-3 text-foreground">
+                <Cake data-icon="inline-start" />
+                Today
+              </Badge>
+            }
+          />
+        ))}
+        {birthdays.upcoming.map((m) => (
+          <MemberRow
+            key={m.id}
+            member={m}
+            trailing={
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                {shortDate(m.date)}
+              </span>
+            }
+          />
+        ))}
+        {birthdays.today.length + birthdays.upcoming.length === 0 && (
+          <EmptyState icon={Cake} title="No birthdays in the next 10 days" />
         )}
       </div>
     </Section>
@@ -107,31 +104,31 @@ export function RecentMembersPanel({
 }) {
   return (
     <Section
-      title="We can’t wait to see the magic you add here"
-      description="Members who joined us recently."
+      title="Recently joined"
+      description="We can’t wait to see the magic you add here."
       actions={
-        <Button variant="outline" size="sm" render={<Link href={ROUTES.people} />}>
-          Open the directory
+        <Button variant="ghost" size="sm" render={<Link href={ROUTES.people} />}>
+          Directory
+          <ArrowRight data-icon="inline-end" />
         </Button>
       }
+      contentClassName="flex flex-col"
     >
-      <div id="new-members" className="scroll-mt-20">
+      <div id="new-members" className="flex scroll-mt-20 flex-col">
         {members.length === 0 ? (
-          <EmptyState title="No new members in the last 10 days" />
+          <EmptyState icon={Sparkles} title="No new members in the last 10 days" />
         ) : (
-          <div className="grid gap-2 @xl/main:grid-cols-2 @4xl/main:grid-cols-3">
-            {members.map((m) => (
-              <MemberRow
-                key={m.id}
-                member={m}
-                trailing={
-                  <Badge variant="outline" className="shrink-0">
-                    {memberSince(m.joinedOn, parseDay(asOf))}
-                  </Badge>
-                }
-              />
-            ))}
-          </div>
+          members.map((m) => (
+            <MemberRow
+              key={m.id}
+              member={m}
+              trailing={
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {memberSince(m.joinedOn, parseDay(asOf)).replace("Member since ", "")}
+                </span>
+              }
+            />
+          ))
         )}
       </div>
     </Section>

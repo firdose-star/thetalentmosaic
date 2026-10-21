@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
+  // Keep the dev "N" badge clear of the sidebar user menu (bottom-left).
+  devIndicators: { position: "bottom-right" },
+
   async redirects() {
     return [
       {

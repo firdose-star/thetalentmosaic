@@ -38,6 +38,24 @@ export interface OverviewSummary {
   birthdays: { today: MemberCard[]; upcoming: UpcomingBirthday[] };
   /** Joined in the last 10 days, newest first. */
   recentMembers: MemberCard[];
+  /** The next few upcoming events, soonest first. Members see city only. */
+  nextEvents: {
+    id: string;
+    title: string;
+    date: string;
+    time?: string;
+    city: string;
+    format: string;
+    category: string;
+  }[];
+  /** The freshest active job listings. */
+  latestRoles: {
+    id: string;
+    title: string;
+    company: string;
+    location: string;
+    postedDaysAgo: number | null;
+  }[];
   /** Admin only: open items across the admin queues. */
   attention: {
     registrations: number;

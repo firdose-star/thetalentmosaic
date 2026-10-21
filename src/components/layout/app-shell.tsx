@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {/* @container/main: page grids use @xl/main: and @4xl/main: so they
               reflow when the SIDEBAR collapses, not just when the viewport
               resizes. Viewport breakpoints are wrong inside a shell. */}
-          <main className="@container/main flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+          <main className="@container/main mx-auto flex w-full max-w-[110rem] flex-col gap-5 p-4 md:p-6">
             {children}
           </main>
           <footer className="border-t px-4 py-5">

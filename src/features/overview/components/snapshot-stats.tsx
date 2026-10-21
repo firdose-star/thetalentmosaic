@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * The KPI row. Every card is clickable (PRD §6.1) — it opens the list behind
- * the number.
+ * The KPI row: six compact tiles on one line at desktop widths. Every tile is
+ * clickable (PRD §6.1) — it opens the list behind the number.
  */
 import {
   Building2,
@@ -15,42 +15,81 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { StatCard } from "@/components/shared/stat-card";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import type { OverviewSummary } from "../types";
+
+const GRID =
+  "grid grid-cols-2 gap-3 @2xl/main:grid-cols-3 @5xl/main:grid-cols-6";
+
+interface Tile {
+  label: string;
+  value: number;
+  hint: string;
+  icon: LucideIcon;
+  href: string;
+  /** Tint for the icon chip — semantic accents, not decoration. */
+  tone: string;
+}
 
 export function SnapshotStats({ summary }: { summary: OverviewSummary }) {
   const { totals, birthdays, recentMembers } = summary;
-  const birthdayCount = birthdays.today.length + birthdays.upcoming.length;
 
-  const stats: { label: string; value: number; hint: string; icon: LucideIcon; href: string }[] = [
-    { label: "Total members", value: totals.members, hint: "Approved members", icon: Users, href: ROUTES.people },
-    { label: "Startups", value: totals.startups, hint: "Unique startups", icon: Building2, href: ROUTES.people },
-    { label: "Cities", value: totals.cities, hint: "Where members are based", icon: MapPin, href: ROUTES.people },
-    { label: "Seniority", value: totals.seniorityLevels, hint: "Levels represented", icon: Compass, href: ROUTES.people },
+  const tiles: Tile[] = [
+    { label: "Members", value: totals.members, hint: "Approved", icon: Users, href: ROUTES.people, tone: "bg-accent text-primary" },
+    { label: "Startups", value: totals.startups, hint: "Unique", icon: Building2, href: ROUTES.people, tone: "bg-accent text-primary" },
+    { label: "Cities", value: totals.cities, hint: "Represented", icon: MapPin, href: ROUTES.people, tone: "bg-accent text-primary" },
+    { label: "Seniority", value: totals.seniorityLevels, hint: "Levels", icon: Compass, href: ROUTES.people, tone: "bg-accent text-primary" },
     {
       label: "Birthdays",
-      value: birthdayCount,
-      hint: `${birthdays.today.length} today, ${birthdays.upcoming.length} coming up`,
+      value: birthdays.today.length + birthdays.upcoming.length,
+      hint: `${birthdays.today.length} today`,
       icon: Cake,
       href: "#birthdays",
+      tone: "bg-chart-3/20 text-chart-3",
     },
-    { label: "New members", value: recentMembers.length, hint: "Joined in the last 10 days", icon: Sparkles, href: "#new-members" },
+    { label: "New members", value: recentMembers.length, hint: "Last 10 days", icon: Sparkles, href: "#new-members", tone: "bg-chart-2/20 text-primary" },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 @md/main:grid-cols-2 @4xl/main:grid-cols-3 @7xl/main:grid-cols-6">
-      {stats.map(({ href, ...stat }) => (
+    <div className={GRID}>
+      {tiles.map(({ label, value, hint, icon: Icon, href, tone }) => (
         <Link
-          key={stat.label}
+          key={label}
           href={href}
           className="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
-          <StatCard
-            {...stat}
-            className="h-full transition-colors group-hover:border-primary/40"
-          />
+          <Card className="h-full flex-row items-center gap-3 p-4 transition-colors group-hover:border-primary/40">
+            <span
+              className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", tone)}
+            >
+              <Icon className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-xs text-muted-foreground">{label}</p>
+              <p className="text-2xl leading-tight font-semibold tabular-nums">{value}</p>
+              <p className="truncate text-xs text-muted-foreground">{hint}</p>
+            </div>
+          </Card>
         </Link>
+      ))}
+    </div>
+  );
+}
+
+export function SnapshotStatsSkeleton() {
+  return (
+    <div className={GRID}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Card key={i} className="flex-row items-center gap-3 p-4">
+          <Skeleton className="size-10 rounded-lg" />
+          <div className="flex flex-col gap-1.5">
+            <Skeleton className="h-3 w-14" />
+            <Skeleton className="h-6 w-10" />
+          </div>
+        </Card>
       ))}
     </div>
   );

@@ -108,6 +108,28 @@ function buildSummary(asOf: Date): OverviewSummary {
       .filter((m) => -daysFrom(m.joinedOn, asOf) <= RECENT_DAYS)
       .sort((a, b) => parseIsoDate(b.joinedOn).getTime() - parseIsoDate(a.joinedOn).getTime())
       .map(toCard),
+    nextEvents: UPCOMING_EVENTS.filter((e) => daysFrom(e.date, asOf) >= 0)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 4)
+      .map(({ id, title, date, time, city, format, category }) => ({
+        id,
+        title,
+        date,
+        time,
+        city,
+        format,
+        category,
+      })),
+    latestRoles: JOBS.filter((j) => j.status === "active")
+      .sort((a, b) => (a.postedDaysAgo ?? 999) - (b.postedDaysAgo ?? 999))
+      .slice(0, 4)
+      .map(({ id, title, company, location, postedDaysAgo }) => ({
+        id,
+        title,
+        company,
+        location,
+        postedDaysAgo,
+      })),
     attention: {
       registrations: REGISTRATIONS.length,
       memberRequests: PROFILE_CHANGES.length + CONTACT_REQUESTS.length,

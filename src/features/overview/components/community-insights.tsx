@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * Community insights: seniority mix, top cities, experience bands, and — for
- * admins only (PRD §3) — new members over time.
+ * Community makeup — seniority, cities and experience side by side in one
+ * card — and, for admins only (PRD §3), new members over time.
  */
 import Link from "next/link";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { RoleGuard } from "@/components/shared/role-guard";
 import { Section } from "@/components/shared/section";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,78 +34,99 @@ const joinsConfig = {
   count: { label: "Joined", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-export function SeniorityMix({ seniority }: { seniority: OverviewSummary["seniority"] }) {
+function Heading({ children }: { children: string }) {
   return (
-    <Section title="Seniority" description="Members across seniority levels.">
-      <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full" aria-hidden>
-        {seniority.map((s, i) => (
-          <span
-            key={s.level}
-            className={SENIORITY_COLOURS[i % SENIORITY_COLOURS.length]}
-            style={{ flex: s.count }}
-          />
-        ))}
-      </div>
-      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
-        {seniority.map((s, i) => (
-          <li key={s.level}>
-            <Link
-              href={filterHref("seniority", s.level)}
-              className="inline-flex items-center gap-1.5 text-sm hover:underline"
-            >
+    <h3 className="mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      {children}
+    </h3>
+  );
+}
+
+export function CommunityMakeup({ summary }: { summary: OverviewSummary }) {
+  const { seniority } = summary;
+
+  return (
+    <Section
+      title="Community makeup"
+      description="Who is in the community. Tap any row to see the members behind it."
+    >
+      <div className="grid gap-6 @3xl/main:grid-cols-3">
+        <div>
+          <Heading>Seniority</Heading>
+          <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" aria-hidden>
+            {seniority.map((s, i) => (
               <span
-                className={`size-2.5 rounded-full ${SENIORITY_COLOURS[i % SENIORITY_COLOURS.length]}`}
-                aria-hidden
+                key={s.level}
+                className={SENIORITY_COLOURS[i % SENIORITY_COLOURS.length]}
+                style={{ flex: s.count }}
               />
-              {s.level}
-              <span className="font-semibold tabular-nums">{s.count}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+            ))}
+          </div>
+          <ul className="mt-3 flex flex-col gap-1">
+            {seniority.map((s, i) => (
+              <li key={s.level}>
+                <Link
+                  href={filterHref("seniority", s.level)}
+                  className="flex items-center gap-2 rounded-md py-1 text-sm hover:text-primary"
+                >
+                  <span
+                    className={`size-2.5 rounded-full ${SENIORITY_COLOURS[i % SENIORITY_COLOURS.length]}`}
+                    aria-hidden
+                  />
+                  {s.level}
+                  <span className="ml-auto font-semibold tabular-nums">{s.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <Heading>Top cities</Heading>
+          <BarList
+            rows={summary.cities.slice(0, 5).map((c) => ({
+              label: c.city,
+              value: c.count,
+              href: filterHref("city", c.city),
+            }))}
+          />
+        </div>
+
+        <div>
+          <Heading>Experience</Heading>
+          <BarList
+            rows={summary.experience.map((e) => ({
+              label: e.band,
+              value: e.count,
+              href: filterHref("experience", e.band),
+            }))}
+          />
+        </div>
+      </div>
     </Section>
   );
 }
 
-export function CommunityInsights({ summary }: { summary: OverviewSummary }) {
+/** Admin only — render inside `<RoleGuard allow={["admin"]}>`. */
+export function NewMembersChart({
+  monthlyJoins,
+}: {
+  monthlyJoins: OverviewSummary["monthlyJoins"];
+}) {
   return (
-    <div className="grid gap-4 @4xl/main:grid-cols-3">
-      <Section title="Cities with the most members" description="Where members are based.">
-        <BarList
-          rows={summary.cities.slice(0, 6).map((c) => ({
-            label: c.city,
-            value: c.count,
-            href: filterHref("city", c.city),
-          }))}
-        />
-      </Section>
-
-      <Section title="Breakdown by experience" description="Years in HR.">
-        <BarList
-          rows={summary.experience.map((e) => ({
-            label: e.band,
-            value: e.count,
-            href: filterHref("experience", e.band),
-          }))}
-        />
-      </Section>
-
-      <RoleGuard allow={["admin"]}>
-        <Section
-          title="New members over time"
-          description="Joined per month, from approval dates."
-          actions={<Badge variant="secondary">Admin only</Badge>}
-        >
-          <ChartContainer config={joinsConfig} className="h-48 w-full">
-            <BarChart data={summary.monthlyJoins} margin={{ left: 0, right: 0, top: 8 }}>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-              <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 2, 2]} />
-            </BarChart>
-          </ChartContainer>
-        </Section>
-      </RoleGuard>
-    </div>
+    <Section
+      title="New members over time"
+      description="Joined per month, from approval dates."
+      actions={<Badge variant="secondary">Admin only</Badge>}
+    >
+      <ChartContainer config={joinsConfig} className="h-44 w-full">
+        <BarChart data={monthlyJoins} margin={{ left: 0, right: 0, top: 8 }}>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+          <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 2, 2]} />
+        </BarChart>
+      </ChartContainer>
+    </Section>
   );
 }
