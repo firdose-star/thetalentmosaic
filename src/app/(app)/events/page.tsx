@@ -1,27 +1,21 @@
-import { CalendarDays } from "lucide-react";
+/**
+ * `/events` — Community Catchups (spec §9).
+ */
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { PlaceholderPanel } from "@/components/shared/placeholder-panel";
+import { LoadingState } from "@/components/shared/state-views";
+import { EventsView } from "@/features/events";
 
 export const metadata = { title: "Events" };
 
 export default function EventsPage() {
   return (
     <>
-      <PageHeader
-        title="Events"
-        description="Upcoming and past events, and hosting your own."
-      />
-      <PlaceholderPanel
-        icon={CalendarDays}
-        title="Events are coming"
-        description="Upcoming, past and calendar views, per PRD §6.5."
-        todo={[
-          "Upcoming and past events with a calendar view",
-          "Host a session form, with admin approval before publishing",
-          "Members see city only; admins see the full venue",
-        ]}
-      />
+      <PageHeader title="Community Catchups" description="Fun Stuff that we do!" />
+      <Suspense fallback={<LoadingState className="min-h-64" />}>
+        <EventsView />
+      </Suspense>
     </>
   );
 }
