@@ -1,7 +1,8 @@
-import { HeartPulse } from "lucide-react";
-
+/**
+ * `/health` — Community Health and Engagement (PRD §8). Admin only.
+ */
 import { PageHeader } from "@/components/shared/page-header";
-import { PlaceholderPanel } from "@/components/shared/placeholder-panel";
+import { HealthDashboard } from "@/features/health";
 
 export const metadata = { title: "Community Health" };
 
@@ -10,18 +11,9 @@ export default function HealthPage() {
     <>
       <PageHeader
         title="Community Health"
-        description="Who is joining, who is connected, and whom to reach out to next."
+        description="How many members use the platform, who is active, and how every member is engaged."
       />
-      <PlaceholderPanel
-        icon={HeartPulse}
-        title="Community Health is coming"
-        description="The admin engagement dashboard, per PRD §8."
-        todo={[
-          "Eight summary cards with live denominators (n / total, %)",
-          "Outreach and follow-up queue with owner filter",
-          "Member engagement, activity timeline, events and owners tabs",
-        ]}
-      />
+      <HealthDashboard />
     </>
   );
 }

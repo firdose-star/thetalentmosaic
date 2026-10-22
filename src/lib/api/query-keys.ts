@@ -26,6 +26,11 @@ export const queryKeys = {
   health: {
     all: ["health"] as const,
     backend: () => [...queryKeys.health.all, "backend"] as const,
+    /** Community Health (PRD §8) — distinct from the backend liveness check. */
+    community: () => [...queryKeys.health.all, "community"] as const,
+    engagement: () => [...queryKeys.health.community(), "engagement"] as const,
+    activity: () => [...queryKeys.health.community(), "activity"] as const,
+    tags: () => [...queryKeys.health.community(), "tags"] as const,
   },
 
   users: {
