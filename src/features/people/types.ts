@@ -4,10 +4,8 @@ export const PEOPLE_FILTER_KEYS = [
   "q",
   "city",
   "seniority",
-  "function",
   "startup",
   "experience",
-  "interest",
   "hobby",
 ] as const;
 
@@ -21,6 +19,8 @@ export interface DirectoryMember {
   startup: string;
   designation: string;
   city: string;
+  /** Joining date — drives the live "Mosaic Member since" label. */
+  joinedOn: string;
 }
 
 export interface FilterOptions {

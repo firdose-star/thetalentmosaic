@@ -9,7 +9,6 @@
 import {
   ArrowLeft,
   Building2,
-  CalendarCheck,
   ExternalLink,
   Mail,
   MapPin,
@@ -21,13 +20,14 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { MemberAvatar } from "@/components/shared/member-avatar";
+import { MemberSince } from "@/components/shared/member-since";
 import { FadeIn } from "@/components/shared/motion";
 import { Section } from "@/components/shared/section";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-views";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { memberSince, shortDate } from "@/lib/community";
+import { shortDate } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
 import { useMemberProfile, useRequestContact } from "../hooks/use-people";
 import type { MemberProfile as Profile } from "../types";
@@ -123,7 +123,7 @@ export function MemberProfile({ id }: { id: string }) {
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5"><Building2 className="size-4" /> {profile.startup}</span>
             <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" /> {profile.city}</span>
-            <span className="inline-flex items-center gap-1.5"><CalendarCheck className="size-4" /> {memberSince(profile.joinedOn)}</span>
+            <MemberSince joinedOn={profile.joinedOn} />
           </div>
         </div>
         {profile.linkedin && (
@@ -141,6 +141,12 @@ export function MemberProfile({ id }: { id: string }) {
       <div className="grid items-start gap-4 @4xl/main:grid-cols-[minmax(0,1fr)_22rem]">
         <Section title="About">
           <dl className="flex flex-col gap-3">
+            <Detail label="In the Mosaic">
+              <span className="flex flex-wrap items-center gap-2">
+                <MemberSince joinedOn={profile.joinedOn} />
+                <span className="text-muted-foreground">Joined {shortDate(profile.joinedOn, true)}</span>
+              </span>
+            </Detail>
             <Detail label="Designation">{profile.designation}</Detail>
             <Detail label="Startup">{profile.startup}</Detail>
             <Detail label="City">{profile.city}</Detail>

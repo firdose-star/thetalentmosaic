@@ -36,11 +36,9 @@ function matches(m: Member, f: PeopleFilters) {
     (!q || `${m.name} ${m.startup} ${m.designation} ${m.city}`.toLowerCase().includes(q)) &&
     (!f.city || m.city === f.city) &&
     (!f.seniority || m.seniority === f.seniority) &&
-    (!f.function || m.hrFunction === f.function) &&
     (!f.startup || m.startup === f.startup) &&
     (!f.experience || experienceBand(m.yearsOfExperience) === f.experience) &&
-    (!f.interest || m.interests.includes(f.interest)) &&
-    (!f.hobby || m.hobbies.includes(f.hobby))
+    (!f.hobby || m.hobbies.some((h) => h.toLowerCase() === f.hobby.toLowerCase()))
   );
 }
 
@@ -50,6 +48,7 @@ const toCard = (m: Member): DirectoryMember => ({
   startup: m.startup,
   designation: m.designation,
   city: m.city,
+  joinedOn: m.joinedOn,
 });
 
 export const peopleService = {
@@ -75,7 +74,8 @@ export const peopleService = {
     cities: unique(MEMBERS.map((m) => m.city)),
     startups: unique(MEMBERS.map((m) => m.startup)),
     interests: unique(MEMBERS.flatMap((m) => m.interests)),
-    hobbies: unique(MEMBERS.flatMap((m) => m.hobbies)),
+    // Hobby options are the keywords members typed into their profiles.
+    hobbies: unique(MEMBERS.flatMap((m) => m.hobbies.map((h) => h.trim())).filter(Boolean)),
   }),
 
   detail: async (id: string, role: Role): Promise<MemberProfile | null> => {
