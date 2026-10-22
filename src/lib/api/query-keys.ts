@@ -39,6 +39,7 @@ export const queryKeys = {
   overview: {
     all: ["overview"] as const,
     summary: () => [...queryKeys.overview.all, "summary"] as const,
+    birthdayMessages: () => [...queryKeys.overview.all, "birthday-messages"] as const,
   },
 
   search: {

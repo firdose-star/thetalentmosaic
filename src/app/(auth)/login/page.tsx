@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-heading text-xl">Welcome to the Community</CardTitle>
+        <CardTitle className="font-heading text-xl">Sign in</CardTitle>
         <CardDescription>
           Access is by approval. New here? Ask a member to invite you.
         </CardDescription>

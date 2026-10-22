@@ -4,18 +4,18 @@
  * The Overview body: one summary query, every panel rendered from it, with the
  * loading and error states every list needs (PRD §5).
  *
- * Layout: welcome band → KPI row → two columns. The main column holds the
- * community picture (makeup, events, roles, and the admin chart); the right
- * rail holds the people lists and the contact card. Panels fade up in order.
+ * Members get a discovery view (search, community picture, birthdays, new
+ * members). Admins additionally get the operational layer: the attention
+ * row, new members over time and birthday message approval.
  */
 import { Stagger, StaggerItem } from "@/components/shared/motion";
 import { RoleGuard } from "@/components/shared/role-guard";
 import { ErrorState, LoadingState } from "@/components/shared/state-views";
 import { useOverviewSummary } from "../hooks/use-overview";
 import { AttentionBar } from "./attention-bar";
+import { BirthdayMessages } from "./birthday-messages";
 import { CommunityMakeup, NewMembersChart } from "./community-insights";
 import { CommunitySearch } from "./community-search";
-import { LatestRolesPanel, UpcomingEventsPanel } from "./events-and-roles";
 import { HaveQuestions } from "./have-questions";
 import { BirthdaysPanel, RecentMembersPanel } from "./member-lists";
 import { SnapshotStats, SnapshotStatsSkeleton } from "./snapshot-stats";
@@ -42,40 +42,32 @@ export function OverviewDashboard() {
 
           <SnapshotStats summary={data} />
 
-          <div className="grid items-start gap-4 @5xl/main:grid-cols-[minmax(0,1fr)_22rem] @7xl/main:grid-cols-[minmax(0,1fr)_24rem]">
-            <Stagger className="flex min-w-0 flex-col gap-4">
-              <StaggerItem>
-                <CommunityMakeup summary={data} />
-              </StaggerItem>
-              <StaggerItem className="grid gap-4 @3xl/main:grid-cols-2">
-                <UpcomingEventsPanel
-                  events={data.nextEvents}
-                  total={data.totals.upcomingEvents}
-                />
-                <LatestRolesPanel
-                  roles={data.latestRoles}
-                  total={data.totals.activeOpportunities}
-                />
-              </StaggerItem>
-              <RoleGuard allow={["admin"]}>
-                <StaggerItem>
-                  <NewMembersChart monthlyJoins={data.monthlyJoins} />
-                </StaggerItem>
-              </RoleGuard>
-            </Stagger>
+          <Stagger className="flex flex-col gap-4">
+            <StaggerItem>
+              <CommunityMakeup summary={data} />
+            </StaggerItem>
 
-            <Stagger className="flex min-w-0 flex-col gap-4">
+            <RoleGuard allow={["admin"]}>
               <StaggerItem>
-                <BirthdaysPanel birthdays={data.birthdays} />
+                <NewMembersChart monthlyJoins={data.monthlyJoins} />
               </StaggerItem>
+            </RoleGuard>
+
+            <StaggerItem className="grid items-start gap-4 @4xl/main:grid-cols-2">
+              <BirthdaysPanel birthdays={data.birthdays} />
+              <RecentMembersPanel members={data.recentMembers} asOf={data.asOf} />
+            </StaggerItem>
+
+            <RoleGuard allow={["admin"]}>
               <StaggerItem>
-                <RecentMembersPanel members={data.recentMembers} asOf={data.asOf} />
+                <BirthdayMessages />
               </StaggerItem>
-              <StaggerItem>
-                <HaveQuestions />
-              </StaggerItem>
-            </Stagger>
-          </div>
+            </RoleGuard>
+
+            <StaggerItem>
+              <HaveQuestions />
+            </StaggerItem>
+          </Stagger>
         </>
       )}
     </>

@@ -1,14 +1,15 @@
 "use client";
 
 /**
- * Member-centred panels for the right rail: birthdays (today + next 10 days)
- * and recent joiners. Compact rows so a list of ten fits without scrolling.
+ * Member-centred panels: birthdays (today + next 10 days) and recent joiners.
+ * Every member shows a live "Mosaic Member since" label.
  */
 import { ArrowRight, Cake, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { MemberAvatar } from "@/components/shared/member-avatar";
+import { MemberSince } from "@/components/shared/member-since";
 import { Section } from "@/components/shared/section";
 import { EmptyState } from "@/components/shared/state-views";
 import { Badge } from "@/components/ui/badge";
@@ -35,12 +36,13 @@ function MemberRow({
         className,
       )}
     >
-      <MemberAvatar name={member.name} className="size-8" />
+      <MemberAvatar name={member.name} className="size-10" />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{member.name}</span>
         <span className="block truncate text-xs text-muted-foreground">
           {member.designation}, {member.startup} · {member.city}
         </span>
+        <MemberSince joinedOn={member.joinedOn} className="mt-1" />
       </span>
       {trailing}
     </Link>
@@ -125,7 +127,7 @@ export function RecentMembersPanel({
               trailing={
                 <span
                   className="shrink-0 text-xs text-muted-foreground"
-                  title={memberSince(m.joinedOn, parseDay(asOf))}
+                  title={`Joined ${shortDate(m.joinedOn, true)} · ${memberSince(m.joinedOn, parseDay(asOf))}`}
                 >
                   Joined {shortDate(m.joinedOn)}
                 </span>

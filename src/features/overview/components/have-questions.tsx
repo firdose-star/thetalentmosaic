@@ -1,6 +1,5 @@
 /**
- * "Have questions?" — the community contact (PRD §1, §6.1). Sized for the
- * right rail.
+ * "Have questions?" — the community contact (PRD §1, §6.1).
  */
 import { ExternalLink, MessageCircle } from "lucide-react";
 
@@ -13,17 +12,17 @@ export function HaveQuestions() {
   const contact = siteConfig.communityContact;
 
   return (
-    <Card className="gap-4 bg-accent/60 p-5">
-      <div className="flex items-center gap-3">
-        <MemberAvatar name={contact.name} className="size-10" />
+    <Card className="flex-col gap-4 bg-accent/60 p-5 sm:flex-row sm:items-center">
+      <div className="flex flex-1 items-center gap-3">
+        <MemberAvatar name={contact.name} className="size-11" />
         <div>
-          <h2 className="text-base font-semibold">Have questions?</h2>
+          <h2 className="text-base font-semibold">Have questions? Reach out to {contact.name}</h2>
           <p className="text-sm text-muted-foreground">
-            Reach out to {contact.name} about the community or your profile.
+            About the community, your profile or anything on this site — just say hello.
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex gap-2">
         <Button nativeButton={false} render={<a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" />}>
           <MessageCircle data-icon="inline-start" />
           WhatsApp

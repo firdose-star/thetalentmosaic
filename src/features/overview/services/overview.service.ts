@@ -10,13 +10,11 @@ import {
   CONTACT_REQUESTS,
   DATA_ISSUES,
   DUPLICATES,
-  JOBS,
   MEMBERS,
   PROFILE_CHANGES,
   REGISTRATIONS,
   SAMPLE_AS_OF,
   SUBMISSIONS,
-  UPCOMING_EVENTS,
   addDays,
   daysFrom,
   daysUntilBirthday,
@@ -84,14 +82,9 @@ function buildSummary(asOf: Date): OverviewSummary {
       startups: new Set(members.map((m) => m.startup)).size,
       cities: cities.length,
       seniorityLevels: seniority.length,
-      hrFunctions: new Set(members.map((m) => m.hrFunction)).size,
-      upcomingEvents: UPCOMING_EVENTS.filter((e) => daysFrom(e.date, asOf) >= 0).length,
-      activeOpportunities: JOBS.filter((j) => j.status === "active").length,
     },
     seniority,
     cities,
-    hrFunctions: countBy(members, (m) => m.hrFunction).map(([name, count]) => ({ name, count })),
-    startups: countBy(members, (m) => m.startup).map(([name, count]) => ({ name, count })),
     experience: EXPERIENCE_BANDS.map((band) => ({
       band,
       count: members.filter((m) => experienceBand(m.yearsOfExperience) === band).length,
@@ -111,28 +104,6 @@ function buildSummary(asOf: Date): OverviewSummary {
       .filter((m) => -daysFrom(m.joinedOn, asOf) <= RECENT_DAYS)
       .sort((a, b) => parseIsoDate(b.joinedOn).getTime() - parseIsoDate(a.joinedOn).getTime())
       .map(toCard),
-    nextEvents: UPCOMING_EVENTS.filter((e) => daysFrom(e.date, asOf) >= 0)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(0, 4)
-      .map(({ id, title, date, time, city, format, category }) => ({
-        id,
-        title,
-        date,
-        time,
-        city,
-        format,
-        category,
-      })),
-    latestRoles: JOBS.filter((j) => j.status === "active")
-      .sort((a, b) => (a.postedDaysAgo ?? 999) - (b.postedDaysAgo ?? 999))
-      .slice(0, 4)
-      .map(({ id, title, company, location, postedDaysAgo }) => ({
-        id,
-        title,
-        company,
-        location,
-        postedDaysAgo,
-      })),
     attention: {
       registrations: REGISTRATIONS.length,
       memberRequests: PROFILE_CHANGES.length + CONTACT_REQUESTS.length,

@@ -15,7 +15,6 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { OverviewSummary } from "../types";
@@ -99,43 +98,16 @@ export function CommunityMakeup({ summary }: { summary: OverviewSummary }) {
           />
         </div>
 
-        <Tabs defaultValue="role">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <Heading className="mb-0">Breakdown</Heading>
-            <TabsList className="h-7">
-              <TabsTrigger value="role" className="px-2 text-xs">Role</TabsTrigger>
-              <TabsTrigger value="startup" className="px-2 text-xs">Startup</TabsTrigger>
-              <TabsTrigger value="experience" className="px-2 text-xs">Experience</TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="role">
-            <BarList
-              rows={summary.hrFunctions.slice(0, 5).map((f) => ({
-                label: f.name,
-                value: f.count,
-                href: filterHref("function", f.name),
-              }))}
-            />
-          </TabsContent>
-          <TabsContent value="startup">
-            <BarList
-              rows={summary.startups.slice(0, 5).map((s) => ({
-                label: s.name,
-                value: s.count,
-                href: filterHref("startup", s.name),
-              }))}
-            />
-          </TabsContent>
-          <TabsContent value="experience">
-            <BarList
-              rows={summary.experience.map((e) => ({
-                label: e.band,
-                value: e.count,
-                href: filterHref("experience", e.band),
-              }))}
-            />
-          </TabsContent>
-        </Tabs>
+        <div>
+          <Heading>Breakdown by experience</Heading>
+          <BarList
+            rows={summary.experience.map((e) => ({
+              label: e.band,
+              value: e.count,
+              href: filterHref("experience", e.band),
+            }))}
+          />
+        </div>
       </div>
     </Section>
   );

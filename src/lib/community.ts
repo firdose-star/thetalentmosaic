@@ -43,3 +43,9 @@ export function shortDate(value: string, withYear = false) {
 export function parseDay(value: string) {
   return parse(value);
 }
+
+export function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
