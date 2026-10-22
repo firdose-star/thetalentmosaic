@@ -115,4 +115,10 @@ export interface JobListing {
   salary: string;
   status: JobStatus;
   experience: string;
+  /** Original application link at the source. */
+  url: string;
+  /** Days since the scraper last confirmed the listing is live. */
+  lastCheckedDaysAgo: number;
+  description: string;
+  skills: string[];
 }

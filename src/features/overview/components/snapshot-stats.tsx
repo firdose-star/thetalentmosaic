@@ -1,15 +1,16 @@
 "use client";
 
 /**
- * The KPI row: six compact tiles on one line at desktop widths. Every tile is
- * clickable (PRD §6.1) — it opens the list behind the number.
+ * Community metrics (spec §5.3): seven compact tiles, each computed from the
+ * underlying records and each clicking through to the list behind it.
  */
 import {
-  Building2,
-  Cake,
+  BriefcaseBusiness,
+  CalendarDays,
   Compass,
   MapPin,
   Sparkles,
+  UserRoundSearch,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,7 +24,7 @@ import { cn } from "@/lib/utils";
 import type { OverviewSummary } from "../types";
 
 const GRID =
-  "grid grid-cols-2 gap-3 @2xl/main:grid-cols-3 @5xl/main:grid-cols-6";
+  "grid grid-cols-2 gap-3 @2xl/main:grid-cols-4 @7xl/main:grid-cols-7";
 
 interface Tile {
   label: string;
@@ -35,23 +36,19 @@ interface Tile {
   tone: string;
 }
 
+const COMMUNITY = "bg-accent text-primary";
+
 export function SnapshotStats({ summary }: { summary: OverviewSummary }) {
-  const { totals, birthdays, recentMembers } = summary;
+  const { totals, recentMembers } = summary;
 
   const tiles: Tile[] = [
-    { label: "Members", value: totals.members, hint: "Approved", icon: Users, href: ROUTES.people, tone: "bg-accent text-primary" },
-    { label: "Startups", value: totals.startups, hint: "Unique", icon: Building2, href: ROUTES.people, tone: "bg-accent text-primary" },
-    { label: "Cities", value: totals.cities, hint: "Represented", icon: MapPin, href: ROUTES.people, tone: "bg-accent text-primary" },
-    { label: "Seniority", value: totals.seniorityLevels, hint: "Levels", icon: Compass, href: ROUTES.people, tone: "bg-accent text-primary" },
-    {
-      label: "Birthdays",
-      value: birthdays.today.length + birthdays.upcoming.length,
-      hint: `${birthdays.today.length} today`,
-      icon: Cake,
-      href: "#birthdays",
-      tone: "bg-chart-3/20 text-chart-3",
-    },
-    { label: "New members", value: recentMembers.length, hint: "Last 10 days", icon: Sparkles, href: "#new-members", tone: "bg-chart-2/20 text-primary" },
+    { label: "Total members", value: totals.members, hint: "Approved members", icon: Users, href: ROUTES.people, tone: COMMUNITY },
+    { label: "Cities", value: totals.cities, hint: "Cities represented", icon: MapPin, href: `${ROUTES.people}#filters`, tone: COMMUNITY },
+    { label: "Seniority", value: totals.seniorityLevels, hint: "Levels represented", icon: Compass, href: "#makeup", tone: COMMUNITY },
+    { label: "Current role", value: totals.hrFunctions, hint: "HR functions", icon: UserRoundSearch, href: "#makeup", tone: COMMUNITY },
+    { label: "Recently joined", value: recentMembers.length, hint: "Last 10 days", icon: Sparkles, href: "#new-members", tone: "bg-chart-2/20 text-primary" },
+    { label: "Upcoming events", value: totals.upcomingEvents, hint: "On the calendar", icon: CalendarDays, href: ROUTES.events, tone: "bg-chart-3/20 text-chart-3" },
+    { label: "Opportunities", value: totals.activeOpportunities, hint: "Active listings", icon: BriefcaseBusiness, href: ROUTES.opportunities, tone: "bg-chart-4/20 text-chart-4" },
   ];
 
   return (
@@ -84,7 +81,7 @@ export function SnapshotStats({ summary }: { summary: OverviewSummary }) {
 export function SnapshotStatsSkeleton() {
   return (
     <div className={GRID}>
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: 7 }).map((_, i) => (
         <Card key={i} className="flex-row items-center gap-3 p-4">
           <Skeleton className="size-10 rounded-lg" />
           <div className="flex flex-col gap-1.5">

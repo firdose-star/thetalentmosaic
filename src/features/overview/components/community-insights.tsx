@@ -15,7 +15,9 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ROUTES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import type { OverviewSummary } from "../types";
 import { BarList } from "./bar-list";
 
@@ -34,9 +36,14 @@ const joinsConfig = {
   count: { label: "Joined", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-function Heading({ children }: { children: string }) {
+function Heading({ children, className }: { children: string; className?: string }) {
   return (
-    <h3 className="mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+    <h3
+      className={cn(
+        "mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase",
+        className,
+      )}
+    >
       {children}
     </h3>
   );
@@ -50,7 +57,7 @@ export function CommunityMakeup({ summary }: { summary: OverviewSummary }) {
       title="Community makeup"
       description="Who is in the community. Tap any row to see the members behind it."
     >
-      <div className="grid gap-6 @3xl/main:grid-cols-3">
+      <div id="makeup" className="grid scroll-mt-20 gap-6 @3xl/main:grid-cols-3">
         <div>
           <Heading>Seniority</Heading>
           <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" aria-hidden>
@@ -82,7 +89,7 @@ export function CommunityMakeup({ summary }: { summary: OverviewSummary }) {
         </div>
 
         <div>
-          <Heading>Top cities</Heading>
+          <Heading>Cities with the most members</Heading>
           <BarList
             rows={summary.cities.slice(0, 5).map((c) => ({
               label: c.city,
@@ -92,16 +99,43 @@ export function CommunityMakeup({ summary }: { summary: OverviewSummary }) {
           />
         </div>
 
-        <div>
-          <Heading>Experience</Heading>
-          <BarList
-            rows={summary.experience.map((e) => ({
-              label: e.band,
-              value: e.count,
-              href: filterHref("experience", e.band),
-            }))}
-          />
-        </div>
+        <Tabs defaultValue="role">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <Heading className="mb-0">Breakdown</Heading>
+            <TabsList className="h-7">
+              <TabsTrigger value="role" className="px-2 text-xs">Role</TabsTrigger>
+              <TabsTrigger value="startup" className="px-2 text-xs">Startup</TabsTrigger>
+              <TabsTrigger value="experience" className="px-2 text-xs">Experience</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="role">
+            <BarList
+              rows={summary.hrFunctions.slice(0, 5).map((f) => ({
+                label: f.name,
+                value: f.count,
+                href: filterHref("function", f.name),
+              }))}
+            />
+          </TabsContent>
+          <TabsContent value="startup">
+            <BarList
+              rows={summary.startups.slice(0, 5).map((s) => ({
+                label: s.name,
+                value: s.count,
+                href: filterHref("startup", s.name),
+              }))}
+            />
+          </TabsContent>
+          <TabsContent value="experience">
+            <BarList
+              rows={summary.experience.map((e) => ({
+                label: e.band,
+                value: e.count,
+                href: filterHref("experience", e.band),
+              }))}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </Section>
   );

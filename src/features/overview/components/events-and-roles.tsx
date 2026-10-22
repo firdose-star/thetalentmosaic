@@ -15,10 +15,10 @@ import { parseDay } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
 import type { OverviewSummary } from "../types";
 
-function SeeAll({ href }: { href: string }) {
+function SeeAll({ href, label }: { href: string; label: string }) {
   return (
     <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={href} />}>
-      See all
+      {label}
       <ArrowRight data-icon="inline-end" />
     </Button>
   );
@@ -40,9 +40,9 @@ export function UpcomingEventsPanel({
 }) {
   return (
     <Section
-      title="Upcoming events"
-      description={`${total} on the calendar`}
-      actions={<SeeAll href={ROUTES.events} />}
+      title="Community Catchups"
+      description="The faces who’ve shown up for our catchups."
+      actions={<SeeAll href={ROUTES.events} label={`All ${total} events`} />}
       contentClassName="flex flex-col"
     >
       {events.length === 0 ? (
@@ -88,9 +88,9 @@ export function LatestRolesPanel({
 }) {
   return (
     <Section
-      title="Active opportunities"
-      description={`${total} open HR roles`}
-      actions={<SeeAll href={ROUTES.opportunities} />}
+      title="Looking for a Switch?"
+      description="Open opportunities that are available in the market."
+      actions={<SeeAll href={ROUTES.opportunities} label={`Explore all ${total}`} />}
       contentClassName="flex flex-col"
     >
       {roles.length === 0 ? (

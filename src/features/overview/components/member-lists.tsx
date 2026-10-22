@@ -39,7 +39,7 @@ function MemberRow({
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{member.name}</span>
         <span className="block truncate text-xs text-muted-foreground">
-          {member.designation}, {member.startup}
+          {member.designation}, {member.startup} · {member.city}
         </span>
       </span>
       {trailing}
@@ -61,7 +61,7 @@ export function BirthdaysPanel({
         : "No birthdays today — here is who is coming up.";
 
   return (
-    <Section title="Birthdays" description={greeting} contentClassName="flex flex-col">
+    <Section title="We’re celebrating you today!" description={greeting} contentClassName="flex flex-col">
       <div id="birthdays" className="flex scroll-mt-20 flex-col">
         {birthdays.today.map((m) => (
           <MemberRow
@@ -104,8 +104,8 @@ export function RecentMembersPanel({
 }) {
   return (
     <Section
-      title="Recently joined"
-      description="We can’t wait to see the magic you add here."
+      title="We can’t wait to see the magic you add here!"
+      description="Members who joined us recently."
       actions={
         <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={ROUTES.people} />}>
           Directory
@@ -123,8 +123,11 @@ export function RecentMembersPanel({
               key={m.id}
               member={m}
               trailing={
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {memberSince(m.joinedOn, parseDay(asOf)).replace("Member since ", "")}
+                <span
+                  className="shrink-0 text-xs text-muted-foreground"
+                  title={memberSince(m.joinedOn, parseDay(asOf))}
+                >
+                  Joined {shortDate(m.joinedOn)}
                 </span>
               }
             />

@@ -41,6 +41,39 @@ export const queryKeys = {
     summary: () => [...queryKeys.overview.all, "summary"] as const,
   },
 
+  search: {
+    all: ["search"] as const,
+    query: (q: string, role: string) => [...queryKeys.search.all, role, q] as const,
+  },
+
+  people: {
+    all: ["people"] as const,
+    lists: () => [...queryKeys.people.all, "list"] as const,
+    list: (filters: object) => [...queryKeys.people.lists(), filters] as const,
+    detail: (id: string, role: string) => [...queryKeys.people.all, "detail", id, role] as const,
+    options: () => [...queryKeys.people.all, "options"] as const,
+  },
+
+  library: {
+    all: ["library"] as const,
+    vendors: () => [...queryKeys.library.all, "vendors"] as const,
+    resources: (role: string) => [...queryKeys.library.all, "resources", role] as const,
+    recommendations: () => [...queryKeys.library.all, "recommendations"] as const,
+  },
+
+  opportunities: {
+    all: ["opportunities"] as const,
+    list: (role: string) => [...queryKeys.opportunities.all, "list", role] as const,
+    detail: (id: string) => [...queryKeys.opportunities.all, "detail", id] as const,
+    scraper: () => [...queryKeys.opportunities.all, "scraper"] as const,
+  },
+
+  events: {
+    all: ["events"] as const,
+    list: () => [...queryKeys.events.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.events.all, "detail", id] as const,
+  },
+
   // ── Add one block per feature. Mirror the API resources. ──
 } as const;
 

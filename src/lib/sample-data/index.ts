@@ -9,4 +9,5 @@ export * from "./admin-queues";
 export * from "./dates";
 export * from "./events";
 export * from "./jobs";
+export * from "./library";
 export * from "./members";

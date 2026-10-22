@@ -27,12 +27,17 @@ export interface OverviewSummary {
     startups: number;
     cities: number;
     seniorityLevels: number;
+    /** HR functions with at least one member — "Current Role" (spec §5.3). */
+    hrFunctions: number;
     upcomingEvents: number;
     activeOpportunities: number;
   };
   seniority: { level: Seniority; count: number }[];
   cities: { city: string; count: number }[];
   experience: { band: ExperienceBand; count: number }[];
+  /** Representation across HR roles. */
+  hrFunctions: { name: string; count: number }[];
+  startups: { name: string; count: number }[];
   /** Admin only (PRD §3): joins per month by approval date, oldest first. */
   monthlyJoins: { key: string; label: string; count: number }[];
   birthdays: { today: MemberCard[]; upcoming: UpcomingBirthday[] };
