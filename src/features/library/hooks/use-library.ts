@@ -21,9 +21,12 @@ export function useResources() {
 }
 
 export function useRecommendations() {
+  const { user } = useAuth();
+  const role = user?.role ?? "member";
+  const userName = user?.name ?? "";
   return useQuery({
-    queryKey: queryKeys.library.recommendations(),
-    queryFn: libraryService.recommendations,
+    queryKey: [...queryKeys.library.recommendations(), role, userName],
+    queryFn: () => libraryService.recommendations({ role, userName }),
   });
 }
 
@@ -35,6 +38,19 @@ export function useSuggestVendor() {
         description: `${vendor.name} will appear in the directory once approved.`,
       }),
     onError: (error) => notify.fromError(error, "Could not send the vendor"),
+  });
+}
+
+/** Admin: correct a vendor's details. */
+export function useUpdateVendor() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: libraryService.updateVendor,
+    onSuccess: (vendor) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.library.vendors() });
+      notify.success(`${vendor.name} updated`);
+    },
+    onError: (error) => notify.fromError(error, "Could not save the vendor"),
   });
 }
 

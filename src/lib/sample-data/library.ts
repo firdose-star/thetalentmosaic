@@ -17,26 +17,29 @@ export interface Vendor {
   name: string;
   category: string;
   description: string;
-  coverage: string;
-  location: string;
+  /** City or cities served, e.g. "Bangalore, Mumbai" or "Pan-India". */
+  city: string;
+  /** Exact area, when the vendor has a physical location. */
+  area: string;
   website: string;
   instagram: string;
-  whatsapp: string;
+  /** 10-digit Indian mobile; also their WhatsApp. */
+  phone: string;
   email: string;
   note: string;
 }
 
 export const VENDORS: Vendor[] = [
-  { id: "v1", name: "Spice Route Caterers", category: "Food & Catering", description: "Team lunches, offsite menus and festive catering with solid vegetarian and vegan options.", coverage: "Bangalore, Mumbai", location: "Indiranagar, Bangalore · Bandra, Mumbai", website: "spiceroute.example", instagram: "spiceroute.eats", whatsapp: "9000000001", email: "hello@spiceroute.example", note: "Minimum 25 plates. Vegan menu on request." },
-  { id: "v2", name: "Tiffin & Co.", category: "Food & Catering", description: "Daily office meals and snack boxes for small teams.", coverage: "Pune, Hyderabad", location: "Koregaon Park, Pune · Madhapur, Hyderabad", website: "tiffinco.example", instagram: "tiffinco.daily", whatsapp: "9000000002", email: "orders@tiffinco.example", note: "Monthly plans with a free trial week." },
-  { id: "v3", name: "Giftwise Studio", category: "Gifting", description: "Joining kits, work anniversary gifts and festive hampers, with custom packaging.", coverage: "Pan-India delivery", location: "Studio in Jayanagar, Bangalore", website: "giftwise.example", instagram: "giftwise.studio", whatsapp: "9000000003", email: "team@giftwise.example", note: "Orders of 50+ get custom branding at no extra cost." },
-  { id: "v4", name: "Paper Trail Print", category: "Stationery & Printing", description: "Branded notebooks, welcome kits, badges and event collateral.", coverage: "Bangalore, Delhi NCR", location: "Peenya, Bangalore · Okhla, Delhi", website: "papertrail.example", instagram: "papertrail.print", whatsapp: "9000000004", email: "print@papertrail.example", note: "Five-day turnaround for most orders." },
-  { id: "v5", name: "The Greenroom Stays", category: "Hotels & Stays", description: "Offsite-friendly resorts with meeting rooms and group rates.", coverage: "Coorg, Goa, Lonavala", location: "Properties in Coorg, Goa and Lonavala", website: "greenroom.example", instagram: "thegreenroom.stays", whatsapp: "9000000005", email: "groups@greenroom.example", note: "Group rates from 15 rooms." },
-  { id: "v6", name: "Wander Offsites", category: "Events & Experiences", description: "Planned team offsites, trail days and wellness retreats.", coverage: "Pan-India", location: "Based in Bangalore, travels across India", website: "wanderoffsites.example", instagram: "wander.offsites", whatsapp: "9000000006", email: "plan@wanderoffsites.example", note: "Handles travel, stay and activities end to end." },
-  { id: "v7", name: "Playbox Experiences", category: "Events & Experiences", description: "Quiz nights, game days and hackathon hosting for 20 to 200 people.", coverage: "Bangalore, Mumbai", location: "Whitefield, Bangalore · Powai, Mumbai", website: "playbox.example", instagram: "playbox.live", whatsapp: "9000000007", email: "hello@playbox.example", note: "Hosts many of our own community catchups." },
-  { id: "v8", name: "Atrium Venues", category: "Venues", description: "Meeting and event spaces for 20 to 300 people with AV included.", coverage: "Mumbai, Gurgaon", location: "Lower Parel, Mumbai · Cyber Hub, Gurgaon", website: "atriumvenues.example", instagram: "atrium.venues", whatsapp: "9000000008", email: "bookings@atriumvenues.example", note: "AV and projector included in every booking." },
-  { id: "v9", name: "The Loft Collective", category: "Venues", description: "Casual, well-lit spaces for community meetups of up to 80.", coverage: "Bangalore, Pune", location: "Indiranagar, Bangalore · Koregaon Park, Pune", website: "loftcollective.example", instagram: "theloft.collective", whatsapp: "9000000009", email: "space@loftcollective.example", note: "Evening slots are the most popular, so book early." },
-  { id: "v10", name: "ClearPath Immigration", category: "Other", description: "Visa and relocation support for cross-border hires.", coverage: "Pan-India", location: "Remote, serves clients across India", website: "clearpath.example", instagram: "", whatsapp: "9000000010", email: "help@clearpath.example", note: "Free 30-minute consult for community members." },
+  { id: "v1", name: "Spice Route Caterers", category: "Food & Catering", description: "Team lunches, offsite menus and festive catering with solid vegetarian and vegan options.", city: "Bangalore, Mumbai", area: "Indiranagar, Bangalore · Bandra, Mumbai", website: "spiceroute.example", instagram: "spiceroute.eats", phone: "9000000001", email: "hello@spiceroute.example", note: "Minimum 25 plates. Vegan menu on request." },
+  { id: "v2", name: "Tiffin & Co.", category: "Food & Catering", description: "Daily office meals and snack boxes for small teams.", city: "Pune, Hyderabad", area: "Koregaon Park, Pune · Madhapur, Hyderabad", website: "tiffinco.example", instagram: "tiffinco.daily", phone: "9000000002", email: "orders@tiffinco.example", note: "Monthly plans with a free trial week." },
+  { id: "v3", name: "Giftwise Studio", category: "Gifting", description: "Joining kits, work anniversary gifts and festive hampers, with custom packaging.", city: "Pan-India delivery", area: "Studio in Jayanagar, Bangalore", website: "giftwise.example", instagram: "giftwise.studio", phone: "9000000003", email: "team@giftwise.example", note: "Orders of 50+ get custom branding at no extra cost." },
+  { id: "v4", name: "Paper Trail Print", category: "Stationery & Printing", description: "Branded notebooks, welcome kits, badges and event collateral.", city: "Bangalore, Delhi NCR", area: "Peenya, Bangalore · Okhla, Delhi", website: "papertrail.example", instagram: "papertrail.print", phone: "9000000004", email: "print@papertrail.example", note: "Five-day turnaround for most orders." },
+  { id: "v5", name: "The Greenroom Stays", category: "Hotels & Stays", description: "Offsite-friendly resorts with meeting rooms and group rates.", city: "Coorg, Goa, Lonavala", area: "Properties in Coorg, Goa and Lonavala", website: "greenroom.example", instagram: "thegreenroom.stays", phone: "9000000005", email: "groups@greenroom.example", note: "Group rates from 15 rooms." },
+  { id: "v6", name: "Wander Offsites", category: "Events & Experiences", description: "Planned team offsites, trail days and wellness retreats.", city: "Pan-India", area: "Based in Bangalore, travels across India", website: "wanderoffsites.example", instagram: "wander.offsites", phone: "9000000006", email: "plan@wanderoffsites.example", note: "Handles travel, stay and activities end to end." },
+  { id: "v7", name: "Playbox Experiences", category: "Events & Experiences", description: "Quiz nights, game days and hackathon hosting for 20 to 200 people.", city: "Bangalore, Mumbai", area: "Whitefield, Bangalore · Powai, Mumbai", website: "playbox.example", instagram: "playbox.live", phone: "9000000007", email: "hello@playbox.example", note: "Hosts many of our own community catchups." },
+  { id: "v8", name: "Atrium Venues", category: "Venues", description: "Meeting and event spaces for 20 to 300 people with AV included.", city: "Mumbai, Gurgaon", area: "Lower Parel, Mumbai · Cyber Hub, Gurgaon", website: "atriumvenues.example", instagram: "atrium.venues", phone: "9000000008", email: "bookings@atriumvenues.example", note: "AV and projector included in every booking." },
+  { id: "v9", name: "The Loft Collective", category: "Venues", description: "Casual, well-lit spaces for community meetups of up to 80.", city: "Bangalore, Pune", area: "Indiranagar, Bangalore · Koregaon Park, Pune", website: "loftcollective.example", instagram: "theloft.collective", phone: "9000000009", email: "space@loftcollective.example", note: "Evening slots are the most popular, so book early." },
+  { id: "v10", name: "ClearPath Immigration", category: "Other", description: "Visa and relocation support for cross-border hires.", city: "Pan-India", area: "Remote, serves clients across India", website: "clearpath.example", instagram: "", phone: "9000000010", email: "help@clearpath.example", note: "Free 30-minute consult for community members." },
 ];
 
 export const RESOURCE_CATEGORIES = [
@@ -80,6 +83,9 @@ export interface Recommendation {
   description: string;
   status: RecommendationStatus;
   submittedOn: string;
+  /** Name of an uploaded file, when the member attached one. */
+  fileName?: string;
+  link?: string;
 }
 
 export const RECOMMENDATIONS: Recommendation[] = [

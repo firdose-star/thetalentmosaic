@@ -55,17 +55,6 @@ export function ResourceList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="gap-2 bg-accent/60 p-5">
-        <p className="text-sm font-medium">Resources can include:</p>
-        <ul className="flex flex-wrap gap-1.5">
-          {RESOURCE_CATEGORIES.map((category) => (
-            <li key={category}>
-              <Badge variant="outline" className="bg-background">{category}</Badge>
-            </li>
-          ))}
-        </ul>
-      </Card>
-
       <FilterPanel className="@2xl/main:flex-row">
         <SearchInput value={values.q} onChange={(v) => set("q", v)} placeholder="Search resources" className="flex-1" />
         <div className="@2xl/main:w-72">

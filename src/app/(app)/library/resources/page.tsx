@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ResourceList } from "@/features/library";
 import { ROUTES } from "@/lib/constants";
 
-export const metadata = { title: "HR Resources" };
+export const metadata = { title: "Resources" };
 
 export default function LibraryResourceListPage() {
   return (
@@ -17,7 +17,7 @@ export default function LibraryResourceListPage() {
         <ArrowLeft data-icon="inline-start" />
         Mosaic Library
       </Button>
-      <PageHeader title="Some Interesting Reads" description="Templates, policies, playbooks and learning materials from the community." />
+      <PageHeader title="Some Interesting Reads" description="Learning materials that might be of help" />
       <Suspense fallback={<LoadingState className="min-h-64" />}>
         <ResourceList />
       </Suspense>

@@ -11,5 +11,6 @@ export {
   useRecommendations,
   useResources,
   useSuggestVendor,
+  useUpdateVendor,
   useVendors,
 } from "./hooks/use-library";

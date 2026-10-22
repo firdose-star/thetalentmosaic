@@ -11,7 +11,7 @@ export default function LibraryPage() {
     <>
       <PageHeader
         title="Mosaic Library"
-        description="Practical resources and recommendations from the Talent Mosaic Community."
+        description="Resources and recommendations by the Community"
       />
       <LibraryLanding />
     </>

@@ -1,11 +1,25 @@
 "use client";
 
 /**
- * Vendor Directory (spec §7.4): category chips, search, and cards with name,
- * category, description, coverage and contact actions. Only approved vendors
- * appear here. Admins can manage the category list.
+ * Vendor Directory (spec §7.4): alphabetical, filterable by category, and
+ * each card opens to every detail — area, phone (copy, WhatsApp, call),
+ * website, Instagram and email — each leading to the right app. Only approved
+ * vendors appear here. Admins can edit vendors and manage categories.
  */
-import { Camera, Globe, Mail, MapPin, MessageCircle, Store } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Camera,
+  Check,
+  ChevronDown,
+  Copy,
+  Globe,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Store,
+} from "lucide-react";
+import { useState, type ReactNode } from "react";
 
 import { FilterPanel, ResultCount, SearchInput } from "@/components/shared/filter-bar";
 import { Stagger, StaggerItem } from "@/components/shared/motion";
@@ -14,57 +28,131 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import type { Vendor } from "@/lib/sample-data";
 import { cn } from "@/lib/utils";
 import { useVendors } from "../hooks/use-library";
 import { CategoryManagerDialog } from "./category-manager-dialog";
-import { VendorSuggestionDialog } from "./vendor-suggestion-dialog";
+import { VendorFormDialog } from "./vendor-form-dialog";
 
 const FILTER_KEYS = ["q", "category"] as const;
 
-function VendorCard({ vendor }: { vendor: Vendor }) {
+function DetailRow({ icon: Icon, label, children }: { icon: typeof Globe; label: string; children: ReactNode }) {
   return (
-    <Card className="h-full gap-3 p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="font-semibold">{vendor.name}</h3>
-          <Badge variant="secondary" className="mt-1">{vendor.category}</Badge>
-        </div>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary">
-          <Store className="size-4" aria-hidden />
+    <div className="flex items-start gap-3">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-primary">
+        <Icon className="size-4" aria-hidden />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[0.6875rem] font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+        <div className="text-sm wrap-break-word">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function PhoneRow({ phone }: { phone: string }) {
+  const { copied, copy } = useCopyToClipboard();
+  const display = `+91 ${phone.slice(0, 5)} ${phone.slice(5)}`;
+
+  return (
+    <DetailRow icon={Phone} label="Phone / WhatsApp">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <a href={`tel:+91${phone}`} className="font-medium tabular-nums hover:underline">{display}</a>
+        <Button size="xs" variant="outline" onClick={() => void copy(`+91${phone}`)} aria-label="Copy number">
+          {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+        <Button size="xs" nativeButton={false} render={<a href={`https://wa.me/91${phone}`} target="_blank" rel="noopener noreferrer" />}>
+          <MessageCircle data-icon="inline-start" />
+          WhatsApp
+        </Button>
+      </div>
+    </DetailRow>
+  );
+}
+
+function VendorCard({ vendor, categories }: { vendor: Vendor; categories: string[] }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Card className={cn("gap-0 overflow-hidden p-0 transition-colors", open && "border-primary/40")}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-start gap-3 p-5 text-left outline-none hover:bg-accent/40 focus-visible:bg-accent/40"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-primary">
+          <Store className="size-4.5" aria-hidden />
         </span>
-      </div>
-      <p className="text-sm text-muted-foreground">{vendor.description}</p>
-      <p className="flex items-start gap-1.5 text-sm">
-        <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-        {vendor.coverage}
-      </p>
-      {vendor.note && (
-        <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">{vendor.note}</p>
-      )}
-      <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
-        {vendor.website && (
-          <Button size="sm" variant="outline" nativeButton={false} render={<a href={`https://${vendor.website}`} target="_blank" rel="noopener noreferrer" />}>
-            <Globe data-icon="inline-start" /> Website
-          </Button>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">{vendor.name}</span>
+          <span className="mt-1 flex flex-wrap items-center gap-1.5">
+            <Badge variant="secondary">{vendor.category}</Badge>
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="size-3" />{vendor.city}
+            </span>
+          </span>
+          {vendor.description && (
+            <span className="mt-2 block text-sm text-muted-foreground">{vendor.description}</span>
+          )}
+        </span>
+        <ChevronDown
+          className={cn("mt-1 size-5 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
+          aria-hidden
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-3 border-t bg-muted/30 p-5">
+              <DetailRow icon={MapPin} label="Location">
+                {vendor.city}
+                {vendor.area && <span className="block text-muted-foreground">{vendor.area}</span>}
+              </DetailRow>
+              {vendor.phone && <PhoneRow phone={vendor.phone} />}
+              {vendor.website && (
+                <DetailRow icon={Globe} label="Website">
+                  <a href={`https://${vendor.website}`} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                    {vendor.website}
+                  </a>
+                </DetailRow>
+              )}
+              {vendor.instagram && (
+                <DetailRow icon={Camera} label="Instagram">
+                  <a href={`https://instagram.com/${vendor.instagram}`} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                    @{vendor.instagram}
+                  </a>
+                </DetailRow>
+              )}
+              {vendor.email && (
+                <DetailRow icon={Mail} label="Email">
+                  <a href={`mailto:${vendor.email}`} className="font-medium text-primary hover:underline">
+                    {vendor.email}
+                  </a>
+                </DetailRow>
+              )}
+              {vendor.note && (
+                <p className="rounded-lg bg-background px-3 py-2 text-xs text-muted-foreground">{vendor.note}</p>
+              )}
+              <RoleGuard allow={["admin"]}>
+                <div className="flex justify-end">
+                  <VendorFormDialog categories={categories} vendor={vendor} />
+                </div>
+              </RoleGuard>
+            </div>
+          </motion.div>
         )}
-        {vendor.whatsapp && (
-          <Button size="sm" variant="outline" nativeButton={false} render={<a href={`https://wa.me/91${vendor.whatsapp}`} target="_blank" rel="noopener noreferrer" />}>
-            <MessageCircle data-icon="inline-start" /> WhatsApp
-          </Button>
-        )}
-        {vendor.email && (
-          <Button size="icon-sm" variant="outline" aria-label={`Email ${vendor.name}`} nativeButton={false} render={<a href={`mailto:${vendor.email}`} />}>
-            <Mail />
-          </Button>
-        )}
-        {vendor.instagram && (
-          <Button size="icon-sm" variant="outline" aria-label={`${vendor.name} on Instagram`} nativeButton={false} render={<a href={`https://instagram.com/${vendor.instagram}`} target="_blank" rel="noopener noreferrer" />}>
-            <Camera />
-          </Button>
-        )}
-      </div>
+      </AnimatePresence>
     </Card>
   );
 }
@@ -80,7 +168,7 @@ export function VendorDirectory() {
   const vendors = data.vendors.filter(
     (v) =>
       (!values.category || v.category === values.category) &&
-      (!q || `${v.name} ${v.description} ${v.coverage}`.toLowerCase().includes(q)),
+      (!q || `${v.name} ${v.description} ${v.city} ${v.area}`.toLowerCase().includes(q)),
   );
   const chips = ["", ...data.categories];
 
@@ -92,12 +180,12 @@ export function VendorDirectory() {
           <RoleGuard allow={["admin"]}>
             <CategoryManagerDialog categories={data.categories} />
           </RoleGuard>
-          <VendorSuggestionDialog categories={data.categories} />
+          <VendorFormDialog categories={data.categories} />
         </div>
       </div>
 
       <FilterPanel>
-        <SearchInput value={values.q} onChange={(v) => set("q", v)} placeholder="Search vendors" />
+        <SearchInput value={values.q} onChange={(v) => set("q", v)} placeholder="Search vendors by name, city or area" />
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Vendor category">
           {chips.map((category) => {
             const active = values.category === category;
@@ -124,10 +212,10 @@ export function VendorDirectory() {
       ) : (
         <>
           <ResultCount count={vendors.length} noun={["vendor", "vendors"]} />
-          <Stagger key={`${values.category}-${values.q}`} className="grid gap-4 @2xl/main:grid-cols-2 @5xl/main:grid-cols-3">
+          <Stagger key={`${values.category}-${values.q}`} className="grid items-start gap-3 @3xl/main:grid-cols-2">
             {vendors.map((vendor) => (
               <StaggerItem key={vendor.id}>
-                <VendorCard vendor={vendor} />
+                <VendorCard vendor={vendor} categories={data.categories} />
               </StaggerItem>
             ))}
           </Stagger>

@@ -56,11 +56,11 @@ export const searchService = {
       },
       {
         category: "Vendors",
-        results: VENDORS.filter((v) => has(v.name, v.category, v.description, v.coverage)).map(
+        results: VENDORS.filter((v) => has(v.name, v.category, v.description, v.city, v.area)).map(
           (v) => ({
             id: v.id,
             title: v.name,
-            subtitle: `${v.category} · ${v.coverage}`,
+            subtitle: `${v.category} · ${v.city}`,
             href: `${ROUTES.library}/vendors?q=${encodeURIComponent(v.name)}`,
           }),
         ),

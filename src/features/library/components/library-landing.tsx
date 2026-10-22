@@ -19,8 +19,8 @@ const AREAS: { href: string; icon: LucideIcon; title: string; description: strin
   {
     href: `${ROUTES.library}/resources`,
     icon: BookOpen,
-    title: "HR Resources",
-    description: "Templates, policies, playbooks, tools, research and learning materials from the community.",
+    title: "Resources",
+    description: "Learning materials that might be of help.",
     cta: "Some interesting reads",
   },
   {
