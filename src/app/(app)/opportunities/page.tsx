@@ -14,7 +14,7 @@ export default function OpportunitiesPage() {
     <>
       <PageHeader
         title="Roles for you!"
-        description="These roles are scraped from various sources."
+        description="Here are some opportunities that might be of interest"
       />
       <Suspense fallback={<LoadingState className="min-h-64" />}>
         <JobBoard />

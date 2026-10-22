@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * "Roles for you!" (spec §8.2–8.4): ten filters plus sorting, all in the URL,
+ * "Roles for you!": Role, Location, Employment Type and Sort, all in the URL,
  * and cards carrying everything spec §8.3 lists. Admins get a second tab for
  * listing management (spec §8.8).
  */
@@ -14,7 +14,6 @@ import {
   FilterPanel,
   FilterSelect,
   ResultCount,
-  SearchInput,
 } from "@/components/shared/filter-bar";
 import { Stagger, StaggerItem } from "@/components/shared/motion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-views";
@@ -25,11 +24,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { ROUTES } from "@/lib/constants";
-import { HR_FUNCTIONS, SENIORITY_LEVELS, type JobListing } from "@/types/community";
+import { HR_FUNCTIONS, type JobListing } from "@/types/community";
 import {
   JOB_FILTER_KEYS,
-  POSTED_OPTIONS,
-  SALARY_OPTIONS,
   SORT_OPTIONS,
   checkedText,
   filterJobs,
@@ -40,16 +37,9 @@ import { useOpportunities } from "../hooks/use-opportunities";
 import { ListingManagement } from "./listing-management";
 
 const LABELS: Record<JobFilterKey, string> = {
-  q: "Keyword",
+  role: "Role",
   location: "Location",
-  arrangement: "Work arrangement",
-  function: "HR function",
-  seniority: "Seniority",
-  company: "Company",
   type: "Employment type",
-  posted: "Date posted",
-  source: "Source",
-  salary: "Salary",
   sort: "Sort",
 };
 
@@ -107,41 +97,27 @@ export function JobBoard() {
   const chips = JOB_FILTER_KEYS.filter((key) => key !== "sort" && values[key]).map((key) => ({
     key,
     label: LABELS[key],
-    value:
-      key === "posted"
-        ? (POSTED_OPTIONS.find((o) => o.value === values.posted)?.label ?? values.posted)
-        : key === "salary"
-          ? "Disclosed"
-          : values[key],
+    value: values[key],
   }));
 
   const board = (
     <div className="flex flex-col gap-4">
       <FilterPanel>
-        <div className="flex flex-col gap-2 @2xl/main:flex-row">
-          <SearchInput value={values.q} onChange={(v) => set("q", v)} placeholder="Keyword: title, company or function" className="flex-1" />
-          <NativeSelect aria-label="Sort" value={values.sort || "newest"} onChange={(e) => set("sort", e.target.value === "newest" ? "" : e.target.value)} className="@2xl/main:w-48">
+        <div className="grid grid-cols-2 gap-2 @3xl/main:grid-cols-4">
+          <FilterSelect label="Role" allLabel="All roles" value={values.role} options={HR_FUNCTIONS} onChange={(v) => set("role", v)} />
+          <FilterSelect label="Location" allLabel="All locations" value={values.location} options={unique(active.map((j) => j.location))} onChange={(v) => set("location", v)} />
+          <FilterSelect label="Employment type" allLabel="All employment types" value={values.type} options={["Full-time", "Contract", "Internship"]} onChange={(v) => set("type", v)} />
+          <NativeSelect aria-label="Sort" value={values.sort || "newest"} onChange={(e) => set("sort", e.target.value === "newest" ? "" : e.target.value)} className="w-full">
             {SORT_OPTIONS.map((o) => (
-              <NativeSelectOption key={o.value} value={o.value}>{o.label}</NativeSelectOption>
+              <NativeSelectOption key={o.value} value={o.value}>{`Sort: ${o.label}`}</NativeSelectOption>
             ))}
           </NativeSelect>
-        </div>
-        <div className="grid grid-cols-2 gap-2 @2xl/main:grid-cols-3 @5xl/main:grid-cols-5">
-          <FilterSelect label="Location" allLabel="All locations" value={values.location} options={unique(active.map((j) => j.location))} onChange={(v) => set("location", v)} />
-          <FilterSelect label="Work arrangement" allLabel="Remote, hybrid or on-site" value={values.arrangement} options={["Remote", "Hybrid", "On-site"]} onChange={(v) => set("arrangement", v)} />
-          <FilterSelect label="HR function" allLabel="All HR functions" value={values.function} options={HR_FUNCTIONS} onChange={(v) => set("function", v)} />
-          <FilterSelect label="Seniority" allLabel="All seniority" value={values.seniority} options={SENIORITY_LEVELS} onChange={(v) => set("seniority", v)} />
-          <FilterSelect label="Company" allLabel="All companies" value={values.company} options={unique(active.map((j) => j.company))} onChange={(v) => set("company", v)} />
-          <FilterSelect label="Employment type" allLabel="All employment types" value={values.type} options={["Full-time", "Contract", "Internship"]} onChange={(v) => set("type", v)} />
-          <FilterSelect label="Date posted" allLabel="Any time" value={values.posted} options={POSTED_OPTIONS} onChange={(v) => set("posted", v)} />
-          <FilterSelect label="Source" allLabel="All sources" value={values.source} options={unique(active.map((j) => j.source))} onChange={(v) => set("source", v)} />
-          <FilterSelect label="Salary" allLabel="Any salary" value={values.salary} options={SALARY_OPTIONS} onChange={(v) => set("salary", v)} />
         </div>
         <ActiveFilters filters={chips} onClear={(key) => clear(key as JobFilterKey)} onClearAll={clearAll} />
       </FilterPanel>
 
       {jobs.length === 0 ? (
-        <EmptyState icon={Briefcase} title="No roles match these filters" description="Try widening the date range or removing a filter." />
+        <EmptyState icon={Briefcase} title="No roles match these filters" description="Try removing a filter." />
       ) : (
         <>
           <ResultCount count={jobs.length} noun={["role", "roles"]} />
