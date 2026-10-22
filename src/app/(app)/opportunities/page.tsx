@@ -1,7 +1,11 @@
-import { Briefcase } from "lucide-react";
+/**
+ * `/opportunities` — the HR job board (spec §8).
+ */
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { PlaceholderPanel } from "@/components/shared/placeholder-panel";
+import { LoadingState } from "@/components/shared/state-views";
+import { JobBoard } from "@/features/opportunities";
 
 export const metadata = { title: "Opportunities" };
 
@@ -9,19 +13,12 @@ export default function OpportunitiesPage() {
   return (
     <>
       <PageHeader
-        title="Opportunities"
-        description="HR job openings from the job feed."
+        title="Roles for you!"
+        description="These roles are scraped from various sources."
       />
-      <PlaceholderPanel
-        icon={Briefcase}
-        title="The job board is coming"
-        description="Scraped HR roles with filters and apply links, per PRD §6.4."
-        todo={[
-          "Searchable listings with filters and apply links",
-          "Expire listings when the source closes them",
-          "Overview count reflects only valid listings",
-        ]}
-      />
+      <Suspense fallback={<LoadingState className="min-h-64" />}>
+        <JobBoard />
+      </Suspense>
     </>
   );
 }
