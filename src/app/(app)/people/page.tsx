@@ -1,7 +1,12 @@
-import { Users } from "lucide-react";
+/**
+ * `/people` — the member directory (spec §6). Filters live in the URL, so
+ * Overview cards deep-link here (`/people?city=Mumbai`).
+ */
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { PlaceholderPanel } from "@/components/shared/placeholder-panel";
+import { LoadingState } from "@/components/shared/state-views";
+import { PeopleDirectory } from "@/features/people";
 
 export const metadata = { title: "People" };
 
@@ -9,19 +14,13 @@ export default function PeoplePage() {
   return (
     <>
       <PageHeader
-        title="People"
-        description="Discover members and connect with relevant professionals."
+        title="People in the Mosaic"
+        description="The people behind the Talent Mosaic!"
       />
-      <PlaceholderPanel
-        icon={Users}
-        title="The member directory is next"
-        description="Searchable directory and profiles, per PRD §6.2."
-        todo={[
-          "Search and filters for startup, location, role, experience and interests",
-          "Profile page with Member since, tags, LinkedIn and permitted contact details",
-          "Members edit permitted fields; edits go to admin review",
-        ]}
-      />
+      {/* PeopleDirectory reads useSearchParams, which needs a Suspense boundary. */}
+      <Suspense fallback={<LoadingState className="min-h-64" />}>
+        <PeopleDirectory />
+      </Suspense>
     </>
   );
 }
