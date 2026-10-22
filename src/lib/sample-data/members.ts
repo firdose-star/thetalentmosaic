@@ -30,7 +30,7 @@ const YEARS: Record<Seniority, [number, number]> = { Associate: [2, 5], Manager:
 const BIRTHDAY_OFFSET: Record<number, number> = { 2: 0, 7: 0, 11: 0, 4: 2, 9: 4, 15: 7, 20: 9 };
 const LAST_LOGIN_DAYS = [0, 0, 1, 1, 2, 3, 4, 6, 9, 12, 18, 26, 41, 63, 95];
 const EVENT_COUNTS = [0, 0, 1, 1, 2, 3, 4, 5, 7, 9];
-export const RELATIONSHIP_OWNERS = ["Aarav Shah", "Ishita Verma", "Dev Kapoor"];
+export const RELATIONSHIP_OWNERS = ["Shubham", "Ritushree", "Bhuvana"];
 
 function designation(level: Seniority, fn: HrFunction, index: number, fnIndex: number) {
   switch (level) {
@@ -96,5 +96,6 @@ export const MEMBERS: Member[] = Array.from({ length: 60 }, (_, i) => {
     eventsAttended: eventsFor(joinedOn, i, PAST_EVENTS),
     owner: RELATIONSHIP_OWNERS[i % 3],
     lastLoginAt: i % 23 === 22 ? null : loginAt.toISOString(),
+    loginCount: i % 23 === 22 ? 0 : 1 + ((i * 7) % 12),
   };
 });

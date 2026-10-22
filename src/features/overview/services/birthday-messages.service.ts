@@ -8,7 +8,7 @@
  * Admin only: phone numbers never reach members. State lives in a session
  * store until the API exists.
  */
-import { MEMBERS, SAMPLE_AS_OF, addDays, daysUntilBirthday, isoDate } from "@/lib/sample-data";
+import { currentMembers, SAMPLE_AS_OF, addDays, daysUntilBirthday, isoDate } from "@/lib/sample-data";
 
 export const DEFAULT_TEMPLATE =
   "Happy birthday, {first}! 🎂 Wishing you a year full of great people moments, from all of us at The Talent Mosaic Community. 💚";
@@ -51,7 +51,7 @@ const draft = (name: string) => DEFAULT_TEMPLATE.replace("{first}", name.split("
 
 export const birthdayMessagesService = {
   list: async (): Promise<BirthdayMessage[]> =>
-    MEMBERS.map((m) => ({ m, inDays: daysUntilBirthday(m.birthday, SAMPLE_AS_OF) }))
+    currentMembers().map((m) => ({ m, inDays: daysUntilBirthday(m.birthday, SAMPLE_AS_OF) }))
       .filter(({ inDays }) => inDays <= 10)
       .sort((a, b) => a.inDays - b.inDays)
       .map(({ m, inDays }) => ({

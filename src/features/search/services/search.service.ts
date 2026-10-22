@@ -10,7 +10,7 @@
 import { ROUTES } from "@/lib/constants";
 import {
   JOBS,
-  MEMBERS,
+  currentMembers,
   PAST_EVENTS,
   RESOURCES,
   UPCOMING_EVENTS,
@@ -34,7 +34,7 @@ export const searchService = {
     const groups: SearchGroup[] = [
       {
         category: "People",
-        results: MEMBERS.filter((m) =>
+        results: currentMembers().filter((m) =>
           has(
             m.name,
             m.startup,

@@ -70,6 +70,8 @@ export interface Member {
   owner: string | null;
   /** ISO datetime of last login, or null if never logged in. */
   lastLoginAt: string | null;
+  /** Successful logins since joining — "returned multiple times" (PRD §8). */
+  loginCount: number;
 }
 
 export type EventFormat = "In person" | "Online" | "Hybrid";

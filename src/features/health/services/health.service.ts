@@ -1,124 +1,206 @@
 /**
  * Community Health and Engagement (PRD §8) — admin only.
  *
- * - engagement: who uses the platform (logins) and what they do there.
- * - activity:   every member's last login and activity status.
- * - tags:       how each member is engaged — events attended (and which),
- *               the automatic tier (online only / 1–2 events / regulars) and
- *               admin-managed custom tags.
+ * `data()` returns every member with their relationship state derived from
+ * recorded interactions (last meaningful contact, last attempt, pending
+ * follow-up, latest touchpoint), plus the admin settings. The tabs compute
+ * their metrics from this with the pure functions in `../metrics`, so the
+ * combined view and each owner's view always agree.
  *
- * Computed from the SAMPLE dataset with a session store for admin edits.
- * Usage counters that have no underlying records yet are marked `sample`.
+ * Every mutation is an admin action: log or edit interactions, assign
+ * owners, snooze, fix member data, tag events and tags, and manage the
+ * lists behind the dashboard (owners, interaction types, outcomes,
+ * thresholds). Backed by the SAMPLE session store until the API exists.
  */
-import { MEMBERS, PAST_EVENTS, SAMPLE_AS_OF } from "@/lib/sample-data";
+import {
+  PAST_EVENTS,
+  REGISTRATIONS,
+  SAMPLE_AS_OF,
+  communityStore,
+  isoDate,
+  patchMember,
+  type HealthSettings,
+  type Interaction,
+  type Outcome,
+} from "@/lib/sample-data";
 import type { Member } from "@/types/community";
 
-export const ENGAGEMENT_TIERS = ["Connected online only", "Attended 1–2 events", "Regulars (3+ events)"] as const;
-export type EngagementTier = (typeof ENGAGEMENT_TIERS)[number];
-
-export const CUSTOM_TAGS = ["Speaker", "Volunteer", "Community champion", "Resource contributor", "Vendor contributor"];
-
-export type ActivityStatus = "Active this week" | "Active this month" | "Inactive 30+ days" | "Never logged in";
-
-const overrides = new Map<string, { eventsAttended: string[]; tags: string[] }>();
-
-const withOverrides = (m: Member): Member => ({ ...m, ...overrides.get(m.id) });
-
-function daysSinceLogin(m: Member) {
-  if (!m.lastLoginAt) return null;
-  return Math.floor((SAMPLE_AS_OF.getTime() - new Date(m.lastLoginAt).getTime()) / 86_400_000);
+export interface Touchpoint {
+  date: string;
+  /** "Phone call", "LinkedIn comment", "Event: Monsoon HR Meetup", … */
+  label: string;
 }
 
-export function activityStatus(m: Member): ActivityStatus {
-  const d = daysSinceLogin(m);
-  if (d === null) return "Never logged in";
-  if (d <= 7) return "Active this week";
-  if (d <= 30) return "Active this month";
-  return "Inactive 30+ days";
+export interface HealthMember extends Member {
+  joinedDaysAgo: number;
+  loginDaysAgo: number | null;
+  lastMeaningful: Interaction | null;
+  lastAttempt: Interaction | null;
+  /** Days since the last meaningful interaction; null if never. */
+  daysSinceContact: number | null;
+  pendingFollowUp: string | null;
+  followUpOverdue: boolean;
+  snoozedUntil: string | null;
+  /** Most recent touchpoint of any kind, including events attended. */
+  latestTouch: Touchpoint | null;
 }
 
-export function engagementTier(eventsAttended: number): EngagementTier {
-  if (eventsAttended === 0) return "Connected online only";
-  if (eventsAttended <= 2) return "Attended 1–2 events";
-  return "Regulars (3+ events)";
+export interface HealthData {
+  asOf: string;
+  members: HealthMember[];
+  interactions: Interaction[];
+  settings: HealthSettings;
+  events: { id: string; title: string; date: string; city: string; attended: number }[];
+  awaitingApproval: number;
 }
 
-const eventTitle = (id: string) => PAST_EVENTS.find((e) => e.id === id)?.title ?? id;
+const DAY = 86_400_000;
+const daysAgo = (iso: string) =>
+  Math.floor((SAMPLE_AS_OF.getTime() - new Date(`${iso.slice(0, 10)}T00:00`).getTime()) / DAY);
+
+function derive(m: Member): HealthMember {
+  const { interactions, settings, snoozes } = communityStore;
+  const meaningful = new Set(settings.outcomes.filter((o) => o.meaningful).map((o) => o.key));
+  const mine = interactions
+    .filter((x) => x.memberId === m.id)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const lastMeaningful = mine.find((x) => meaningful.has(x.outcome)) ?? null;
+  const lastAttempt = mine.find((x) => !meaningful.has(x.outcome)) ?? null;
+
+  // A promised follow-up stays open until a later meaningful interaction.
+  const promise = mine.find((x) => x.nextFollowUp);
+  const resolved = promise && mine.some((x) => meaningful.has(x.outcome) && x.date > promise.date);
+  const pendingFollowUp = promise && !resolved ? promise.nextFollowUp : null;
+
+  const lastEvent = m.eventsAttended
+    .map((id) => PAST_EVENTS.find((e) => e.id === id))
+    .filter((e) => e !== undefined)
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+  const touches: Touchpoint[] = [
+    ...(mine[0] ? [{ date: mine[0].date, label: mine[0].type }] : []),
+    ...(lastEvent ? [{ date: lastEvent.date, label: `Event: ${lastEvent.title}` }] : []),
+  ].sort((a, b) => b.date.localeCompare(a.date));
+
+  const snoozedUntil = snoozes.get(m.id) ?? null;
+
+  return {
+    ...m,
+    joinedDaysAgo: daysAgo(m.joinedOn),
+    loginDaysAgo: m.lastLoginAt ? daysAgo(m.lastLoginAt) : null,
+    lastMeaningful,
+    lastAttempt,
+    daysSinceContact: lastMeaningful ? daysAgo(lastMeaningful.date) : null,
+    pendingFollowUp,
+    followUpOverdue: Boolean(pendingFollowUp && pendingFollowUp < isoDate(SAMPLE_AS_OF)),
+    snoozedUntil: snoozedUntil && snoozedUntil > isoDate(SAMPLE_AS_OF) ? snoozedUntil : null,
+    latestTouch: touches[0] ?? null,
+  };
+}
+
+const nextId = () => `int${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
 export const healthService = {
-  engagement: async () => {
-    const members = MEMBERS.map(withOverrides);
-    const total = members.length;
-    const count = (status: ActivityStatus) => members.filter((m) => activityStatus(m) === status).length;
-    const week = count("Active this week");
-    const month = week + count("Active this month");
-    const never = count("Never logged in");
+  data: async (): Promise<HealthData> => ({
+    asOf: isoDate(SAMPLE_AS_OF),
+    members: communityStore.members.map(derive),
+    interactions: [...communityStore.interactions],
+    settings: structuredClone(communityStore.settings),
+    events: PAST_EVENTS.map((e) => ({
+      id: e.id,
+      title: e.title,
+      date: e.date,
+      city: e.city,
+      attended: communityStore.members.filter((m) => m.eventsAttended.includes(e.id)).length,
+    })),
+    awaitingApproval: REGISTRATIONS.length,
+  }),
 
-    return {
-      total,
-      activeWeek: week,
-      activeMonth: month,
-      inactive: total - month - never,
-      neverLoggedIn: never,
-      onlineOnly: members.filter((m) => m.eventsAttended.length === 0).length,
-      /** Weekly active members, oldest first; the last week is live. */
-      weeklyActive: [31, 34, 33, 38, 41, 40, 44, week].map((value, i, all) => {
-        const d = new Date(SAMPLE_AS_OF);
-        d.setDate(d.getDate() - 7 * (all.length - 1 - i));
-        return { week: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), members: value };
-      }),
-      /** Share of page views this month — sample until analytics events are captured. */
-      pageShare: [
-        { page: "Overview", share: 31 },
-        { page: "People", share: 27 },
-        { page: "Opportunities", share: 19 },
-        { page: "Library", share: 14 },
-        { page: "Events", share: 9 },
-      ],
-      /** PRD §12 analytics events — sample until captured from day one. */
-      counters: [
-        { label: "Logins this week", value: 212 },
-        { label: "Searches run", value: 386 },
-        { label: "Profile views", value: 924 },
-        { label: "Resources opened", value: 268 },
-        { label: "Role clicks to source", value: 151 },
-        { label: "Event registrations", value: 94 },
-      ],
-    };
+  // ── Interactions ──────────────────────────────────────────────────────────
+  logInteraction: async (input: Omit<Interaction, "id">) => {
+    communityStore.interactions = [{ ...input, id: nextId() }, ...communityStore.interactions];
+  },
+  updateInteraction: async (input: Interaction) => {
+    communityStore.interactions = communityStore.interactions.map((x) => (x.id === input.id ? input : x));
+  },
+  deleteInteraction: async (id: string) => {
+    communityStore.interactions = communityStore.interactions.filter((x) => x.id !== id);
+  },
+  /** "Mark as contacted": a meaningful touchpoint dated today. */
+  markContacted: async ({ memberId, by }: { memberId: string; by: string }) => {
+    const meaningful = communityStore.settings.outcomes.find((o) => o.meaningful)?.key ?? "meaningful";
+    communityStore.interactions = [
+      {
+        id: nextId(),
+        memberId,
+        type: communityStore.settings.interactionTypes[0] ?? "Phone call",
+        outcome: meaningful,
+        date: isoDate(SAMPLE_AS_OF),
+        notes: "Marked as contacted",
+        nextFollowUp: "",
+        loggedBy: by,
+      },
+      ...communityStore.interactions,
+    ];
   },
 
-  activity: async () =>
-    MEMBERS.map(withOverrides)
-      .map((m) => ({
-        id: m.id,
-        name: m.name,
-        startup: m.startup,
-        city: m.city,
-        lastLoginAt: m.lastLoginAt,
-        status: activityStatus(m),
-        eventsAttended: m.eventsAttended.length,
-      }))
-      .sort((a, b) => (b.lastLoginAt ?? "").localeCompare(a.lastLoginAt ?? "")),
-
-  tags: async () => {
-    const members = MEMBERS.map(withOverrides).map((m) => ({
-      id: m.id,
-      name: m.name,
-      startup: m.startup,
-      eventsAttended: m.eventsAttended.map((id) => ({ id, title: eventTitle(id) })),
-      tier: engagementTier(m.eventsAttended.length),
-      tags: m.tags,
-    }));
-    return {
-      members,
-      tierCounts: ENGAGEMENT_TIERS.map((tier) => ({ tier, count: members.filter((m) => m.tier === tier).length })),
-      tagCounts: CUSTOM_TAGS.map((tag) => ({ tag, count: members.filter((m) => m.tags.includes(tag)).length })),
-      events: PAST_EVENTS.map((e) => ({ id: e.id, title: e.title, date: e.date, city: e.city })),
-    };
+  // ── Members ───────────────────────────────────────────────────────────────
+  setOwner: async ({ memberId, owner }: { memberId: string; owner: string | null }) => {
+    patchMember(memberId, { owner });
+  },
+  snooze: async ({ memberId, days }: { memberId: string; days: number }) => {
+    if (days <= 0) communityStore.snoozes.delete(memberId);
+    else {
+      const until = new Date(SAMPLE_AS_OF);
+      until.setDate(until.getDate() + days);
+      communityStore.snoozes.set(memberId, isoDate(until));
+    }
+  },
+  /** Data-quality fixes and engagement tagging (events attended, tags). */
+  updateMember: async ({ memberId, patch }: { memberId: string; patch: Partial<Member> }) => {
+    patchMember(memberId, patch);
   },
 
-  /** Admin: tick which events a member attended and set their tags. */
-  updateEngagement: async (input: { memberId: string; eventsAttended: string[]; tags: string[] }) => {
-    overrides.set(input.memberId, { eventsAttended: input.eventsAttended, tags: input.tags });
+  // ── Settings: thresholds, owners, interaction types, outcomes ─────────────
+  updateThresholds: async (input: Pick<HealthSettings, "thresholds" | "windows" | "newMemberDays">) => {
+    Object.assign(communityStore.settings, input);
+  },
+
+  addOwner: async (name: string) => {
+    if (communityStore.settings.owners.includes(name)) throw new Error(`${name} is already an owner`);
+    communityStore.settings.owners.push(name);
+  },
+  renameOwner: async ({ from, to }: { from: string; to: string }) => {
+    communityStore.settings.owners = communityStore.settings.owners.map((o) => (o === from ? to : o));
+    communityStore.members.filter((m) => m.owner === from).forEach((m) => patchMember(m.id, { owner: to }));
+  },
+  /** Removing an owner reassigns their members (or leaves them unassigned). */
+  removeOwner: async ({ name, reassignTo }: { name: string; reassignTo: string | null }) => {
+    communityStore.settings.owners = communityStore.settings.owners.filter((o) => o !== name);
+    communityStore.members.filter((m) => m.owner === name).forEach((m) => patchMember(m.id, { owner: reassignTo }));
+  },
+
+  addType: async (name: string) => {
+    if (communityStore.settings.interactionTypes.includes(name)) throw new Error(`${name} already exists`);
+    communityStore.settings.interactionTypes.push(name);
+  },
+  renameType: async ({ from, to }: { from: string; to: string }) => {
+    communityStore.settings.interactionTypes = communityStore.settings.interactionTypes.map((t) => (t === from ? to : t));
+    communityStore.interactions = communityStore.interactions.map((x) => (x.type === from ? { ...x, type: to } : x));
+  },
+  /** PRD §9: removing a type in use asks where its records go. */
+  removeType: async ({ name, remapTo }: { name: string; remapTo: string }) => {
+    communityStore.settings.interactionTypes = communityStore.settings.interactionTypes.filter((t) => t !== name);
+    communityStore.interactions = communityStore.interactions.map((x) => (x.type === name ? { ...x, type: remapTo } : x));
+  },
+
+  saveOutcome: async (outcome: Outcome) => {
+    const exists = communityStore.settings.outcomes.some((o) => o.key === outcome.key);
+    communityStore.settings.outcomes = exists
+      ? communityStore.settings.outcomes.map((o) => (o.key === outcome.key ? outcome : o))
+      : [...communityStore.settings.outcomes, outcome];
+  },
+  removeOutcome: async ({ key, remapTo }: { key: string; remapTo: string }) => {
+    communityStore.settings.outcomes = communityStore.settings.outcomes.filter((o) => o.key !== key);
+    communityStore.interactions = communityStore.interactions.map((x) => (x.outcome === key ? { ...x, outcome: remapTo } : x));
   },
 };

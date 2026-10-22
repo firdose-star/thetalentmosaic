@@ -11,3 +11,4 @@ export * from "./events";
 export * from "./jobs";
 export * from "./library";
 export * from "./members";
+export * from "./community-store";

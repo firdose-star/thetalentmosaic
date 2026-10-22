@@ -6,7 +6,7 @@
  * The API must apply the same rule as here: contact details and admin fields
  * are only ever sent to admins.
  */
-import { MEMBERS } from "@/lib/sample-data";
+import { currentMembers } from "@/lib/sample-data";
 import { experienceBand, type Member } from "@/types/community";
 import type { Role } from "@/types/enums";
 
@@ -54,13 +54,13 @@ const toCard = (m: Member): DirectoryMember => ({
 export const peopleService = {
   /** Alphabetical by default (spec §6.3). */
   list: async (filters: PeopleFilters): Promise<DirectoryMember[]> =>
-    MEMBERS.filter((m) => matches(m, filters))
+    currentMembers().filter((m) => matches(m, filters))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(toCard),
 
   /** Admin only: every record with status, owner and data gaps. */
   records: async (filters: PeopleFilters): Promise<MemberRecord[]> =>
-    MEMBERS.filter((m) => matches(m, filters))
+    currentMembers().filter((m) => matches(m, filters))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((m) => ({
         ...toCard(m),
@@ -71,15 +71,15 @@ export const peopleService = {
       })),
 
   options: async (): Promise<FilterOptions> => ({
-    cities: unique(MEMBERS.map((m) => m.city)),
-    startups: unique(MEMBERS.map((m) => m.startup)),
-    interests: unique(MEMBERS.flatMap((m) => m.interests)),
+    cities: unique(currentMembers().map((m) => m.city)),
+    startups: unique(currentMembers().map((m) => m.startup)),
+    interests: unique(currentMembers().flatMap((m) => m.interests)),
     // Hobby options are the keywords members typed into their profiles.
-    hobbies: unique(MEMBERS.flatMap((m) => m.hobbies.map((h) => h.trim())).filter(Boolean)),
+    hobbies: unique(currentMembers().flatMap((m) => m.hobbies.map((h) => h.trim())).filter(Boolean)),
   }),
 
   detail: async (id: string, role: Role): Promise<MemberProfile | null> => {
-    const m = MEMBERS.find((member) => member.id === id);
+    const m = currentMembers().find((member) => member.id === id);
     if (!m) return null;
     const isAdmin = role === "admin";
 

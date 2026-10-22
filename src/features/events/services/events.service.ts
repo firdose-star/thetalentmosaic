@@ -10,7 +10,7 @@
  * Backed by a session store over the SAMPLE data until the API exists.
  */
 import {
-  MEMBERS,
+  currentMembers,
   PAST_EVENTS,
   SAMPLE_AS_OF,
   UPCOMING_EVENTS,
@@ -45,7 +45,7 @@ const store = {
   submissions: [] as HostedSubmission[],
 };
 
-const memberName = (id: string) => MEMBERS.find((m) => m.id === id)?.name;
+const memberName = (id: string) => currentMembers().find((m) => m.id === id)?.name;
 
 function toView(event: CommunityEvent, role: Role): EventView {
   const hostName = event.hostedBy ?? (event.hostedById ? memberName(event.hostedById) : undefined);
@@ -127,7 +127,7 @@ export const eventsService = {
           venue: submission.city,
           category: "Community session",
           description: submission.details,
-          hostedById: MEMBERS.some((m) => m.id === submission.hostId) ? submission.hostId : undefined,
+          hostedById: currentMembers().some((m) => m.id === submission.hostId) ? submission.hostId : undefined,
           hostedBy: submission.hostName,
           registrationUrl: submission.registrationUrl,
           cost: submission.cost === "Free" ? "Free" : `Paid · ${submission.price}`,
@@ -152,5 +152,5 @@ export const eventsService = {
 
   /** Admin: the member picker for co-hosts. */
   memberOptions: async (): Promise<PersonRef[]> =>
-    MEMBERS.map((m) => ({ id: m.id, name: m.name })).sort((a, b) => a.name.localeCompare(b.name)),
+    currentMembers().map((m) => ({ id: m.id, name: m.name })).sort((a, b) => a.name.localeCompare(b.name)),
 };

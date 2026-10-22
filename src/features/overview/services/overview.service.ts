@@ -10,7 +10,7 @@ import {
   CONTACT_REQUESTS,
   DATA_ISSUES,
   DUPLICATES,
-  MEMBERS,
+  currentMembers,
   PROFILE_CHANGES,
   REGISTRATIONS,
   SAMPLE_AS_OF,
@@ -51,7 +51,7 @@ function countBy<T>(items: T[], key: (item: T) => string) {
 
 function buildSummary(asOf: Date): OverviewSummary {
   // PRD §9: only approved members count — every sample member is approved.
-  const members = MEMBERS;
+  const members = currentMembers();
 
   const monthlyJoins = Array.from({ length: MONTHS_SHOWN }, (_, k) => {
     const month = new Date(asOf.getFullYear(), asOf.getMonth() - (MONTHS_SHOWN - 1 - k), 1);
