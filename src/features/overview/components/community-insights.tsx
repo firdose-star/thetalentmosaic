@@ -5,16 +5,12 @@
  * card — and, for admins only (PRD §3), new members over time.
  */
 import Link from "next/link";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { useState } from "react";
 
+import { MemberAvatar } from "@/components/shared/member-avatar";
 import { Section } from "@/components/shared/section";
 import { Badge } from "@/components/ui/badge";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
+import { shortDate } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { OverviewSummary } from "../types";
@@ -30,10 +26,6 @@ const SENIORITY_COLOURS = [
 
 const filterHref = (key: string, value: string) =>
   `${ROUTES.people}?${key}=${encodeURIComponent(value)}`;
-
-const joinsConfig = {
-  count: { label: "Joined", color: "var(--chart-2)" },
-} satisfies ChartConfig;
 
 function Heading({ children, className }: { children: string; className?: string }) {
   return (
@@ -113,26 +105,74 @@ export function CommunityMakeup({ summary }: { summary: OverviewSummary }) {
   );
 }
 
-/** Admin only — render inside `<RoleGuard allow={["admin"]}>`. */
+/**
+ * Admin only — render inside `<RoleGuard allow={["admin"]}>`. Tap a month to
+ * see exactly who joined.
+ */
 export function NewMembersChart({
   monthlyJoins,
 }: {
   monthlyJoins: OverviewSummary["monthlyJoins"];
 }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const max = Math.max(...monthlyJoins.map((m) => m.count), 1);
+  const month = monthlyJoins.find((m) => m.key === selected);
+
   return (
     <Section
       title="New members over time"
-      description="Joined per month, from approval dates."
+      description="Joined per month, from approval dates. Tap a month to see who joined."
       actions={<Badge variant="secondary">Admin only</Badge>}
     >
-      <ChartContainer config={joinsConfig} className="h-44 w-full">
-        <BarChart data={monthlyJoins} margin={{ left: 0, right: 0, top: 8 }}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-          <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-          <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 2, 2]} />
-        </BarChart>
-      </ChartContainer>
+      <div className="flex h-44 items-end gap-2">
+        {monthlyJoins.map((m) => (
+          <button
+            key={m.key}
+            type="button"
+            onClick={() => setSelected(selected === m.key ? null : m.key)}
+            aria-pressed={selected === m.key}
+            aria-label={`${m.label}: ${m.count} joined`}
+            className="group flex h-full flex-1 flex-col items-center justify-end gap-1"
+          >
+            <span className="text-xs font-semibold tabular-nums">{m.count}</span>
+            <span
+              className={cn(
+                "w-full max-w-12 rounded-t-md bg-chart-2 transition-colors group-hover:bg-primary",
+                selected === m.key && "bg-primary",
+              )}
+              style={{ height: `${Math.max(4, (m.count / max) * 100)}%` }}
+            />
+            <span className="text-xs text-muted-foreground">{m.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {month && (
+        <div className="mt-4 border-t pt-4">
+          <p className="mb-2 text-sm text-muted-foreground">
+            <span className="text-base font-semibold text-foreground">{month.count}</span>{" "}
+            {month.count === 1 ? "member" : "members"} joined in {month.label}
+          </p>
+          {month.members.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nobody joined this month.</p>
+          ) : (
+            <ul className="grid gap-2 @3xl/main:grid-cols-2 @6xl/main:grid-cols-3">
+              {month.members.map((m) => (
+                <li key={m.id}>
+                  <Link href={`${ROUTES.people}/${m.id}`} className="flex items-center gap-3 rounded-lg border p-2 hover:border-primary/40">
+                    <MemberAvatar name={m.name} className="size-8" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{m.name}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{m.designation}, {m.startup}</span>
+                    </span>
+                    <span className="text-xs text-muted-foreground tabular-nums">{shortDate(m.joinedOn)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </Section>
   );
 }

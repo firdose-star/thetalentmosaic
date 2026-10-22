@@ -11,16 +11,15 @@
  */
 import {
   currentMembers,
-  PAST_EVENTS,
+  communityStore,
   SAMPLE_AS_OF,
-  UPCOMING_EVENTS,
   daysFrom,
   isoDate,
 } from "@/lib/sample-data";
 import type { CommunityEvent } from "@/types/community";
 import type { Role } from "@/types/enums";
 
-import type { HostSessionInput, WinnerInput } from "../schemas";
+import type { AdminEventInput, HostSessionInput, WinnerInput } from "../schemas";
 
 export interface PersonRef {
   id: string;
@@ -41,9 +40,20 @@ export interface HostedSubmission extends HostSessionInput {
 }
 
 const store = {
-  events: [...UPCOMING_EVENTS, ...PAST_EVENTS],
+  get events() {
+    return communityStore.events;
+  },
+  set events(next: CommunityEvent[]) {
+    communityStore.events = next;
+  },
   submissions: [] as HostedSubmission[],
 };
+
+/** "18:30" → "6:30 PM", matching how every other event shows its time. */
+function to12h(value: string) {
+  const [h, m] = value.split(":").map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+}
 
 const memberName = (id: string) => currentMembers().find((m) => m.id === id)?.name;
 
@@ -121,7 +131,7 @@ export const eventsService = {
           id: `e-${submission.id}`,
           title: submission.title,
           date: submission.date,
-          time: submission.time,
+          time: to12h(submission.time),
           format: submission.format,
           city: submission.city,
           venue: submission.city,
@@ -138,6 +148,26 @@ export const eventsService = {
       store.submissions = store.submissions.map((s) => (s.id === id ? { ...s, status: "rejected" } : s));
     }
     return submission;
+  },
+
+  /** Admin: add an event directly. A past date puts it straight on the timeline. */
+  createEvent: async (input: AdminEventInput) => {
+    const event: CommunityEvent = {
+      id: `a${Date.now()}`,
+      title: input.title,
+      date: input.date,
+      time: input.time ? to12h(input.time) : undefined,
+      format: input.format,
+      city: input.city,
+      venue: input.venue || input.city,
+      category: input.category,
+      description: input.description,
+      registrationUrl: input.registrationUrl || undefined,
+      cost: input.cost || undefined,
+      winners: [],
+    };
+    store.events = [...store.events, event];
+    return event;
   },
 
   /** Admin: tag one or more prize winners on a past event. */

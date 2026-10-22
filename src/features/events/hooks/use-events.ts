@@ -37,7 +37,11 @@ export function useEventMemberOptions() {
 
 function useRefreshEvents() {
   const queryClient = useQueryClient();
-  return () => void queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
+    // Health lists events attended and reach, so new or edited events refresh it too.
+    void queryClient.invalidateQueries({ queryKey: queryKeys.health.community() });
+  };
 }
 
 export function useHostSession() {
@@ -64,6 +68,14 @@ export function useEventAdminActions() {
       onSuccess: (s, { approve }) => {
         refresh();
         notify.success(approve ? `"${s.title}" is published` : `"${s.title}" was rejected`);
+      },
+      onError,
+    }),
+    create: useMutation({
+      mutationFn: eventsService.createEvent,
+      onSuccess: (e) => {
+        refresh();
+        notify.success(`"${e.title}" added`);
       },
       onError,
     }),

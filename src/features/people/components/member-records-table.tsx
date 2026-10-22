@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { shortDate } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
+import { MemberOwnerSelect } from "@/features/health";
 import { useMemberRecords } from "../hooks/use-people";
 import type { PeopleFilters } from "../types";
 
@@ -81,7 +82,7 @@ export function MemberRecordsTable({ filters }: { filters: PeopleFilters }) {
                 <TableCell>
                   <Badge variant={r.status === "Active" ? "secondary" : "outline"}>{r.status}</Badge>
                 </TableCell>
-                <TableCell>{r.owner ?? <span className="text-muted-foreground">Unassigned</span>}</TableCell>
+                <TableCell><MemberOwnerSelect memberId={r.id} memberName={r.name} /></TableCell>
                 <TableCell className="tabular-nums">{shortDate(r.joinedOn, true)}</TableCell>
                 <TableCell>
                   {r.missing.length === 0 ? (

@@ -26,6 +26,7 @@ import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useEvents } from "../hooks/use-events";
 import type { EventView } from "../services/events.service";
+import { AddEventDialog } from "./add-event-dialog";
 import { CoHostsDialog, WinnersDialog } from "./event-admin-dialogs";
 import { DateTile, HostLine, PhotoStrip, Winners, longDate, venueText } from "./event-parts";
 import { HostedSubmissions } from "./hosted-submissions";
@@ -338,7 +339,12 @@ export function EventsView() {
             Tell the community about it — name, location, details and how to register. It goes live once the admins approve it.
           </p>
         </div>
-        <HostSessionDialog />
+        <div className="flex flex-wrap gap-2">
+          <RoleGuard allow={["admin"]}>
+            <AddEventDialog />
+          </RoleGuard>
+          <HostSessionDialog />
+        </div>
       </Card>
 
       <HostedSubmissions submissions={data.submissions} />

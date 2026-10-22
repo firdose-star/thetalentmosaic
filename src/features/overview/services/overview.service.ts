@@ -60,6 +60,7 @@ function buildSummary(asOf: Date): OverviewSummary {
       key,
       label: month.toLocaleDateString("en-IN", { month: "short" }),
       count: members.filter((m) => m.joinedOn.startsWith(key)).length,
+      members: members.filter((m) => m.joinedOn.startsWith(key)).map(toCard),
     };
   });
 

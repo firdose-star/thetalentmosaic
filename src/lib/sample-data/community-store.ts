@@ -6,9 +6,10 @@
  * People, Overview and Community Health at once, exactly as it will when all
  * of them read from MongoDB. Changes last until the page reloads.
  */
-import type { Member } from "@/types/community";
+import type { CommunityEvent, Member } from "@/types/community";
 
 import { SAMPLE_AS_OF, addDays, isoDate } from "./dates";
+import { PAST_EVENTS, UPCOMING_EVENTS } from "./events";
 import { MEMBERS, RELATIONSHIP_OWNERS } from "./members";
 
 // ── Interactions (PRD §8: recorded relationship touchpoints) ────────────────
@@ -114,6 +115,8 @@ function seedInteractions(): Interaction[] {
 export const communityStore = {
   members: MEMBERS.map((m) => ({ ...m })),
   interactions: seedInteractions(),
+  /** Every event, upcoming and past, including ones admins add. */
+  events: [...UPCOMING_EVENTS, ...PAST_EVENTS] as CommunityEvent[],
   /** memberId → snoozed until (ISO date). */
   snoozes: new Map<string, string>(),
   settings: {

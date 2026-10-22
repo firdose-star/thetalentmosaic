@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { shortDate } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
+import { MemberEngagementButton, MemberOwnerSelect } from "@/features/health";
 import { useMemberProfile, useRequestContact } from "../hooks/use-people";
 import type { MemberProfile as Profile } from "../types";
 
@@ -185,8 +186,14 @@ export function MemberProfile({ id }: { id: string }) {
                     {profile.admin.status}
                   </Badge>
                 </Detail>
-                <Detail label="Owner">{profile.admin.owner ?? "Unassigned"}</Detail>
-                <Detail label="Events attended">{profile.eventsAttended}</Detail>
+                <Detail label="Owner"><MemberOwnerSelect memberId={profile.id} memberName={profile.name} /></Detail>
+                <Detail label="Events attended">
+                  <span className="flex flex-wrap items-center gap-2">
+                    {profile.eventsAttended}
+                    <MemberEngagementButton memberId={profile.id} />
+                  </span>
+                </Detail>
+                <Detail label="Tags"><Chips items={profile.tags} empty="None yet" /></Detail>
                 <Detail label="Last login">
                   {profile.admin.lastLoginAt
                     ? new Date(profile.admin.lastLoginAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })

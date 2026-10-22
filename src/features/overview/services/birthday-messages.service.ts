@@ -46,6 +46,8 @@ export interface BirthdayMessage {
 
 type Override = Partial<Pick<BirthdayMessage, "text" | "status" | "offsetDays" | "time" | "sentAt">>;
 const overrides = new Map<string, Override>();
+/** Applies to every message that has no day or time of its own. */
+const defaults = { offsetDays: 0, time: "09:00" };
 
 const draft = (name: string) => DEFAULT_TEMPLATE.replace("{first}", name.split(" ")[0]);
 
@@ -64,14 +66,21 @@ export const birthdayMessagesService = {
         birthdayOn: isoDate(addDays(SAMPLE_AS_OF, inDays)),
         text: draft(m.name),
         status: "needs-approval" as const,
-        offsetDays: 0,
-        time: "09:00",
+        offsetDays: defaults.offsetDays,
+        time: defaults.time,
         sentAt: null,
         ...overrides.get(m.id),
       })),
 
   update: async ({ memberId, ...patch }: Override & { memberId: string }) => {
     overrides.set(memberId, { ...overrides.get(memberId), ...patch });
+  },
+
+  defaults: async () => ({ ...defaults }),
+
+  /** Admin: the default send day and time for all messages. */
+  setDefaults: async (input: { offsetDays: number; time: string }) => {
+    Object.assign(defaults, input);
   },
 
   reset: async (memberId: string) => {

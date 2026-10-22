@@ -32,7 +32,7 @@ export interface OverviewSummary {
   cities: { city: string; count: number }[];
   experience: { band: ExperienceBand; count: number }[];
   /** Admin only (PRD §3): joins per month by approval date, oldest first. */
-  monthlyJoins: { key: string; label: string; count: number }[];
+  monthlyJoins: { key: string; label: string; count: number; members: MemberCard[] }[];
   birthdays: { today: MemberCard[]; upcoming: UpcomingBirthday[] };
   /** Members who joined us recently (last 10 days), newest first. */
   recentMembers: MemberCard[];

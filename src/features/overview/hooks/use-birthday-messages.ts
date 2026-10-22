@@ -14,6 +14,13 @@ export function useBirthdayMessages() {
   });
 }
 
+export function useBirthdayDefaults() {
+  return useQuery({
+    queryKey: [...queryKeys.overview.birthdayMessages(), "defaults"],
+    queryFn: birthdayMessagesService.defaults,
+  });
+}
+
 export function useBirthdayMessageActions() {
   const queryClient = useQueryClient();
   const refresh = () =>
@@ -23,5 +30,13 @@ export function useBirthdayMessageActions() {
   return {
     update: useMutation({ mutationFn: birthdayMessagesService.update, onSuccess: refresh, onError }),
     reset: useMutation({ mutationFn: birthdayMessagesService.reset, onSuccess: refresh, onError }),
+    setDefaults: useMutation({
+      mutationFn: birthdayMessagesService.setDefaults,
+      onSuccess: () => {
+        refresh();
+        notify.success("Default send time saved");
+      },
+      onError,
+    }),
   };
 }

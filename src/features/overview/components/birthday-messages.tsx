@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { addDays, parseDay, shortDate } from "@/lib/community";
-import { useBirthdayMessageActions, useBirthdayMessages } from "../hooks/use-birthday-messages";
+import { useBirthdayDefaults, useBirthdayMessageActions, useBirthdayMessages } from "../hooks/use-birthday-messages";
 import {
   SEND_OFFSETS,
   SEND_TIMES,
@@ -147,6 +147,41 @@ function MessageRow({ message }: { message: BirthdayMessage }) {
   );
 }
 
+/** Default send day and time for every message without its own. */
+function DefaultSchedule() {
+  const { data } = useBirthdayDefaults();
+  const { setDefaults } = useBirthdayMessageActions();
+  if (!data) return null;
+
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-accent/60 p-3 text-sm">
+      <span className="font-medium">Default for all messages:</span>
+      <NativeSelect
+        size="sm"
+        aria-label="Default send day"
+        value={data.offsetDays}
+        onChange={(e) => setDefaults.mutate({ ...data, offsetDays: Number(e.target.value) })}
+      >
+        {SEND_OFFSETS.map((o) => (
+          <NativeSelectOption key={o.value} value={o.value}>{o.label}</NativeSelectOption>
+        ))}
+      </NativeSelect>
+      <span className="text-muted-foreground">at</span>
+      <NativeSelect
+        size="sm"
+        aria-label="Default send time"
+        value={data.time}
+        onChange={(e) => setDefaults.mutate({ ...data, time: e.target.value })}
+      >
+        {SEND_TIMES.map((t) => (
+          <NativeSelectOption key={t} value={t}>{time12(t)}</NativeSelectOption>
+        ))}
+      </NativeSelect>
+      <span className="text-xs text-muted-foreground">Change any single message below to override it.</span>
+    </div>
+  );
+}
+
 export function BirthdayMessages() {
   const { data, isPending, isError, error, refetch } = useBirthdayMessages();
 
@@ -161,11 +196,14 @@ export function BirthdayMessages() {
       ) : isPending ? (
         <LoadingState className="min-h-40" />
       ) : (
-        <ul className="grid gap-3 @4xl/main:grid-cols-2">
-          {data.map((message) => (
-            <MessageRow key={`${message.memberId}-${message.status}`} message={message} />
-          ))}
-        </ul>
+        <>
+          <DefaultSchedule />
+          <ul className="grid gap-3 @4xl/main:grid-cols-2">
+            {data.map((message) => (
+              <MessageRow key={`${message.memberId}-${message.status}`} message={message} />
+            ))}
+          </ul>
+        </>
       )}
     </Section>
   );

@@ -13,7 +13,6 @@
  * thresholds). Backed by the SAMPLE session store until the API exists.
  */
 import {
-  PAST_EVENTS,
   REGISTRATIONS,
   SAMPLE_AS_OF,
   communityStore,
@@ -73,7 +72,7 @@ function derive(m: Member): HealthMember {
   const pendingFollowUp = promise && !resolved ? promise.nextFollowUp : null;
 
   const lastEvent = m.eventsAttended
-    .map((id) => PAST_EVENTS.find((e) => e.id === id))
+    .map((id) => communityStore.events.find((e) => e.id === id))
     .filter((e) => e !== undefined)
     .sort((a, b) => b.date.localeCompare(a.date))[0];
   const touches: Touchpoint[] = [
@@ -97,6 +96,12 @@ function derive(m: Member): HealthMember {
   };
 }
 
+/** Events that have happened — the ones members can have attended. */
+const pastEvents = () =>
+  communityStore.events
+    .filter((e) => e.date < isoDate(SAMPLE_AS_OF))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
 const nextId = () => `int${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
 export const healthService = {
@@ -105,7 +110,7 @@ export const healthService = {
     members: communityStore.members.map(derive),
     interactions: [...communityStore.interactions],
     settings: structuredClone(communityStore.settings),
-    events: PAST_EVENTS.map((e) => ({
+    events: pastEvents().map((e) => ({
       id: e.id,
       title: e.title,
       date: e.date,
