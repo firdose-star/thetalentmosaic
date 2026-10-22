@@ -1,27 +1,20 @@
-import { Inbox } from "lucide-react";
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { PlaceholderPanel } from "@/components/shared/placeholder-panel";
+import { LoadingState } from "@/components/shared/state-views";
+import { AdminGate, Submissions } from "@/features/admin";
 
 export const metadata = { title: "Submissions & Approvals" };
 
-export default function ApprovalsPage() {
+export default function SubmissionsPage() {
   return (
     <>
-      <PageHeader
-        title="Submissions & Approvals"
-        description="One queue for suggestions, hosted events, profile changes and birthday messages."
-      />
-      <PlaceholderPanel
-        icon={Inbox}
-        title="The approvals queue is coming"
-        description="Per PRD §7."
-        todo={[
-          "Vendor and resource suggestions",
-          "Member-hosted events and profile change requests",
-          "Approve, edit, or reject with a reason",
-        ]}
-      />
+      <PageHeader title="Submissions & Approvals" description="Only approved vendors, resources and sessions appear to members." />
+      <AdminGate>
+        <Suspense fallback={<LoadingState className="min-h-64" />}>
+        <Submissions />
+        </Suspense>
+      </AdminGate>
     </>
   );
 }

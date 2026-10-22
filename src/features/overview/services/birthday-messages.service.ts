@@ -8,7 +8,14 @@
  * Admin only: phone numbers never reach members. State lives in a session
  * store until the API exists.
  */
-import { currentMembers, SAMPLE_AS_OF, addDays, daysUntilBirthday, isoDate } from "@/lib/sample-data";
+import {
+  SAMPLE_AS_OF,
+  addDays,
+  communityStore,
+  currentMembers,
+  daysUntilBirthday,
+  isoDate,
+} from "@/lib/sample-data";
 
 export const DEFAULT_TEMPLATE =
   "Happy birthday, {first}! 🎂 Wishing you a year full of great people moments, from all of us at The Talent Mosaic Community. 💚";
@@ -45,9 +52,9 @@ export interface BirthdayMessage {
 }
 
 type Override = Partial<Pick<BirthdayMessage, "text" | "status" | "offsetDays" | "time" | "sentAt">>;
-const overrides = new Map<string, Override>();
+const overrides = communityStore.birthday.overrides as Map<string, Override>;
 /** Applies to every message that has no day or time of its own. */
-const defaults = { offsetDays: 0, time: "09:00" };
+const defaults = communityStore.birthday.defaults;
 
 const draft = (name: string) => DEFAULT_TEMPLATE.replace("{first}", name.split(" ")[0]);
 

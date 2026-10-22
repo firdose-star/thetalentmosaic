@@ -1,10 +1,13 @@
 /**
  * Date helpers for the sample dataset.
  *
- * Sample records are generated relative to a fixed "as of" date so they are
- * identical on the server and the client (no hydration drift) and every run.
+ * Sample records are generated relative to today, so the dashboard always
+ * reads as live: birthdays, recent joiners, contact windows and upcoming
+ * events all count from the real current date. Data is fetched in the
+ * browser, so the server never renders a different "today".
  */
-export const SAMPLE_AS_OF = new Date(2026, 9, 15);
+const now = new Date();
+export const SAMPLE_AS_OF = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
 export function addDays(date: Date, days: number) {
   const next = new Date(date);

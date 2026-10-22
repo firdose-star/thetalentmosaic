@@ -7,11 +7,8 @@
  * in the member-facing lists until approved.
  */
 import {
-  RECOMMENDATIONS,
-  RESOURCES,
+  communityStore,
   SAMPLE_AS_OF,
-  VENDOR_CATEGORIES,
-  VENDORS,
   isoDate,
   type Recommendation,
   type Vendor,
@@ -20,11 +17,7 @@ import type { Role } from "@/types/enums";
 
 import type { RecommendationInput, VendorInput } from "../schemas";
 
-const store = {
-  categories: [...VENDOR_CATEGORIES],
-  vendors: [...VENDORS],
-  recommendations: [...RECOMMENDATIONS],
-};
+const store = communityStore.library;
 
 const clean = (input: VendorInput) => ({
   name: input.name,
@@ -55,11 +48,24 @@ export const libraryService = {
   },
 
   /** Goes to Submissions & Approvals; not published until approved. */
-  suggestVendor: async (input: VendorInput) => ({ ...clean(input), status: "Under review" as const }),
+  suggestVendor: async ({ input, submittedBy }: { input: VendorInput; submittedBy: string }) => {
+    const vendor = clean(input);
+    communityStore.vendorSuggestions = [
+      {
+        id: `vs${Date.now()}`,
+        vendor: { ...vendor, note: "" },
+        submittedBy,
+        submittedOn: isoDate(SAMPLE_AS_OF),
+        status: "pending",
+      },
+      ...communityStore.vendorSuggestions,
+    ];
+    return vendor;
+  },
 
   /** Admin-only resources are never sent to members. */
   resources: async (role: Role) =>
-    RESOURCES.filter((r) => role === "admin" || r.access !== "Admins"),
+    store.resources.filter((r) => role === "admin" || r.access !== "Admins"),
 
   /**
    * Latest uploads, newest first. Members see what is published plus their
@@ -76,6 +82,7 @@ export const libraryService = {
     const created: Recommendation = {
       id: `rec${Date.now()}`,
       title: input.title,
+      category: input.category,
       owner: input.owner,
       description: input.description,
       status: "Under review",

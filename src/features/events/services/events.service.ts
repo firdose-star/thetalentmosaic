@@ -15,6 +15,8 @@ import {
   SAMPLE_AS_OF,
   daysFrom,
   isoDate,
+  logAdminAction,
+  type HostedSessionRecord,
 } from "@/lib/sample-data";
 import type { CommunityEvent } from "@/types/community";
 import type { Role } from "@/types/enums";
@@ -31,13 +33,8 @@ export interface EventView extends CommunityEvent {
   coHosts: PersonRef[];
 }
 
-export interface HostedSubmission extends HostSessionInput {
-  id: string;
-  hostId: string;
-  hostName: string;
-  submittedOn: string;
-  status: "pending" | "rejected";
-}
+/** Member-hosted sessions awaiting review — the same queue Admin › Submissions shows. */
+export type HostedSubmission = HostedSessionRecord;
 
 const store = {
   get events() {
@@ -46,7 +43,12 @@ const store = {
   set events(next: CommunityEvent[]) {
     communityStore.events = next;
   },
-  submissions: [] as HostedSubmission[],
+  get submissions() {
+    return communityStore.hostedSubmissions;
+  },
+  set submissions(next: HostedSubmission[]) {
+    communityStore.hostedSubmissions = next;
+  },
 };
 
 /** "18:30" → "6:30 PM", matching how every other event shows its time. */
@@ -144,8 +146,10 @@ export const eventsService = {
         },
       ];
       store.submissions = store.submissions.filter((s) => s.id !== id);
+      logAdminAction({ actor: "Admin", action: "Published a hosted session", object: `${submission.title} · by ${submission.hostName}` });
     } else {
       store.submissions = store.submissions.map((s) => (s.id === id ? { ...s, status: "rejected" } : s));
+      logAdminAction({ actor: "Admin", action: "Declined a hosted session", object: submission.title });
     }
     return submission;
   },
@@ -167,17 +171,20 @@ export const eventsService = {
       winners: [],
     };
     store.events = [...store.events, event];
+    logAdminAction({ actor: "Admin", action: "Added an event", object: `${event.title} · ${event.date}` });
     return event;
   },
 
   /** Admin: tag one or more prize winners on a past event. */
   setWinners: async ({ eventId, winners }: { eventId: string; winners: WinnerInput[] }) => {
     patchEvent(eventId, { winners });
+    logAdminAction({ actor: "Admin", action: "Tagged winners", object: store.events.find((e) => e.id === eventId)?.title ?? eventId, change: winners.map((w) => `${w.prize}: ${w.winner}`).join(", ") });
   },
 
   /** Admin: tag member co-hosts so the community can see them. */
   setCoHosts: async ({ eventId, memberIds }: { eventId: string; memberIds: string[] }) => {
     patchEvent(eventId, { coHostIds: memberIds });
+    logAdminAction({ actor: "Admin", action: "Tagged co-hosts", object: store.events.find((e) => e.id === eventId)?.title ?? eventId, change: memberIds.map((id) => memberName(id)).join(", ") || "None" });
   },
 
   /** Admin: the member picker for co-hosts. */

@@ -74,6 +74,9 @@ export const MEMBERS: Member[] = Array.from({ length: 60 }, (_, i) => {
   const loginDaysAgo = Math.min(joinedDaysAgo, LAST_LOGIN_DAYS[(i * 7 + 3) % 15]);
   const loginAt = addDays(SAMPLE_AS_OF, -loginDaysAgo);
   loginAt.setHours(8 + ((i * 5) % 13), (i * 17) % 60);
+  // Today's sign-ins can't be later than right now.
+  const rightNow = new Date();
+  if (loginAt > rightNow) loginAt.setTime(rightNow.getTime() - (5 + ((i * 13) % 50)) * 60_000);
 
   return {
     id: `m${i + 1}`,

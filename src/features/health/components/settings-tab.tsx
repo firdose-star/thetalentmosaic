@@ -196,7 +196,7 @@ function FixField({ member, field, owners }: { member: HealthMember; field: (typ
   );
 }
 
-function DataQuality({ data, list }: { data: HealthData; list: HealthMember[] }) {
+export function DataQuality({ data, list }: { data: HealthData; list: HealthMember[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
   return (

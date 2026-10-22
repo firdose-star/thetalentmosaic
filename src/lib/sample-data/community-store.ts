@@ -11,6 +11,28 @@ import type { CommunityEvent, Member } from "@/types/community";
 import { SAMPLE_AS_OF, addDays, isoDate } from "./dates";
 import { PAST_EVENTS, UPCOMING_EVENTS } from "./events";
 import { MEMBERS, RELATIONSHIP_OWNERS } from "./members";
+import {
+  CONTACT_REQUESTS,
+  DATA_ISSUES,
+  DUPLICATES,
+  PROFILE_CHANGES,
+  REGISTRATIONS,
+  SUBMISSIONS,
+} from "./admin-queues";
+import {
+  AUTOMATIONS,
+  DATA_SOURCES,
+  IMPORT_UPDATES,
+  PERMISSIONS,
+  type AccessRole,
+} from "./admin-config";
+import {
+  RECOMMENDATIONS,
+  RESOURCES,
+  VENDOR_CATEGORIES,
+  VENDORS,
+  type Vendor,
+} from "./library";
 
 // ── Interactions (PRD §8: recorded relationship touchpoints) ────────────────
 
@@ -45,6 +67,60 @@ export interface HealthSettings {
   interactionTypes: string[];
   outcomes: Outcome[];
   owners: string[];
+}
+
+
+// ── Shared queues every section and the admin area read ─────────────────────
+
+export interface VendorSuggestion {
+  id: string;
+  vendor: Omit<Vendor, "id">;
+  submittedBy: string;
+  submittedOn: string;
+  status: "pending" | "rejected";
+  reason?: string;
+}
+
+export interface HostedSessionRecord {
+  id: string;
+  title: string;
+  city: string;
+  date: string;
+  time: string;
+  format: "In person" | "Online" | "Hybrid";
+  details: string;
+  registrationUrl: string;
+  cost: "Free" | "Paid";
+  price?: string;
+  hostId: string;
+  hostName: string;
+  submittedOn: string;
+  status: "pending" | "rejected";
+  reason?: string;
+}
+
+export interface AccessUser {
+  id: string;
+  name: string;
+  email: string;
+  role: AccessRole;
+  status: "Active" | "Invited" | "Deactivated";
+  /** ISO datetime, or null if never signed in. */
+  lastActiveAt: string | null;
+}
+
+export type LogActorType = "Admin" | "Member" | "System";
+
+export interface ActivityLogEntry {
+  id: string;
+  /** ISO datetime. */
+  at: string;
+  actor: string;
+  actorType: LogActorType;
+  action: string;
+  object: string;
+  /** "before → after", for edits. */
+  change?: string;
 }
 
 const NOTES = [
@@ -119,6 +195,53 @@ export const communityStore = {
   events: [...UPCOMING_EVENTS, ...PAST_EVENTS] as CommunityEvent[],
   /** memberId → snoozed until (ISO date). */
   snoozes: new Map<string, string>(),
+  library: {
+    vendors: [...VENDORS],
+    categories: [...VENDOR_CATEGORIES],
+    resources: [...RESOURCES],
+    recommendations: [...RECOMMENDATIONS],
+  },
+  /** Member vendor suggestions awaiting review (approved ones move to library.vendors). */
+  vendorSuggestions: SUBMISSIONS.filter((s) => s.kind === "Vendor").map<VendorSuggestion>((s) => ({
+    id: s.id,
+    vendor: {
+      name: s.name,
+      category: s.category,
+      description: s.description,
+      city: s.id === "s1" ? "Bangalore" : "Goa",
+      area: "",
+      phone: "",
+      website: s.id === "s1" ? "brewhouse.example" : "heritagegoa.example",
+      instagram: "",
+      email: "",
+      note: "",
+    },
+    submittedBy: s.submittedBy,
+    submittedOn: isoDate(addDays(SAMPLE_AS_OF, s.submittedAt === "Today" ? 0 : -1)),
+    status: "pending",
+  })),
+  /** Member-hosted sessions awaiting review (approved ones move to events). */
+  hostedSubmissions: [] as HostedSessionRecord[],
+  birthday: {
+    overrides: new Map<string, Record<string, unknown>>(),
+    defaults: { offsetDays: 0, time: "09:00" },
+  },
+  admin: {
+    registrations: [...REGISTRATIONS],
+    profileChanges: [...PROFILE_CHANGES],
+    contactRequests: [...CONTACT_REQUESTS],
+    duplicates: [...DUPLICATES],
+    importUpdates: [...IMPORT_UPDATES],
+    issues: [...DATA_ISSUES],
+    sources: DATA_SOURCES.map((s) => ({ ...s })),
+    automations: AUTOMATIONS.map((a) => ({ ...a })),
+    permissions: PERMISSIONS.map((p) => ({ ...p, roles: { ...p.roles } })),
+    /** Role and status changes for derived users, keyed by user id. */
+    access: new Map<string, Partial<Pick<AccessUser, "role" | "status">>>(),
+    invited: [] as AccessUser[],
+    /** Admin actions recorded this session, newest first. */
+    log: [] as ActivityLogEntry[],
+  },
   settings: {
     windows: [15, 30, 60, 90],
     thresholds: { t1: 30, t2: 60, t3: 90 },
@@ -140,4 +263,12 @@ export function currentMembers(): Member[] {
 
 export function patchMember(id: string, patch: Partial<Member>) {
   communityStore.members = communityStore.members.map((m) => (m.id === id ? { ...m, ...patch } : m));
+}
+
+/** Append an admin action to the activity log (append-only). */
+export function logAdminAction(entry: Omit<ActivityLogEntry, "id" | "at" | "actorType"> & { actorType?: LogActorType }) {
+  communityStore.admin.log = [
+    { actorType: "Admin", ...entry, id: `log${Date.now()}${communityStore.admin.log.length}`, at: new Date().toISOString() },
+    ...communityStore.admin.log,
+  ];
 }

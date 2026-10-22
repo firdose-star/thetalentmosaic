@@ -42,7 +42,8 @@ export function experienceBand(years: number): ExperienceBand {
   return "16+ years";
 }
 
-export type MemberStatus = "Active" | "On break";
+export type MemberStatus = "Active" | "On break" | "Inactive";
+export const MEMBER_STATUSES: MemberStatus[] = ["Active", "On break", "Inactive"];
 
 export interface Member {
   id: string;

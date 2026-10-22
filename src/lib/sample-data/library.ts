@@ -74,7 +74,7 @@ export const RESOURCES: Resource[] = [
   { id: "res8", title: "Community moderation guidelines", category: "Policies and frameworks", description: "How admins review submissions and handle member requests.", source: "Talent Mosaic team", addedOn: "2026-07-11", access: "Admins" },
 ];
 
-export type RecommendationStatus = "Under review" | "Published";
+export type RecommendationStatus = "Under review" | "Published" | "Not approved";
 
 export interface Recommendation {
   id: string;
@@ -83,6 +83,9 @@ export interface Recommendation {
   description: string;
   status: RecommendationStatus;
   submittedOn: string;
+  category?: string;
+  /** Why an admin didn't publish it. */
+  reason?: string;
   /** Name of an uploaded file, when the member attached one. */
   fileName?: string;
   link?: string;

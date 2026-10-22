@@ -80,6 +80,10 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.events.all, "detail", id] as const,
   },
 
+  admin: {
+    all: ["admin"] as const,
+  },
+
   // ── Add one block per feature. Mirror the API resources. ──
 } as const;
 

@@ -1,7 +1,7 @@
 /**
  * Public surface of the Community Health slice (PRD §8) — admin only.
  */
-export { MemberEngagementButton, MemberOwnerSelect } from "./components/admin-member-controls";
+export { DataQualityPanel, MemberEngagementButton, MemberOwnerSelect } from "./components/admin-member-controls";
 export { EngagementEditor } from "./components/engagement-editor";
 export { HealthDashboard } from "./components/health-dashboard";
 export { OwnerSelect } from "./components/health-parts";

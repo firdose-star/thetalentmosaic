@@ -1,27 +1,20 @@
-import { UsersRound } from "lucide-react";
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { PlaceholderPanel } from "@/components/shared/placeholder-panel";
+import { LoadingState } from "@/components/shared/state-views";
+import { AdminGate, MemberManagement } from "@/features/admin";
 
 export const metadata = { title: "Member Management" };
 
 export default function MemberManagementPage() {
   return (
     <>
-      <PageHeader
-        title="Member Management"
-        description="Registrations, member records, duplicates, owners and tags."
-      />
-      <PlaceholderPanel
-        icon={UsersRound}
-        title="Member Management is coming"
-        description="Per PRD §7."
-        todo={[
-          "Review new registrations and profile change requests",
-          "Spot and merge duplicates",
-          "Assign relationship owners; edit tags and events attended",
-        ]}
-      />
+      <PageHeader title="Member Management" description="Review registrations, keep records accurate and manage member status." />
+      <AdminGate>
+        <Suspense fallback={<LoadingState className="min-h-64" />}>
+        <MemberManagement />
+        </Suspense>
+      </AdminGate>
     </>
   );
 }

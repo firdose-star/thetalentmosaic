@@ -24,6 +24,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
 import type { Vendor } from "@/lib/sample-data";
 import { useSuggestVendor, useUpdateVendor } from "../hooks/use-library";
 import { vendorSchema, type VendorInput } from "../schemas";
@@ -48,6 +49,7 @@ export function VendorFormDialog({
   /** Present → admin edit mode. */
   vendor?: Vendor;
 }) {
+  const { user } = useAuth();
   const isEdit = Boolean(vendor);
   const [open, setOpen] = useState(false);
   const suggest = useSuggestVendor();
@@ -76,7 +78,7 @@ export function VendorFormDialog({
     if (vendor) {
       await update.mutateAsync({ id: vendor.id, input: values });
     } else {
-      await suggest.mutateAsync(values);
+      await suggest.mutateAsync({ input: values, submittedBy: user?.name ?? "A member" });
       form.reset(EMPTY);
     }
     setOpen(false);

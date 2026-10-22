@@ -8,6 +8,7 @@
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useHealthActions, useHealthData } from "../hooks/use-health";
 import { EngagementEditor } from "./engagement-editor";
+import { DataQuality } from "./settings-tab";
 
 /** Relationship owner dropdown for one member. */
 export function MemberOwnerSelect({ memberId, memberName }: { memberId: string; memberName: string }) {
@@ -47,4 +48,11 @@ export function MemberEngagementButton({ memberId }: { memberId: string }) {
       events={data.events}
     />
   );
+}
+
+/** The data-quality panel with inline fixes, for the whole community. */
+export function DataQualityPanel() {
+  const { data } = useHealthData();
+  if (!data) return null;
+  return <DataQuality data={data} list={data.members} />;
 }
