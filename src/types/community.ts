@@ -91,11 +91,15 @@ export interface CommunityEvent {
   capacity?: number;
   attended?: number;
   photos?: number;
-  /** Member name when member-hosted; omitted for community-hosted events. */
+  /** Member id when member-hosted; omitted when hosted by The Talent Mosaic. */
+  hostedById?: string;
+  /** Resolved host name (filled by the service from `hostedById`). */
   hostedBy?: string;
   registrationUrl?: string;
   cost?: string;
   winners?: { prize: string; winner: string }[];
+  /** Member ids an admin tagged as co-hosts. */
+  coHostIds?: string[];
 }
 
 export type JobStatus = "active" | "expired" | "review";

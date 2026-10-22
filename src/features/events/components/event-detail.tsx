@@ -2,13 +2,15 @@
 
 /**
  * Event detail: everything about one catchup — date and time, format, venue
- * (full for admins, city for members), description, registration for upcoming
+ * (full for admins, city for members), who hosts it and any co-hosts,
+ * description, registration for upcoming
  * events, and photographs and winners for past ones.
  */
 import { ArrowLeft, CalendarDays, Clock, MapPin, Ticket, Users } from "lucide-react";
 import Link from "next/link";
 
 import { FadeIn } from "@/components/shared/motion";
+import { RoleGuard } from "@/components/shared/role-guard";
 import { Section } from "@/components/shared/section";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-views";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ROUTES } from "@/lib/constants";
 import { useEvent } from "../hooks/use-events";
-import { DateTile, PhotoStrip, Winners, longDate, venueText } from "./event-parts";
+import { CoHostsDialog, WinnersDialog } from "./event-admin-dialogs";
+import { DateTile, HostLine, PhotoStrip, Winners, longDate, venueText } from "./event-parts";
 
 export function EventDetail({ id }: { id: string }) {
   const { data, isPending, isError, error, refetch } = useEvent(id);
@@ -59,6 +62,13 @@ export function EventDetail({ id }: { id: string }) {
             {event.time && <span className="inline-flex items-center gap-1.5"><Clock className="size-4" />{event.time}</span>}
             <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" />{venueText(event)}</span>
           </p>
+          <HostLine event={event} className="mt-2" />
+          <RoleGuard allow={["admin"]}>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {!isUpcoming && <WinnersDialog event={event} />}
+              <CoHostsDialog event={event} />
+            </div>
+          </RoleGuard>
         </div>
         {isUpcoming && event.registrationUrl && (
           <Button size="lg" nativeButton={false} render={<a href={event.registrationUrl} target="_blank" rel="noopener noreferrer" />}>
@@ -72,9 +82,6 @@ export function EventDetail({ id }: { id: string }) {
         <div className="flex flex-col gap-4">
           <Section title="About this catchup">
             <p className="text-sm leading-relaxed">{event.description}</p>
-            {event.hostedBy && (
-              <p className="mt-3 text-sm text-chart-3">Hosted by {event.hostedBy}, a Community Member</p>
-            )}
           </Section>
           {!isUpcoming && event.photos ? (
             <Section title="Photographs">
