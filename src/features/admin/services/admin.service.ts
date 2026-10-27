@@ -20,6 +20,7 @@ import {
   type ActivityLogEntry,
   type Automation,
 } from "@/lib/sample-data";
+import { inferHrFunction } from "@/lib/community-import/parse";
 import type { Member, MemberStatus } from "@/types/community";
 
 const store = () => communityStore.admin;
@@ -37,6 +38,7 @@ function missingFields(m: Member) {
   if (!m.owner) out.push("Owner");
   if (!m.birthday) out.push("Birthday");
   if (m.yearsOfExperience === null) out.push("Years in HR");
+  if (!m.hrFunction) out.push("HR function");
   if (!m.photoUrl) out.push("Photo");
   if (!m.lastLoginAt) out.push("Never logged in");
   return out;
@@ -278,7 +280,7 @@ export const adminService = {
       startup: r.startup,
       city: r.city,
       seniority: /chro|chief|cxo/i.test(r.designation) ? "SVP / CXO" : /head|vp|director/i.test(r.designation) ? "Head / Director / VP" : /lead/i.test(r.designation) ? "Senior Manager / Lead" : /manager/i.test(r.designation) ? "Manager" : "Associate",
-      hrFunction: /talent|recruit/i.test(r.designation) ? "Talent Acquisition" : "Generalist HR",
+      hrFunction: inferHrFunction(r.designation),
       yearsOfExperience: null,
       hobbies: [],
       linkedin: "",
@@ -430,7 +432,7 @@ export const adminService = {
       startup: r.startup || "Not listed",
       city: r.city || "Not listed",
       seniority: "Associate",
-      hrFunction: "Generalist HR",
+      hrFunction: null,
       yearsOfExperience: null,
       hobbies: [],
       linkedin: "",

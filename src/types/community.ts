@@ -58,7 +58,8 @@ export interface Member {
   startup: string;
   city: string;
   seniority: Seniority;
-  hrFunction: HrFunction;
+  /** Null when not shared and not clear from the job title. */
+  hrFunction: HrFunction | null;
   /** Total years in HR; null when not shared. */
   yearsOfExperience: number | null;
   hobbies: string[];
@@ -86,8 +87,6 @@ export interface Member {
   formEmail?: string;
   /** Okay to appear in the member directory (Community Form). */
   directoryConsent?: boolean;
-  /** The team's "Added to Community" status: Yes, No, Invite Sent… */
-  addedToCommunity?: string;
   /** Successful logins since joining — "returned multiple times" (PRD §8). */
   loginCount: number;
 }

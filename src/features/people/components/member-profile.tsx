@@ -152,7 +152,7 @@ export function MemberProfile({ id }: { id: string }) {
             <Detail label="Designation">{profile.designation}</Detail>
             <Detail label="Startup">{profile.startup}</Detail>
             <Detail label="City">{profile.city}</Detail>
-            <Detail label="HR function">{profile.hrFunction}</Detail>
+            <Detail label="HR function">{profile.hrFunction ?? "Not shared"}</Detail>
             <Detail label="Seniority">{profile.seniority}</Detail>
             <Detail label="Experience">{profile.yearsOfExperience === null ? <span className="text-muted-foreground">Not shared yet</span> : `${profile.yearsOfExperience} years in HR`}</Detail>
             <Detail label="LinkedIn">

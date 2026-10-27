@@ -22,7 +22,7 @@
  *   Whatsapp No.         → WhatsApp (admin only, validated)
  *   Total YoE in HR?     → years of experience
  *   Events Attended      → events attended (admin-editable)
- *   Added to Community   → kept for admins
+ *   Added to Community   → ignored
  *   Contribution, Suggestions, Column 17, Comment, Notion → not imported
  */
 import type { CommunityEvent, HrFunction, Member, Seniority } from "@/types/community";
@@ -147,8 +147,11 @@ export function parseSeniority(raw: string): Seniority {
   return (SENIORITY_LEVELS as readonly string[]).includes(v) ? (v as Seniority) : "Other";
 }
 
-/** HR function isn't on the form, so infer it from the job title. */
-export function inferHrFunction(role: string): HrFunction {
+/**
+ * HR function isn't on the form, so read it from the job title when the title
+ * says it plainly; otherwise null ("Not shared") for an admin to fill in.
+ */
+export function inferHrFunction(role: string): HrFunction | null {
   const r = role.toLowerCase();
   if (/talent acq|recruit|\bta\b|hiring|sourc|campus/.test(r)) return "Talent Acquisition";
   if (/hrbp|business partner|people success|people & culture partner|business hr/.test(r)) return "HR Business Partnering";
@@ -157,7 +160,7 @@ export function inferHrFunction(role: string): HrFunction {
   if (/analytic|strategy/.test(r)) return "People Analytics";
   if (/culture|engagement|branding|communication/.test(r)) return "Culture & Engagement";
   if (/operation|ops\b|admin/.test(r)) return "People Operations";
-  return "Generalist HR";
+  return null;
 }
 
 /** Google Drive "open?id=…" → a thumbnail URL an <img> can show. */
@@ -235,7 +238,6 @@ export interface ImportReport {
   missingWhatsapp: number;
   missingYoe: number;
   directoryConsentNo: string[];
-  addedToCommunity: Record<string, number>;
   events: string[];
   /** Catchups loaded from the Community Catchups tab. */
   catchups?: number;
@@ -273,7 +275,6 @@ function columns(header: string[]) {
     whatsapp: find("whatsapp"),
     yoe: find("yoe"),
     events: find("events attended"),
-    added: find("added to community"),
   };
 }
 
@@ -290,7 +291,6 @@ export function importCommunityForm(csv: string, now = new Date()): CommunityImp
     missingWhatsapp: 0,
     missingYoe: 0,
     directoryConsentNo: [],
-    addedToCommunity: {},
     events: [],
   };
 
@@ -352,7 +352,6 @@ export function importCommunityForm(csv: string, now = new Date()): CommunityImp
       photoUrl: parsePhoto(cell(row, col.photo)),
       formEmail: parseEmail(cell(row, col.formEmail)) || undefined,
       directoryConsent: !/^no$/i.test(cell(row, col.consent)),
-      addedToCommunity: cell(row, col.added) || "Not recorded",
     };
 
     // Same person filling the form twice: same email, or same name + company.
@@ -386,10 +385,6 @@ export function importCommunityForm(csv: string, now = new Date()): CommunityImp
   report.missingWhatsapp = members.filter((m) => !m.whatsapp).length;
   report.missingYoe = members.filter((m) => m.yearsOfExperience === null).length;
   report.directoryConsentNo = members.filter((m) => m.directoryConsent === false).map((m) => m.name);
-  for (const m of members) {
-    const k = m.addedToCommunity ?? "Not recorded";
-    report.addedToCommunity[k] = (report.addedToCommunity[k] ?? 0) + 1;
-  }
   report.events = [...eventIds.keys()];
 
   // The form only names events; dates and venues still need to come from the team.

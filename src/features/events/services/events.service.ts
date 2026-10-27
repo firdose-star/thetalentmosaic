@@ -57,6 +57,14 @@ function to12h(value: string) {
   return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
 }
 
+/** "Hosted by" text → a member link when it names a member, else the name as typed. */
+function resolveHost(host?: string): Pick<CommunityEvent, "hostedBy" | "hostedById"> {
+  const name = host?.trim();
+  if (!name || name.toLowerCase() === "the talent mosaic") return { hostedBy: undefined, hostedById: undefined };
+  const member = currentMembers().find((m) => m.name.toLowerCase() === name.toLowerCase());
+  return member ? { hostedBy: undefined, hostedById: member.id } : { hostedBy: name, hostedById: undefined };
+}
+
 /** Admin form → event fields (shared by add and edit). */
 const fromInput = (input: AdminEventInput) => ({
   title: input.title,
@@ -71,6 +79,7 @@ const fromInput = (input: AdminEventInput) => ({
   cost: input.cost || undefined,
   momentsUrl: input.momentsUrl || undefined,
   photosUrl: input.photosUrl || undefined,
+  ...resolveHost(input.host),
 });
 
 const memberName = (id: string) => currentMembers().find((m) => m.id === id)?.name;

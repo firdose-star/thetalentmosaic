@@ -24,7 +24,7 @@ export const searchService = {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
     const isAdmin = role === "admin";
-    const has = (...fields: (string | undefined)[]) =>
+    const has = (...fields: (string | null | undefined)[]) =>
       fields.join(" ").toLowerCase().includes(q);
 
     const groups: SearchGroup[] = [

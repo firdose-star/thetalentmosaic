@@ -28,8 +28,9 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { CommunityEvent } from "@/types/community";
-import { useEventAdminActions, useEventAttendees } from "../hooks/use-events";
+import { useEventAdminActions, useEventAttendees, useEventMemberOptions } from "../hooks/use-events";
 import { adminEventSchema, type AdminEventInput } from "../schemas";
+import type { PersonRef } from "../services/events.service";
 
 const EMPTY: AdminEventInput = {
   title: "",
@@ -44,6 +45,7 @@ const EMPTY: AdminEventInput = {
   cost: "",
   momentsUrl: "",
   photosUrl: "",
+  host: "",
 };
 
 /** "6:30 PM" → "18:30" for the time input. */
@@ -55,7 +57,8 @@ function to24h(value?: string) {
   return `${String(h).padStart(2, "0")}:${m[2]}`;
 }
 
-const fromEvent = (e: CommunityEvent): AdminEventInput => ({
+const fromEvent = (e: CommunityEvent, members: PersonRef[] = []): AdminEventInput => ({
+  host: e.hostedBy ?? members.find((m) => m.id === e.hostedById)?.name ?? "",
   title: e.title,
   date: e.date,
   time: to24h(e.time),
@@ -74,7 +77,8 @@ export function EventFormDialog({ event, size = "default" }: { event?: Community
   const isEdit = Boolean(event);
   const [open, setOpen] = useState(false);
   const { create, update } = useEventAdminActions();
-  const form = useForm<AdminEventInput>({ resolver: zodResolver(adminEventSchema), defaultValues: event ? fromEvent(event) : EMPTY });
+  const members = useEventMemberOptions().data;
+  const form = useForm<AdminEventInput>({ resolver: zodResolver(adminEventSchema), defaultValues: event ? fromEvent(event, members) : EMPTY });
   const errors = form.formState.errors;
   const id = event?.id ?? "new";
 
@@ -100,7 +104,7 @@ export function EventFormDialog({ event, size = "default" }: { event?: Community
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) form.reset(event ? fromEvent(event) : EMPTY);
+        if (next) form.reset(event ? fromEvent(event, members) : EMPTY);
       }}
     >
       {isEdit ? (
@@ -117,7 +121,7 @@ export function EventFormDialog({ event, size = "default" }: { event?: Community
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEdit ? `Edit ${event?.title}` : "Add an event"}</DialogTitle>
-          <DialogDescription>Hosted by The Talent Mosaic. A past date puts it on the timeline; a future date under Upcoming.</DialogDescription>
+          <DialogDescription>A past date puts it on the timeline; a future date under Upcoming.</DialogDescription>
         </DialogHeader>
         <form id={`event-form-${id}`} onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
@@ -138,6 +142,14 @@ export function EventFormDialog({ event, size = "default" }: { event?: Community
               {text("city", "City", { placeholder: "Bangalore, or Online" })}
               {text("category", "Category", { placeholder: "Toast to Talent, Talentable…" })}
             </div>
+            <Field>
+              <FieldLabel htmlFor={`ev-${id}-host`}>Hosted by</FieldLabel>
+              <Input id={`ev-${id}-host`} list={`ev-${id}-hosts`} placeholder="The Talent Mosaic" autoComplete="off" {...form.register("host")} />
+              <datalist id={`ev-${id}-hosts`}>
+                {members?.map((m) => <option key={m.id} value={m.name} />)}
+              </datalist>
+              <FieldDescription>Pick a member to link their profile, or type any name. Leave blank for The Talent Mosaic. Tag member co-hosts with Co-hosts.</FieldDescription>
+            </Field>
             <Field>
               <FieldLabel htmlFor={`ev-${id}-venue`}>Venue / area</FieldLabel>
               <Input id={`ev-${id}-venue`} placeholder="Koramangala, Bangalore" {...form.register("venue")} />

@@ -43,5 +43,7 @@ export const adminEventSchema = z.object({
   cost: z.string().trim().optional(),
   momentsUrl: z.url("Full link, starting with https://").optional().or(z.literal("")),
   photosUrl: z.url("Full link, starting with https://").optional().or(z.literal("")),
+  /** A member's name links to their profile; any other name is shown as typed; blank = The Talent Mosaic. */
+  host: z.string().trim().optional(),
 });
 export type AdminEventInput = z.infer<typeof adminEventSchema>;

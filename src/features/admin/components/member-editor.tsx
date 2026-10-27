@@ -30,7 +30,6 @@ import { HR_FUNCTIONS, MEMBER_STATUSES, SENIORITY_LEVELS, type Member } from "@/
 import { useAdminActions, useAdminData } from "../hooks/use-admin";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const ADDED_OPTIONS = ["Yes", "No", "Invite Sent", "Not recorded"];
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
 type Form = {
@@ -49,7 +48,6 @@ type Form = {
   birthDay: string;
   hobbies: string;
   status: Member["status"];
-  addedToCommunity: string;
   directoryConsent: boolean;
   owner: string;
   photoUrl: string;
@@ -73,7 +71,6 @@ const toForm = (m: Member): Form => ({
   birthDay: m.birthday ? String(m.birthday.day) : "",
   hobbies: m.hobbies.join(", "),
   status: m.status,
-  addedToCommunity: m.addedToCommunity ?? "Not recorded",
   directoryConsent: m.directoryConsent !== false,
   owner: m.owner ?? "",
   photoUrl: m.photoUrl ?? "",
@@ -99,7 +96,6 @@ function toPatch(f: Form): Partial<Member> {
     birthday: f.birthMonth !== "" && day >= 1 && day <= 31 ? { month: Number(f.birthMonth), day } : null,
     hobbies: f.hobbies.split(",").map((h) => h.trim()).filter(Boolean),
     status: f.status,
-    addedToCommunity: f.addedToCommunity,
     directoryConsent: f.directoryConsent,
     owner: f.owner || null,
     photoUrl: f.photoUrl.trim() || null,
@@ -195,7 +191,8 @@ export function EditMemberButton({ memberId, label = "Edit", size = "xs" }: { me
             </Field>
             <Field>
               <FieldLabel htmlFor="me-function">HR function</FieldLabel>
-              <NativeSelect id="me-function" className="w-full" value={f.hrFunction} onChange={(e) => set({ hrFunction: e.target.value as Form["hrFunction"] })}>
+              <NativeSelect id="me-function" className="w-full" value={f.hrFunction ?? ""} onChange={(e) => set({ hrFunction: (e.target.value || null) as Form["hrFunction"] })}>
+                <NativeSelectOption value="">Not shared</NativeSelectOption>
                 {HR_FUNCTIONS.map((s) => <NativeSelectOption key={s} value={s}>{s}</NativeSelectOption>)}
               </NativeSelect>
             </Field>
@@ -223,12 +220,6 @@ export function EditMemberButton({ memberId, label = "Edit", size = "xs" }: { me
               <FieldLabel htmlFor="me-status">Status</FieldLabel>
               <NativeSelect id="me-status" className="w-full" value={f.status} onChange={(e) => set({ status: e.target.value as Form["status"] })}>
                 {MEMBER_STATUSES.map((s) => <NativeSelectOption key={s} value={s}>{s}</NativeSelectOption>)}
-              </NativeSelect>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="me-added">Added to community</FieldLabel>
-              <NativeSelect id="me-added" className="w-full" value={f.addedToCommunity} onChange={(e) => set({ addedToCommunity: e.target.value })}>
-                {[...new Set([...ADDED_OPTIONS, f.addedToCommunity])].map((s) => <NativeSelectOption key={s} value={s}>{s}</NativeSelectOption>)}
               </NativeSelect>
             </Field>
             <Field>

@@ -36,7 +36,7 @@ export interface MemberProfile {
   startup: string;
   city: string;
   seniority: Seniority;
-  hrFunction: HrFunction;
+  hrFunction: HrFunction | null;
   yearsOfExperience: number | null;
   hobbies: string[];
   linkedin: string;

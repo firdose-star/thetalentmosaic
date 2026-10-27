@@ -282,11 +282,6 @@ function CommunityFormReport({ data }: { data: AdminData }) {
       actions={<Badge className="bg-accent text-primary">Connected</Badge>}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2 text-sm">
-          {Object.entries(r.addedToCommunity).map(([k, v]) => (
-            <Badge key={k} variant="outline">Added to community: {k} · {v}</Badge>
-          ))}
-        </div>
         <ul className="flex flex-col divide-y">
           {rows.map(([label, n, detail]) => (
             <li key={label} className="grid gap-1 py-2 text-sm first:pt-0 last:pb-0 @3xl/main:grid-cols-[14rem_4rem_1fr]">
