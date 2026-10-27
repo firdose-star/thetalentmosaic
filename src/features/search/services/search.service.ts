@@ -34,7 +34,7 @@ export const searchService = {
     const groups: SearchGroup[] = [
       {
         category: "People",
-        results: currentMembers().filter((m) =>
+        results: currentMembers().filter((m) => (isAdmin || m.directoryConsent !== false) &&
           has(
             m.name,
             m.startup,

@@ -2,7 +2,7 @@
  * Job board filtering and sorting: Role, Location, Employment Type and Sort.
  * Pure functions so the API can adopt the same semantics server-side.
  */
-import type { JobListing } from "@/types/community";
+import { SENIORITY_LEVELS, type JobListing } from "@/types/community";
 
 export const JOB_FILTER_KEYS = ["role", "location", "type", "sort"] as const;
 export type JobFilterKey = (typeof JOB_FILTER_KEYS)[number];
@@ -15,7 +15,7 @@ export const SORT_OPTIONS = [
   { value: "seniority", label: "Most senior first" },
 ];
 
-const SENIORITY_RANK = { Associate: 0, Manager: 1, Head: 2, "Director/VP": 3, CHRO: 4 };
+const rank = (s: JobListing["seniority"]) => SENIORITY_LEVELS.indexOf(s);
 
 export function filterJobs(jobs: JobListing[], f: JobFilters) {
   const filtered = jobs.filter(
@@ -32,7 +32,7 @@ export function filterJobs(jobs: JobListing[], f: JobFilters) {
     case "company":
       return filtered.sort((a, b) => a.company.localeCompare(b.company));
     case "seniority":
-      return filtered.sort((a, b) => SENIORITY_RANK[b.seniority] - SENIORITY_RANK[a.seniority]);
+      return filtered.sort((a, b) => rank(b.seniority) - rank(a.seniority));
     default:
       return filtered.sort((a, b) => age(a) - age(b));
   }

@@ -174,7 +174,7 @@ function Outcomes({ data }: { data: HealthData }) {
 function FixField({ member, field, owners }: { member: HealthMember; field: (typeof DATA_CHECKS)[number]["field"]; owners: string[] }) {
   const { updateMember } = useHealthActions();
   const [value, setValue] = useState("");
-  if (!field) return <span className="text-xs text-muted-foreground">Send a nudge to log in</span>;
+  if (!field) return <span className="text-xs text-muted-foreground">Ask the member — they can share it from their profile</span>;
   if (field === "owner") return <OwnerSelect member={member} owners={owners} />;
 
   const placeholder = { linkedin: "linkedin.com/in/…", whatsapp: "10-digit mobile", interests: "Comma separated", hobbies: "Comma separated" }[field];

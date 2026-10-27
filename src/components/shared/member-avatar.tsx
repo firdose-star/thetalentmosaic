@@ -1,9 +1,16 @@
+"use client";
+
 /**
- * A member's face. Illustrated portraits from the prototype, generated
- * deterministically from the name so the same person always looks the same.
- * When real photographs are collected (PRD §6.2), pass `src` and the photo
- * replaces the illustration.
+ * A member's face. Shows their real photograph (from the Community Form) when
+ * there is one and it loads; otherwise an illustrated portrait generated from
+ * the name, so the same person always looks the same.
+ *
+ * Photos are Google Drive uploads. They only display if the files are shared
+ * as "Anyone with the link" — when they aren't, the illustration shows.
  */
+import { useState } from "react";
+
+import { memberPhoto } from "@/lib/sample-data";
 import { cn } from "@/lib/utils";
 
 const SKIN = ["#F1C9A5", "#E3A982", "#C98B62", "#A8683F", "#7A4A2B", "#F6D9BF"];
@@ -41,40 +48,53 @@ function hairPath(style: number, colour: string) {
   }
 }
 
+function Illustration({ name }: { name: string }) {
+  const skin = SKIN[hash(name, 1) % SKIN.length];
+  const hair = HAIR[hash(name, 2) % HAIR.length];
+  const shirt = SHIRT[hash(name, 3) % SHIRT.length];
+  const background = BACKGROUND[hash(name, 4) % BACKGROUND.length];
+  return (
+    <svg viewBox="0 0 64 64" className="size-full">
+      <rect width="64" height="64" fill={background} />
+      <path d="M6 66c2-13 12-19 26-19s24 6 26 19z" fill={shirt} />
+      <rect x="27" y="40" width="10" height="12" rx="3" fill={skin} />
+      <ellipse cx="32" cy="30" rx="12" ry="14" fill={skin} />
+      {hairPath(hash(name, 5) % 5, hair)}
+      <circle cx="27.5" cy="33" r="1.5" fill="#2B2B2B" />
+      <circle cx="36.5" cy="33" r="1.5" fill="#2B2B2B" />
+      <path d="M27.5 39q4.5 4 9 0" stroke="#7A3E2B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function MemberAvatar({
   name,
   src,
   className,
 }: {
   name: string;
-  /** A real photograph, once collected. */
+  /** Explicit photo; defaults to the member's Community Form photo. */
   src?: string | null;
   className?: string;
 }) {
-  const classes = cn("inline-flex size-9 shrink-0 overflow-hidden rounded-full", className);
-
-  if (src) {
-    // eslint-disable-next-line @next/next/no-img-element -- member photos come from arbitrary storage
-    return <img src={src} alt="" className={cn(classes, "object-cover")} />;
-  }
-
-  const skin = SKIN[hash(name, 1) % SKIN.length];
-  const hair = HAIR[hash(name, 2) % HAIR.length];
-  const shirt = SHIRT[hash(name, 3) % SHIRT.length];
-  const background = BACKGROUND[hash(name, 4) % BACKGROUND.length];
+  const photo = src === undefined ? memberPhoto(name) : src;
+  const [failed, setFailed] = useState<string | null>(null);
+  const showPhoto = photo && failed !== photo;
 
   return (
-    <span className={classes} aria-hidden>
-      <svg viewBox="0 0 64 64" className="size-full">
-        <rect width="64" height="64" fill={background} />
-        <path d="M6 66c2-13 12-19 26-19s24 6 26 19z" fill={shirt} />
-        <rect x="27" y="40" width="10" height="12" rx="3" fill={skin} />
-        <ellipse cx="32" cy="30" rx="12" ry="14" fill={skin} />
-        {hairPath(hash(name, 5) % 5, hair)}
-        <circle cx="27.5" cy="33" r="1.5" fill="#2B2B2B" />
-        <circle cx="36.5" cy="33" r="1.5" fill="#2B2B2B" />
-        <path d="M27.5 39q4.5 4 9 0" stroke="#7A3E2B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      </svg>
+    <span className={cn("relative inline-flex size-9 shrink-0 overflow-hidden rounded-full bg-muted", className)} aria-hidden>
+      <Illustration name={name} />
+      {showPhoto && (
+        // eslint-disable-next-line @next/next/no-img-element -- member photos come from Google Drive, not our domain
+        <img
+          src={photo}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(photo)}
+          className="absolute inset-0 size-full object-cover"
+        />
+      )}
     </span>
   );
 }

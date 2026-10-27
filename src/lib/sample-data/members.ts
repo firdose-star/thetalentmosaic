@@ -21,11 +21,11 @@ const FIRST = ["Ananya", "Rohan", "Priya", "Karthik", "Sneha", "Arjun", "Meera",
 const LAST = ["Rao", "Mehta", "Nair", "Subramanian", "Kulkarni", "Malhotra", "Iyer", "Qureshi", "Reddy", "Sethi", "Bhatia", "Joshi"];
 const CITIES = ["Bangalore", "Bangalore", "Bangalore", "Mumbai", "Mumbai", "Delhi NCR", "Delhi NCR", "Hyderabad", "Pune", "Chennai", "Kolkata", "Ahmedabad"];
 const STARTUPS = ["Paybridge", "Nimbus Labs", "Kiranaly", "Gridwise", "Orbitly", "Zesto", "Tallyfox", "Loomstack", "Brightkart", "Fintrail", "LearnLoop", "Trackwise"];
-const LEVEL_CYCLE: Seniority[] = ["Associate", "Manager", "Manager", "Head", "Associate", "Manager", "Director/VP", "Head", "Manager", "Associate", "CHRO", "Manager"];
+const LEVEL_CYCLE: Seniority[] = ["Associate", "Manager", "Manager", "Senior Manager / Lead", "Associate", "Manager", "Head / Director / VP", "Senior Manager / Lead", "Manager", "Associate", "SVP / CXO", "Manager"];
 const ASSOCIATE_TITLES = ["Recruiter", "HR Business Associate", "L&D Associate", "Comp & Ben Analyst", "People Ops Associate", "People Analyst", "Culture Associate", "HR Generalist"];
 const INTERESTS = ["Employer branding", "Org design", "People analytics", "Compensation strategy", "Leadership development", "HR tech", "Inclusion & belonging", "Workplace culture", "Hiring strategy", "Employment law"];
 const HOBBIES = ["Running", "Trekking", "Filter coffee", "Board games", "Photography", "Cooking", "Cricket", "Reading", "Travel", "Live music"];
-const YEARS: Record<Seniority, [number, number]> = { Associate: [2, 5], Manager: [6, 10], Head: [11, 14], "Director/VP": [14, 18], CHRO: [17, 22] };
+const YEARS: Record<Seniority, [number, number]> = { Intern: [0, 1], Fresher: [0, 1], Associate: [2, 5], Manager: [6, 10], "Senior Manager / Lead": [11, 14], "Head / Director / VP": [14, 18], "SVP / CXO": [17, 22], Other: [3, 8] };
 /** Members whose birthday falls within the next 10 days, so the panel is never empty. */
 const BIRTHDAY_OFFSET: Record<number, number> = { 2: 0, 7: 0, 11: 0, 4: 2, 9: 4, 15: 7, 20: 9 };
 const LAST_LOGIN_DAYS = [0, 0, 1, 1, 2, 3, 4, 6, 9, 12, 18, 26, 41, 63, 95];
@@ -34,16 +34,16 @@ export const RELATIONSHIP_OWNERS = ["Shubham", "Ritushree", "Bhuvana"];
 
 function designation(level: Seniority, fn: HrFunction, index: number, fnIndex: number) {
   switch (level) {
-    case "Associate":
-      return ASSOCIATE_TITLES[fnIndex];
     case "Manager":
       return `${fn} Manager`;
-    case "Head":
+    case "Senior Manager / Lead":
       return `Head of ${fn}`;
-    case "Director/VP":
+    case "Head / Director / VP":
       return `${index % 2 ? "VP" : "Director"}, ${fn}`;
-    case "CHRO":
+    case "SVP / CXO":
       return "CHRO";
+    default:
+      return ASSOCIATE_TITLES[fnIndex];
   }
 }
 

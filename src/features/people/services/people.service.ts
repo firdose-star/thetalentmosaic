@@ -52,9 +52,10 @@ const toCard = (m: Member): DirectoryMember => ({
 });
 
 export const peopleService = {
-  /** Alphabetical by default (spec §6.3). */
-  list: async (filters: PeopleFilters): Promise<DirectoryMember[]> =>
-    currentMembers().filter((m) => matches(m, filters))
+  /** Alphabetical (spec §6.3). Members only see people who agreed to be in the directory. */
+  list: async (filters: PeopleFilters, role: Role = "member"): Promise<DirectoryMember[]> =>
+    currentMembers()
+      .filter((m) => (role === "admin" || m.directoryConsent !== false) && matches(m, filters))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(toCard),
 
@@ -80,7 +81,8 @@ export const peopleService = {
 
   detail: async (id: string, role: Role): Promise<MemberProfile | null> => {
     const m = currentMembers().find((member) => member.id === id);
-    if (!m) return null;
+    // Someone who opted out of the directory has no public profile.
+    if (!m || (role !== "admin" && m.directoryConsent === false)) return null;
     const isAdmin = role === "admin";
 
     return {

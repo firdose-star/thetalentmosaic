@@ -34,11 +34,12 @@ export function daysFrom(value: string, asOf: Date) {
   return Math.round((parseIsoDate(value).getTime() - asOf.getTime()) / 86_400_000);
 }
 
-/** Days until the next occurrence of a birthday, 0 when it is today. */
+/** Days until the next occurrence of a birthday, 0 when it is today; Infinity when unknown. */
 export function daysUntilBirthday(
-  birthday: { month: number; day: number },
+  birthday: { month: number; day: number } | null,
   asOf: Date,
 ) {
+  if (!birthday) return Number.POSITIVE_INFINITY;
   let next = new Date(asOf.getFullYear(), birthday.month, birthday.day);
   if (next < asOf) next = new Date(asOf.getFullYear() + 1, birthday.month, birthday.day);
   return Math.round((next.getTime() - asOf.getTime()) / 86_400_000);

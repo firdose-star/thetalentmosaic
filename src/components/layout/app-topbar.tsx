@@ -14,6 +14,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { DataSourceBadge } from "@/components/layout/data-source-badge";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import {
   Breadcrumb,
@@ -67,6 +68,7 @@ export function AppTopbar() {
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-1">
+        <DataSourceBadge />
         <ThemeToggle />
       </div>
     </header>

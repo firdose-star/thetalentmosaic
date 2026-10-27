@@ -106,12 +106,14 @@ function AllRecords({ data }: { data: AdminData }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
   const [owner, setOwner] = useState("");
+  const [added, setAdded] = useState("");
   const q = query.trim().toLowerCase();
   const rows = data.members
     .filter(
       (m) =>
         (!status || m.status === status) &&
         (!owner || (owner === "__none" ? !m.owner : m.owner === owner)) &&
+        (!added || (m.addedToCommunity ?? "Not recorded") === added) &&
         (!q || `${m.name} ${m.startup} ${m.city} ${m.email}`.toLowerCase().includes(q)),
     )
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -120,9 +122,10 @@ function AllRecords({ data }: { data: AdminData }) {
     <div className="flex flex-col gap-3">
       <Card className="gap-2 p-4 @3xl/main:flex-row">
         <SearchInput value={query} onChange={setQuery} placeholder="Search name, startup, city or email" className="flex-1" />
-        <div className="grid grid-cols-2 gap-2 @3xl/main:w-96">
+        <div className="grid grid-cols-2 gap-2 @3xl/main:w-[36rem] @3xl/main:grid-cols-3">
           <FilterSelect label="Status" allLabel="All statuses" value={status} options={MEMBER_STATUSES} onChange={setStatus} />
           <FilterSelect label="Owner" allLabel="All owners" value={owner} options={[...data.owners.map((o) => ({ value: o, label: o })), { value: "__none", label: "Unassigned" }]} onChange={setOwner} />
+          <FilterSelect label="Added to community" allLabel="Added to community: any" value={added} options={[...new Set(data.members.map((x) => x.addedToCommunity ?? "Not recorded"))].sort()} onChange={setAdded} />
         </div>
       </Card>
       <p className="text-sm text-muted-foreground">
@@ -150,6 +153,10 @@ function AllRecords({ data }: { data: AdminData }) {
                     <span>
                       <span className="block font-medium">{m.name}</span>
                       <span className="block text-xs text-muted-foreground">{m.designation} · {m.startup}</span>
+                      <span className="mt-0.5 flex flex-wrap gap-1">
+                        {m.addedToCommunity && <Badge variant="outline" className="text-[0.625rem]">Added to community: {m.addedToCommunity}</Badge>}
+                        {m.directoryConsent === false && <Badge className="bg-chart-3/20 text-[0.625rem] text-foreground">Hidden from directory</Badge>}
+                      </span>
                     </span>
                   </Link>
                 </TableCell>

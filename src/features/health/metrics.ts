@@ -204,6 +204,8 @@ export const DATA_CHECKS: { key: string; label: string; test: (m: HealthMember) 
   { key: "interests", label: "Missing interests", test: (m) => m.interests.length === 0, field: "interests" },
   { key: "hobbies", label: "Missing hobbies", test: (m) => m.hobbies.length === 0, field: "hobbies" },
   { key: "whatsapp", label: "Missing WhatsApp number", test: (m) => !m.whatsapp, field: "whatsapp" },
+  { key: "birthday", label: "Missing or invalid birthday", test: (m) => !m.birthday },
+  { key: "photo", label: "No photo shared", test: (m) => !m.photoUrl },
   { key: "owner", label: "No relationship owner", test: (m) => !m.owner, field: "owner" },
   { key: "login", label: "Never logged in", test: (m) => !m.lastLoginAt },
 ];

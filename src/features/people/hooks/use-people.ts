@@ -9,9 +9,11 @@ import { peopleService } from "../services/people.service";
 import type { PeopleFilters } from "../types";
 
 export function usePeople(filters: PeopleFilters) {
+  const { user } = useAuth();
+  const role = user?.role ?? "member";
   return useQuery({
-    queryKey: queryKeys.people.list(filters),
-    queryFn: () => peopleService.list(filters),
+    queryKey: [...queryKeys.people.list(filters), role],
+    queryFn: () => peopleService.list(filters, role),
     placeholderData: keepPreviousData,
   });
 }

@@ -246,6 +246,60 @@ function ErrorMonitor({ data }: { data: AdminData }) {
   );
 }
 
+/** What the Community Form import did, and what still needs fixing. */
+function CommunityFormReport({ data }: { data: AdminData }) {
+  const r = data.source.report;
+  if (data.source.kind !== "community-form" || !r) {
+    return (
+      <Section title="Community Form" description="Not connected — the dashboard is showing sample members.">
+        <p className="text-sm text-muted-foreground">
+          Put the form export at <code className="rounded bg-muted px-1">data/community-form.csv</code> and reload to see the real community.
+        </p>
+      </Section>
+    );
+  }
+  const list = (names: string[]) => (names.length ? names.join(", ") : "None");
+  const rows: [string, string | number, string][] = [
+    ["Form responses", r.fileRows, "Rows in the export"],
+    ["Members imported", r.imported, `${r.merged.length} people submitted more than once — merged, keeping their first joining date`],
+    ["Merged submissions", r.merged.length, list(r.merged.map((m) => `${m.name} (${m.submissions})`))],
+    ["Birthdays not usable", r.invalid.birthday.length, list(r.invalid.birthday)],
+    ["LinkedIn not a profile link", r.invalid.linkedin.length, list(r.invalid.linkedin)],
+    ["WhatsApp missing", r.missingWhatsapp, `${r.invalid.whatsapp.length} more not a valid mobile: ${list(r.invalid.whatsapp)}`],
+    ["Years in HR missing", r.missingYoe, "The form column is empty for everyone"],
+    ["Opted out of the directory", r.directoryConsentNo.length, `Hidden from members, visible to admins: ${list(r.directoryConsentNo)}`],
+    ["Events named in the form", r.events.length, list(r.events)],
+  ];
+
+  return (
+    <Section
+      title="Community Form"
+      description={`Live source for members · imported ${new Date(data.source.importedAt ?? "").toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}`}
+      actions={<Badge className="bg-accent text-primary">Connected</Badge>}
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2 text-sm">
+          {Object.entries(r.addedToCommunity).map(([k, v]) => (
+            <Badge key={k} variant="outline">Added to community: {k} · {v}</Badge>
+          ))}
+        </div>
+        <ul className="flex flex-col divide-y">
+          {rows.map(([label, n, detail]) => (
+            <li key={label} className="grid gap-1 py-2 text-sm first:pt-0 last:pb-0 @3xl/main:grid-cols-[14rem_4rem_1fr]">
+              <span className="font-medium">{label}</span>
+              <span className="tabular-nums">{n}</span>
+              <span className="text-muted-foreground">{detail}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground">
+          Fix any of these in Member Management › Missing data; the form itself stays untouched. Re-export the form and reload to pick up new responses.
+        </p>
+      </div>
+    </Section>
+  );
+}
+
 export function DataIntegrations() {
   const { data, isPending, isError, error, refetch } = useAdminData();
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />;
@@ -253,6 +307,7 @@ export function DataIntegrations() {
 
   return (
     <div className="flex flex-col gap-4">
+      <CommunityFormReport data={data} />
       <Sources data={data} />
       <div className="grid items-start gap-4 @5xl/main:grid-cols-2">
         <SheetUpdates data={data} />

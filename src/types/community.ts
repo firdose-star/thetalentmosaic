@@ -6,12 +6,16 @@
  * serialise unchanged between MongoDB, the API, and the browser.
  */
 
+/** Seniority exactly as the Community Form asks it. */
 export const SENIORITY_LEVELS = [
+  "Intern",
+  "Fresher",
   "Associate",
   "Manager",
-  "Head",
-  "Director/VP",
-  "CHRO",
+  "Senior Manager / Lead",
+  "Head / Director / VP",
+  "SVP / CXO",
+  "Other",
 ] as const;
 export type Seniority = (typeof SENIORITY_LEVELS)[number];
 
@@ -32,10 +36,12 @@ export const EXPERIENCE_BANDS = [
   "6–10 years",
   "11–15 years",
   "16+ years",
+  "Not shared",
 ] as const;
 export type ExperienceBand = (typeof EXPERIENCE_BANDS)[number];
 
-export function experienceBand(years: number): ExperienceBand {
+export function experienceBand(years: number | null): ExperienceBand {
+  if (years === null) return "Not shared";
   if (years <= 5) return "0–5 years";
   if (years <= 10) return "6–10 years";
   if (years <= 15) return "11–15 years";
@@ -53,7 +59,8 @@ export interface Member {
   city: string;
   seniority: Seniority;
   hrFunction: HrFunction;
-  yearsOfExperience: number;
+  /** Total years in HR; null when not shared. */
+  yearsOfExperience: number | null;
   interests: string[];
   hobbies: string[];
   /** Empty when the member has not shared it. */
@@ -62,7 +69,8 @@ export interface Member {
   whatsapp: string;
   /** Approval date — "Member since" derives from this. */
   joinedOn: string;
-  birthday: { month: number; day: number };
+  /** Month (0–11) and day; null when not shared or clearly wrong. */
+  birthday: { month: number; day: number } | null;
   status: MemberStatus;
   tags: string[];
   /** Ids of past events the member attended. */
@@ -71,6 +79,16 @@ export interface Member {
   owner: string | null;
   /** ISO datetime of last login, or null if never logged in. */
   lastLoginAt: string | null;
+  /** Exact time they filled the Community Form, when known. */
+  joinedAt?: string;
+  /** A real photograph, when shared. */
+  photoUrl?: string | null;
+  /** The "Email Address" the form collected (admin only). */
+  formEmail?: string;
+  /** Okay to appear in the member directory (Community Form). */
+  directoryConsent?: boolean;
+  /** The team's "Added to Community" status: Yes, No, Invite Sent… */
+  addedToCommunity?: string;
   /** Successful logins since joining — "returned multiple times" (PRD §8). */
   loginCount: number;
 }

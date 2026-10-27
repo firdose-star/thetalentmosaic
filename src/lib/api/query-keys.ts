@@ -80,6 +80,10 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.events.all, "detail", id] as const,
   },
 
+  community: {
+    source: () => ["community", "source"] as const,
+  },
+
   admin: {
     all: ["admin"] as const,
   },

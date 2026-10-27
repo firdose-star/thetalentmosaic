@@ -272,3 +272,47 @@ export function logAdminAction(entry: Omit<ActivityLogEntry, "id" | "at" | "acto
     ...communityStore.admin.log,
   ];
 }
+
+// ── Real community data ─────────────────────────────────────────────────────
+
+export interface CommunitySource {
+  kind: "sample" | "community-form";
+  importedAt?: string;
+  report?: import("@/lib/community-import/parse").ImportReport;
+}
+
+export let communitySource: CommunitySource = { kind: "sample" };
+
+/**
+ * Replace the sample community with the real one from the Community Form.
+ *
+ * Only what the form actually says is kept. Everything the sample data had
+ * invented about these people — interactions, owners, logins, event
+ * attendance, review queues — starts empty, and fills up as admins work.
+ * Library, job listings and the admin configuration stay as they are.
+ */
+export function applyCommunityImport(data: import("@/lib/community-import/parse").CommunityImport) {
+  communityStore.members = data.members.map((m) => ({ ...m }));
+  communityStore.events = [...data.events];
+  communityStore.interactions = [];
+  communityStore.snoozes = new Map();
+  communityStore.hostedSubmissions = [];
+  communityStore.birthday.overrides = new Map();
+  const admin = communityStore.admin;
+  admin.registrations = [];
+  admin.profileChanges = [];
+  admin.contactRequests = [];
+  admin.duplicates = [];
+  admin.importUpdates = [];
+  admin.issues = [
+    ...data.report.invalid.linkedin.map((name, i) => ({ id: `imp-li-${i}`, severity: "warning" as const, at: "On import", source: "Community Form", message: `${name}: LinkedIn isn't a profile link` })),
+    ...data.report.invalid.whatsapp.map((name, i) => ({ id: `imp-wa-${i}`, severity: "warning" as const, at: "On import", source: "Community Form", message: `${name}: WhatsApp number isn't a valid mobile` })),
+  ];
+  admin.sources = admin.sources.map((s) => (s.id === "members" ? { ...s, name: "Community Form (Google Sheets)", minutesSinceSync: 0, status: "ok" as const } : s));
+  communitySource = { kind: "community-form", importedAt: data.importedAt, report: data.report };
+}
+
+/** A member's real photo, looked up by name for avatars that only know the name. */
+export function memberPhoto(name: string) {
+  return communityStore.members.find((m) => m.name === name)?.photoUrl ?? null;
+}

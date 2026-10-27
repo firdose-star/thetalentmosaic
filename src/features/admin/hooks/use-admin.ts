@@ -24,7 +24,8 @@ function useAdminAction<I extends { by: string }>(fn: (input: I) => Promise<unkn
     mutationFn: (input: Omit<I, "by">) => fn({ ...input, by: user?.name ?? "Admin" } as I),
     onSuccess: () => {
       // Admin edits touch members, the library and events — refresh them all.
-      void queryClient.invalidateQueries();
+      // Everything except the one-time community load, which would undo the edit.
+      void queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] !== "community" });
       notify.success(success);
     },
     onError: (error) => notify.fromError(error, "Could not save"),
