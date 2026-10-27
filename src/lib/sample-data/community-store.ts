@@ -35,7 +35,15 @@ import {
 } from "./library";
 
 /** The community team's relationship owners. */
-export const RELATIONSHIP_OWNERS = ["Shubham", "Ritushree", "Bhuvana"];
+export const RELATIONSHIP_OWNERS = ["Shubham", "Ritushree", "Bhuvana", "Mosaic [New Kam]"];
+
+/** Work emails for the relationship owners. Owners added in Settings have none until listed here. */
+export const OWNER_EMAILS: Record<string, string> = {
+  Shubham: "shubham@mesaschool.co",
+  Ritushree: "ritushree@mesaschool.co",
+  Bhuvana: "bhuvana@mesaschool.co",
+  "Mosaic [New Kam]": "talentmosaic@mesaschool.co",
+};
 
 // ── Interactions (PRD §8: recorded relationship touchpoints) ────────────────
 

@@ -14,6 +14,7 @@ import {
   daysUntilBirthday,
   isoDate,
   logAdminAction,
+  OWNER_EMAILS,
   type AccessRole,
   type AccessUser,
   type ActivityLogEntry,
@@ -74,8 +75,7 @@ function users(): AccessUser[] {
       return {
         id: `owner-${owner}`,
         name: owner,
-        // Owners' work emails aren't on file yet.
-        email: "",
+        email: OWNER_EMAILS[owner] ?? "",
         role: "Relationship owner",
         status: "Active",
         lastActiveAt: last ? at(last, "11:00") : null,

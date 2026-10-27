@@ -52,7 +52,7 @@ function OwnerDetail({ data, owner }: { data: HealthData; owner: string }) {
   return (
     <Section
       title={owner === "__none" ? "Unassigned members" : `${owner}’s members`}
-      description={`${members.length} of ${data.members.length} community members (${pct(members.length, data.members.length)}).`}
+      description={`${members.length} of ${data.members.length} community members (${pct(members.length, data.members.length)}).${data.ownerEmails[owner] ? ` · ${data.ownerEmails[owner]}` : ""}`}
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">

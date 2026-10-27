@@ -15,6 +15,7 @@
 import {
   SAMPLE_AS_OF,
   communityStore,
+  OWNER_EMAILS,
   isoDate,
   patchMember,
   type HealthSettings,
@@ -48,6 +49,8 @@ export interface HealthData {
   members: HealthMember[];
   interactions: Interaction[];
   settings: HealthSettings;
+  /** Work email per relationship owner, where known. */
+  ownerEmails: Record<string, string>;
   events: { id: string; title: string; date: string; city: string; attended: number }[];
   awaitingApproval: number;
 }
@@ -109,6 +112,7 @@ export const healthService = {
     members: communityStore.members.map(derive),
     interactions: [...communityStore.interactions],
     settings: structuredClone(communityStore.settings),
+    ownerEmails: { ...OWNER_EMAILS },
     events: pastEvents().map((e) => ({
       id: e.id,
       title: e.title,
