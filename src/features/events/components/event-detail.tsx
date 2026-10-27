@@ -4,7 +4,7 @@
  * Event detail: everything about one catchup — date and time, format, venue
  * (full for admins, city for members), who hosts it and any co-hosts,
  * description, registration for upcoming
- * events, and photographs and winners for past ones.
+ * events, and for past ones the Moments hero, the best photos and winners.
  */
 import { ArrowLeft, CalendarDays, Clock, MapPin, Ticket, Users } from "lucide-react";
 import Link from "next/link";
@@ -17,15 +17,18 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
 import { ROUTES } from "@/lib/constants";
 import { useEvent } from "../hooks/use-events";
 import { CoHostsDialog, WinnersDialog } from "./event-admin-dialogs";
 import { AttendeesDialog, DeleteEventButton, EventFormDialog } from "./event-editor";
-import { DateTile, EventMedia, HostLine, Winners, longDate, venueText } from "./event-parts";
+import { DateTile, HostLine, Winners, longDate, venueText } from "./event-parts";
+import { EventHero, EventPhotos } from "./event-photos";
 
 export function EventDetail({ id }: { id: string }) {
   const { data, isPending, isError, error, refetch } = useEvent(id);
   const router = useRouter();
+  const isAdmin = useAuth().user?.role === "admin";
 
   const back = (
     <Button variant="ghost" size="sm" className="w-fit" nativeButton={false} render={<Link href={ROUTES.events} />}>
@@ -46,10 +49,18 @@ export function EventDetail({ id }: { id: string }) {
   }
 
   const { event, isUpcoming } = data;
+  const hasWinners = (event.winners?.length ?? 0) > 0;
+  const attendedLine = event.attended ? (
+    <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+      <Users className="size-4" />{event.attended} members attended
+    </span>
+  ) : null;
 
   return (
     <FadeIn className="flex flex-col gap-4">
       {back}
+
+      {!isUpcoming && <EventHero event={event} />}
 
       <Card className="flex-row flex-wrap items-start gap-5 p-6">
         <DateTile date={event.date} className="w-16" />
@@ -90,14 +101,14 @@ export function EventDetail({ id }: { id: string }) {
             <p className="text-sm leading-relaxed">{event.description}</p>
           </Section>
           {event.momentsUrl || event.photosUrl ? (
-            <Section title="Moments and photos">
-              <EventMedia event={event} />
+            <Section title="Photos" description="The best of the day. Tap a photo to see it full size.">
+              <EventPhotos event={event} />
             </Section>
           ) : null}
         </div>
 
-        <Section title={isUpcoming ? "Registration" : "Winners of the Catchup"}>
-          {isUpcoming ? (
+        {isUpcoming ? (
+          <Section title="Registration">
             <div className="flex flex-col gap-2 text-sm">
               {event.capacity && event.registered !== undefined ? (
                 <span className="inline-flex items-center gap-1.5">
@@ -107,17 +118,22 @@ export function EventDetail({ id }: { id: string }) {
               ) : null}
               <span>{event.cost ?? "Free for members"}</span>
             </div>
-          ) : (
+          </Section>
+        ) : hasWinners || isAdmin ? (
+          // Members only see this once an admin has tagged the winners.
+          <Section title="Winners of the Catchup">
             <div className="flex flex-col gap-3">
-              <Winners winners={event.winners} />
-              {event.attended ? (
-                <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Users className="size-4" />{event.attended} members attended
-                </span>
-              ) : null}
+              {hasWinners ? (
+                <Winners winners={event.winners} />
+              ) : (
+                <span className="text-xs text-muted-foreground">Not tagged yet — members won&apos;t see this section until you tag the winners.</span>
+              )}
+              {attendedLine}
             </div>
-          )}
-        </Section>
+          </Section>
+        ) : event.attended ? (
+          <Section title="At the catchup">{attendedLine}</Section>
+        ) : null}
       </div>
     </FadeIn>
   );

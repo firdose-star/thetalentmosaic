@@ -133,3 +133,30 @@ export function useEventAttendees(eventId: string, enabled: boolean) {
     enabled,
   });
 }
+
+/**
+ * An event's photos. While the folder is still being ranked for admins, checks back
+ * every 20 seconds so the picker shows the best first.
+ */
+export function useEventAlbum(event: { momentsUrl?: string; photosUrl?: string }) {
+  return useQuery({
+    queryKey: queryKeys.events.album(event.momentsUrl, event.photosUrl),
+    queryFn: () => eventsService.album(event),
+    enabled: Boolean(event.momentsUrl || event.photosUrl),
+    staleTime: 5 * 60_000,
+    refetchInterval: (query) => (query.state.data?.ranking === "scoring" ? 20_000 : false),
+  });
+}
+
+/** Admin: save which photos members see for an event. */
+export function useSaveHighlights() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: eventsService.saveHighlights,
+    onSuccess: (_, { ids }) => {
+      void queryClient.invalidateQueries({ queryKey: [...queryKeys.events.all, "album"] });
+      notify.success(ids.length ? `${ids.length} photos saved` : "Photos cleared");
+    },
+    onError: (error) => notify.fromError(error, "Could not save the photos"),
+  });
+}

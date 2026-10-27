@@ -78,6 +78,7 @@ export const queryKeys = {
     all: ["events"] as const,
     list: () => [...queryKeys.events.all, "list"] as const,
     detail: (id: string) => [...queryKeys.events.all, "detail", id] as const,
+    album: (moments = "", photos = "") => [...queryKeys.events.all, "album", moments, photos] as const,
   },
 
   community: {

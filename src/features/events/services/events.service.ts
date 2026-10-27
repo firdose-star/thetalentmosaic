@@ -18,6 +18,7 @@ import {
   logAdminAction,
   type HostedSessionRecord,
 } from "@/lib/sample-data";
+import { loadEventAlbum, saveEventHighlights } from "@/lib/event-photos";
 import type { CommunityEvent } from "@/types/community";
 import type { Role } from "@/types/enums";
 
@@ -242,4 +243,14 @@ export const eventsService = {
   /** Admin: the member picker for co-hosts. */
   memberOptions: async (): Promise<PersonRef[]> =>
     currentMembers().map((m) => ({ id: m.id, name: m.name })).sort((a, b) => a.name.localeCompare(b.name)),
+
+  /** The event's photos from its Drive links: the Moments hero and the hand-picked best. */
+  album: (event: Pick<CommunityEvent, "momentsUrl" | "photosUrl">) =>
+    loadEventAlbum({ moments: event.momentsUrl, photos: event.photosUrl }),
+
+  /** Admin: save the photos members see for an event (up to 30). */
+  saveHighlights: async ({ albumKey, ids, title }: { albumKey: string; ids: string[]; title: string }) => {
+    await saveEventHighlights(albumKey, ids);
+    logAdminAction({ actor: "Admin", action: ids.length ? "Picked event photos" : "Cleared event photos", object: `${title} · ${ids.length} photos` });
+  },
 };

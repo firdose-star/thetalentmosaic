@@ -1,11 +1,10 @@
 /**
  * Small pieces shared by the events views and the detail page.
  */
-import { Images, ShieldCheck, Sparkles, Trophy, UserRound } from "lucide-react";
+import { ShieldCheck, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { parseDay } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -84,31 +83,9 @@ export function HostLine({ event, className }: { event: EventView; className?: s
   );
 }
 
-/** Links to the catchup's highlight ("Moments") and full photo folder on Drive. */
-export function EventMedia({ event }: { event: CommunityEvent }) {
-  if (!event.momentsUrl && !event.photosUrl) return null;
-  return (
-    <div className="flex flex-wrap gap-2">
-      {event.momentsUrl && (
-        <Button size="sm" variant="outline" nativeButton={false} render={<a href={event.momentsUrl} target="_blank" rel="noopener noreferrer" />}>
-          <Sparkles data-icon="inline-start" />
-          Moments
-        </Button>
-      )}
-      {event.photosUrl && event.photosUrl !== event.momentsUrl && (
-        <Button size="sm" variant="outline" nativeButton={false} render={<a href={event.photosUrl} target="_blank" rel="noopener noreferrer" />}>
-          <Images data-icon="inline-start" />
-          All photos
-        </Button>
-      )}
-    </div>
-  );
-}
-
+/** The tagged winners; nothing at all until an admin tags them. */
 export function Winners({ winners }: { winners: CommunityEvent["winners"] }) {
-  if (!winners || winners.length === 0) {
-    return <span className="text-xs text-muted-foreground">Winners not tagged yet</span>;
-  }
+  if (!winners || winners.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5">
       {winners.map((w) => (

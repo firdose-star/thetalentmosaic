@@ -29,6 +29,8 @@ export const siteConfig = {
     whatsappUrl: "https://wa.me/919916577315" as string | null,
     linkedinUrl: "https://www.linkedin.com/in/firdose-fathima" as string | null,
   },
+  /** Registration form members share to invite an HR professional they know. */
+  inviteFormUrl: "https://forms.gle/MM2i99SJfVVf85H59",
 } as const;
 
 export type SiteConfig = typeof siteConfig;

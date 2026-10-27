@@ -28,7 +28,8 @@ import { useEvents } from "../hooks/use-events";
 import type { EventView } from "../services/events.service";
 import { AttendeesDialog, DeleteEventButton, EventFormDialog } from "./event-editor";
 import { CoHostsDialog, WinnersDialog } from "./event-admin-dialogs";
-import { DateTile, EventMedia, HostLine, Winners, longDate, venueText } from "./event-parts";
+import { DateTile, HostLine, Winners, longDate, venueText } from "./event-parts";
+import { EventCover } from "./event-photos";
 import { HostedSubmissions } from "./hosted-submissions";
 import { HostSessionDialog } from "./host-session-dialog";
 
@@ -204,7 +205,7 @@ function Timeline({ events }: { events: EventView[] }) {
                     </div>
                     <p className="text-sm text-muted-foreground">{event.description}</p>
                     <HostLine event={event} />
-                    <EventMedia event={event} />
+                    <EventCover event={event} />
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
                       <Winners winners={event.winners} />
                       <div className="flex items-center gap-2">

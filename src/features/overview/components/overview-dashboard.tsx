@@ -5,8 +5,9 @@
  * loading and error states every list needs (PRD §5).
  *
  * Members get a discovery view (search, community picture, birthdays, new
- * members). Admins additionally get the operational layer: the attention
- * row, new members over time and birthday message approval.
+ * members, and an invite for HR professionals they know). Admins additionally
+ * get the operational layer: the attention row, new members over time and
+ * birthday message approval.
  */
 import { Stagger, StaggerItem } from "@/components/shared/motion";
 import { RoleGuard } from "@/components/shared/role-guard";
@@ -17,6 +18,7 @@ import { BirthdayMessages } from "./birthday-messages";
 import { CommunityMakeup, NewMembersChart } from "./community-insights";
 import { CommunitySearch } from "./community-search";
 import { HaveQuestions } from "./have-questions";
+import { InviteMember } from "./invite-member";
 import { BirthdaysPanel, RecentMembersPanel } from "./member-lists";
 import { SnapshotStats, SnapshotStatsSkeleton } from "./snapshot-stats";
 
@@ -41,6 +43,10 @@ export function OverviewDashboard() {
           </RoleGuard>
 
           <SnapshotStats summary={data} />
+
+          <RoleGuard allow={["member"]}>
+            <InviteMember />
+          </RoleGuard>
 
           <Stagger className="flex flex-col gap-4">
             <StaggerItem>
