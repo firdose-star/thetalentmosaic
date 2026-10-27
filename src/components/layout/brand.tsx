@@ -7,6 +7,7 @@
  * page, including login). Change the brand once, and the sidebar, the login
  * screen and the footer all follow.
  */
+import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -120,37 +121,27 @@ export function Brand({
 }
 
 /**
- * The Mesa School of Business logo: the "m" tile plus the name. Drawn in
- * `currentColor` with the "m" knocked out of the tile, so it reads on light,
- * dark and black surfaces alike. Size it with a height class.
+ * The official Mesa School of Business logo (`public/brand/mesa-logo*.png`,
+ * from Mesa's logo file with the background made transparent): dark green on
+ * light surfaces, white on dark ones. `inverse` forces the white version, for
+ * always-dark surfaces such as the sidebar. Size it with a height class.
  */
-export function MesaLogo({ className, showName = true }: { className?: string; showName?: boolean }) {
+export function MesaLogo({ className, inverse = false }: { className?: string; inverse?: boolean }) {
+  const logo = (src: string, extra?: string) => (
+    <Image
+      src={src}
+      alt="Mesa School of Business"
+      width={754}
+      height={265}
+      className={cn("h-7 w-auto", extra, className)}
+    />
+  );
+  if (inverse) return logo("/brand/mesa-logo-white.png");
   return (
-    <span
-      role="img"
-      aria-label="Mesa School of Business"
-      className={cn("inline-flex h-7 items-center gap-[0.3em]", className)}
-    >
-      <svg viewBox="0 0 40 40" className="aspect-square h-full" aria-hidden>
-        <mask id="mesa-m">
-          <rect width="40" height="40" fill="white" />
-          <rect x="9" y="9" width="22" height="2.6" rx="0.5" fill="black" />
-          <path
-            d="M9 31V17.5c0-2.2 1.6-3.8 3.8-3.8h0.6c1.6 0 2.9.8 3.6 2.1c.7-1.3 2-2.1 3.6-2.1h.8c1.6 0 2.9.8 3.6 2.1c.7-1.3 2-2.1 3.6-2.1h.6c2.2 0 3.8 1.6 3.8 3.8V31h-3.4V18.2c0-.8-.6-1.3-1.3-1.3h-.4c-.8 0-1.3.6-1.3 1.3V31h-3.4V18.2c0-.8-.6-1.3-1.3-1.3h-.4c-.8 0-1.3.6-1.3 1.3V31h-3.4V18.2c0-.8-.6-1.3-1.3-1.3h-.4c-.8 0-1.3.6-1.3 1.3V31Z"
-            fill="black"
-          />
-        </mask>
-        <rect width="40" height="40" rx="7" fill="currentColor" mask="url(#mesa-m)" />
-      </svg>
-      {showName && (
-        <span className="flex flex-col justify-center leading-none">
-          <span className="text-[0.78em] font-bold tracking-tight">Mesa</span>
-          <span className="mt-[0.12em] text-[0.27em] font-medium tracking-wide uppercase">
-            School of Business
-          </span>
-        </span>
-      )}
-    </span>
+    <>
+      {logo("/brand/mesa-logo.png", "dark:hidden")}
+      {logo("/brand/mesa-logo-white.png", "hidden dark:block")}
+    </>
   );
 }
 
@@ -159,7 +150,7 @@ export function BuiltByMesa({ className }: { className?: string }) {
   return (
     <p
       className={cn(
-        "flex items-center justify-center gap-2 text-xs text-muted-foreground",
+        "flex items-center justify-center gap-2.5 text-sm text-muted-foreground",
         className,
       )}
     >
@@ -168,9 +159,9 @@ export function BuiltByMesa({ className }: { className?: string }) {
         href="https://mesaschool.co"
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-sm text-foreground outline-none transition-opacity hover:opacity-80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="rounded-sm outline-none transition-opacity hover:opacity-80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
-        <MesaLogo className="h-6 text-[1.6rem]" />
+        <MesaLogo className="h-10" />
       </a>
     </p>
   );
