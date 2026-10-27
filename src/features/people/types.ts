@@ -49,6 +49,8 @@ export interface MemberProfile {
   admin: {
     status: MemberStatus;
     owner: string | null;
+    /** e.g. "20 Aug · in 12 days"; null when not shared. */
+    birthday: string | null;
     missing: string[];
     lastLoginAt: string | null;
     history: { date: string; by: string; change: string }[];

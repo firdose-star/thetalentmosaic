@@ -6,7 +6,7 @@
  * The API must apply the same rule as here: contact details and admin fields
  * are only ever sent to admins.
  */
-import { currentMembers } from "@/lib/sample-data";
+import { SAMPLE_AS_OF, currentMembers, daysUntilBirthday } from "@/lib/sample-data";
 import { experienceBand, type Member } from "@/types/community";
 import type { Role } from "@/types/enums";
 
@@ -17,6 +17,14 @@ import type {
   MemberRecord,
   PeopleFilters,
 } from "../types";
+
+/** "20 Aug · in 12 days", "20 Aug · today", or null when not shared. */
+function birthdayLabel(birthday: Member["birthday"]) {
+  if (!birthday) return null;
+  const date = new Date(2000, birthday.month, birthday.day).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  const days = daysUntilBirthday(birthday, SAMPLE_AS_OF);
+  return `${date} · ${days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`}`;
+}
 
 const unique = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b));
 
@@ -102,6 +110,7 @@ export const peopleService = {
         ? {
             status: m.status,
             owner: m.owner,
+            birthday: birthdayLabel(m.birthday),
             missing: missingData(m),
             lastLoginAt: m.lastLoginAt,
             history: [

@@ -187,6 +187,9 @@ export function MemberProfile({ id }: { id: string }) {
                   </Badge>
                 </Detail>
                 <Detail label="Owner"><MemberOwnerSelect memberId={profile.id} memberName={profile.name} /></Detail>
+                <Detail label="Birthday">
+                  {profile.admin.birthday ?? <span className="text-muted-foreground">Not shared</span>}
+                </Detail>
                 <Detail label="Events attended">
                   <span className="flex flex-wrap items-center gap-2">
                     {profile.eventsAttended}
