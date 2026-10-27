@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * "Prototype: enter as" — signs in as a sample member or admin without a
+ * "Prototype: enter as" — signs in as a preview member or admin without a
  * backend. Renders nothing once `NEXT_PUBLIC_AUTH_ENABLED=true`, so it can
  * stay on the login page until real sign-in replaces it.
  */

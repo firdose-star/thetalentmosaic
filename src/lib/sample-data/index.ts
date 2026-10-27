@@ -1,15 +1,11 @@
 /**
- * SAMPLE dataset — the stand-in for MongoDB until the real import lands.
- *
- * Only feature *services* import from here, never components. That keeps the
- * swap to real data a one-file change per feature: replace the service body
- * with an `api.get(...)` call and delete this folder.
+ * The community data store and its types. Services read and write records
+ * here; components never import it directly. When MongoDB lands, each
+ * service swaps its body for an API call and this folder goes away.
  */
+export * from "./admin-config";
 export * from "./admin-queues";
+export * from "./community-store";
 export * from "./dates";
-export * from "./events";
 export * from "./jobs";
 export * from "./library";
-export * from "./members";
-export * from "./community-store";
-export * from "./admin-config";

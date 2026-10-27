@@ -26,9 +26,9 @@ import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useEvents } from "../hooks/use-events";
 import type { EventView } from "../services/events.service";
-import { AddEventDialog } from "./add-event-dialog";
+import { AttendeesDialog, DeleteEventButton, EventFormDialog } from "./event-editor";
 import { CoHostsDialog, WinnersDialog } from "./event-admin-dialogs";
-import { DateTile, HostLine, PhotoStrip, Winners, longDate, venueText } from "./event-parts";
+import { DateTile, EventMedia, HostLine, Winners, longDate, venueText } from "./event-parts";
 import { HostedSubmissions } from "./hosted-submissions";
 import { HostSessionDialog } from "./host-session-dialog";
 
@@ -42,7 +42,7 @@ function StatBlocks({ stats }: { stats: { eventsDone: number; cities: string[]; 
   const blocks = [
     { emoji: "🎉", value: stats.eventsDone, label: "Events done till now", tone: "from-chart-2/30" },
     { emoji: "🙌", value: `${stats.attendees.toLocaleString("en-IN")}+`, label: "Seats filled across catchups", tone: "from-chart-3/30" },
-    { emoji: "📸", value: stats.photos, label: "Memories captured", tone: "from-chart-4/25" },
+    { emoji: "📸", value: stats.photos, label: "Catchups with photo albums", tone: "from-chart-4/25" },
   ];
 
   return (
@@ -123,6 +123,9 @@ function FeaturedEvent({ event }: { event: EventView }) {
               )}
               <RoleGuard allow={["admin"]}>
                 <CoHostsDialog event={event} />
+                <AttendeesDialog event={event} />
+                <EventFormDialog event={event} />
+                <DeleteEventButton event={event} />
               </RoleGuard>
             </div>
           </div>
@@ -154,6 +157,9 @@ function UpcomingCard({ event }: { event: EventView }) {
           {event.cost && <span className="text-xs text-muted-foreground">{event.cost}</span>}
           <RoleGuard allow={["admin"]}>
             <CoHostsDialog event={event} />
+            <AttendeesDialog event={event} />
+            <EventFormDialog event={event} />
+            <DeleteEventButton event={event} />
           </RoleGuard>
         </div>
       </div>
@@ -198,7 +204,7 @@ function Timeline({ events }: { events: EventView[] }) {
                     </div>
                     <p className="text-sm text-muted-foreground">{event.description}</p>
                     <HostLine event={event} />
-                    {event.photos ? <PhotoStrip count={event.photos} /> : null}
+                    <EventMedia event={event} />
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
                       <Winners winners={event.winners} />
                       <div className="flex items-center gap-2">
@@ -206,6 +212,9 @@ function Timeline({ events }: { events: EventView[] }) {
                         <RoleGuard allow={["admin"]}>
                           <WinnersDialog event={event} />
                           <CoHostsDialog event={event} />
+                          <AttendeesDialog event={event} />
+                          <EventFormDialog event={event} />
+                          <DeleteEventButton event={event} />
                         </RoleGuard>
                       </div>
                     </div>
@@ -341,7 +350,7 @@ export function EventsView() {
         </div>
         <div className="flex flex-wrap gap-2">
           <RoleGuard allow={["admin"]}>
-            <AddEventDialog />
+            <EventFormDialog />
           </RoleGuard>
           <HostSessionDialog />
         </div>

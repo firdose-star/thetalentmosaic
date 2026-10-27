@@ -8,7 +8,7 @@ export const siteConfig = {
   name: env.NEXT_PUBLIC_APP_NAME,
   shortName: "Talent Mosaic",
   description:
-    "Recruit, onboard and manage mentors, book sessions, and capture what happened in each one.",
+    "A private, peer-led community of HR professionals across startups — people, resources, roles and catchups in one place. By Mesa School of Business.",
   url: env.NEXT_PUBLIC_APP_URL,
   locale: "en_US",
   themeColor: {
@@ -17,16 +17,17 @@ export const siteConfig = {
   },
   links: {
     docs: "/docs",
-    support: "mailto:support@example.com",
+    support: "mailto:firdose@mesaschool.co",
   },
   /**
-   * "Have questions?" contact on Overview (PRD §1). The WhatsApp number and
-   * LinkedIn URL are placeholders — an open question in PRD §13.
+   * "Have questions?" contact on Overview (PRD §1). Add the WhatsApp number
+   * (wa.me link) and LinkedIn URL here and their buttons appear.
    */
   communityContact: {
     name: "Firdose",
-    whatsappUrl: "https://wa.me/910000000000",
-    linkedinUrl: "https://www.linkedin.com/in/firdose",
+    email: "firdose@mesaschool.co",
+    whatsappUrl: null as string | null,
+    linkedinUrl: null as string | null,
   },
 } as const;
 

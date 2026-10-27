@@ -48,7 +48,7 @@ export interface AuthContextValue {
   /** Re-read `/auth/me`, e.g. after the user edits their own profile. */
   refreshUser: () => Promise<void>;
   /**
-   * Sign in as a sample member or admin. Only works while
+   * Sign in as a preview member or admin. Only works while
    * `NEXT_PUBLIC_AUTH_ENABLED=false` — the login screen's prototype buttons.
    */
   enterPreview: (role: PreviewRole) => void;

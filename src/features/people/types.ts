@@ -26,7 +26,6 @@ export interface DirectoryMember {
 export interface FilterOptions {
   cities: string[];
   startups: string[];
-  interests: string[];
   hobbies: string[];
 }
 
@@ -39,7 +38,6 @@ export interface MemberProfile {
   seniority: Seniority;
   hrFunction: HrFunction;
   yearsOfExperience: number | null;
-  interests: string[];
   hobbies: string[];
   linkedin: string;
   joinedOn: string;

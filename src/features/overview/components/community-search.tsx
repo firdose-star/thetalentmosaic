@@ -69,7 +69,7 @@ export function CommunitySearch() {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={(event) => event.key === "Escape" && setOpen(false)}
-            placeholder="Name, startup, designation, city, HR function, interest, vendor, role or event"
+            placeholder="Name, startup, designation, city, hobby, vendor, role or event"
             aria-label="Search the community"
             className="h-11 w-full rounded-xl border-0 bg-background pr-3 pl-10 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-primary-foreground/40"
           />

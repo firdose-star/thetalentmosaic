@@ -41,6 +41,9 @@ function useRefreshEvents() {
     void queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
     // Health lists events attended and reach, so new or edited events refresh it too.
     void queryClient.invalidateQueries({ queryKey: queryKeys.health.community() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.people.all });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.overview.all });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
   };
 }
 
@@ -71,6 +74,30 @@ export function useEventAdminActions() {
       },
       onError,
     }),
+    update: useMutation({
+      mutationFn: eventsService.updateEvent,
+      onSuccess: (e) => {
+        refresh();
+        notify.success(`"${e.title}" saved`);
+      },
+      onError,
+    }),
+    remove: useMutation({
+      mutationFn: eventsService.deleteEvent,
+      onSuccess: () => {
+        refresh();
+        notify.success("Event removed");
+      },
+      onError,
+    }),
+    attendees: useMutation({
+      mutationFn: eventsService.setAttendees,
+      onSuccess: () => {
+        refresh();
+        notify.success("Attendees saved");
+      },
+      onError,
+    }),
     create: useMutation({
       mutationFn: eventsService.createEvent,
       onSuccess: (e) => {
@@ -96,4 +123,13 @@ export function useEventAdminActions() {
       onError,
     }),
   };
+}
+
+/** Admin: every member, with whether they attended this event. */
+export function useEventAttendees(eventId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...queryKeys.events.detail(eventId), "attendees"],
+    queryFn: () => eventsService.attendees(eventId),
+    enabled,
+  });
 }

@@ -1,7 +1,7 @@
 /**
  * Library API calls (spec §7).
  *
- * Backed by an in-memory copy of the SAMPLE data so admin edits and new
+ * Backed by an community store so admin edits and new
  * submissions survive navigation for the session. Each method maps to one
  * future endpoint; suggestions go to the admin review queue and never appear
  * in the member-facing lists until approved.
@@ -10,12 +10,14 @@ import {
   communityStore,
   SAMPLE_AS_OF,
   isoDate,
+  logAdminAction,
   type Recommendation,
+  type Resource,
   type Vendor,
 } from "@/lib/sample-data";
 import type { Role } from "@/types/enums";
 
-import type { RecommendationInput, VendorInput } from "../schemas";
+import type { RecommendationInput, ResourceInput, VendorInput } from "../schemas";
 
 const store = communityStore.library;
 
@@ -45,6 +47,44 @@ export const libraryService = {
     const updated = { ...existing, ...clean(input) };
     store.vendors = store.vendors.map((v) => (v.id === id ? updated : v));
     return updated;
+  },
+
+  /** Admin only: publish a vendor directly, no review step. */
+  createVendor: async (input: VendorInput): Promise<Vendor> => {
+    const vendor: Vendor = { id: `vendor-${Date.now()}`, ...clean(input), note: "" };
+    store.vendors = [...store.vendors, vendor];
+    logAdminAction({ actor: "Admin", action: "Added a vendor", object: vendor.name });
+    return vendor;
+  },
+
+  /** Admin only: remove a vendor from the directory. */
+  deleteVendor: async (id: string) => {
+    const vendor = store.vendors.find((v) => v.id === id);
+    store.vendors = store.vendors.filter((v) => v.id !== id);
+    logAdminAction({ actor: "Admin", action: "Removed a vendor", object: vendor?.name ?? id });
+  },
+
+  // ── Admin: resources ──
+  saveResource: async ({ id, input }: { id?: string; input: ResourceInput }): Promise<Resource> => {
+    const resource: Resource = {
+      id: id ?? `res-${Date.now()}`,
+      title: input.title,
+      category: input.category,
+      description: input.description,
+      source: input.source || "Talent Mosaic team",
+      access: input.access,
+      link: input.link || undefined,
+      addedOn: store.resources.find((r) => r.id === id)?.addedOn ?? isoDate(SAMPLE_AS_OF),
+    };
+    store.resources = id ? store.resources.map((r) => (r.id === id ? resource : r)) : [resource, ...store.resources];
+    logAdminAction({ actor: "Admin", action: id ? "Edited a resource" : "Added a resource", object: resource.title });
+    return resource;
+  },
+
+  deleteResource: async (id: string) => {
+    const resource = store.resources.find((r) => r.id === id);
+    store.resources = store.resources.filter((r) => r.id !== id);
+    logAdminAction({ actor: "Admin", action: "Removed a resource", object: resource?.title ?? id });
   },
 
   /** Goes to Submissions & Approvals; not published until approved. */

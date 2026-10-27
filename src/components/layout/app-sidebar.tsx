@@ -49,7 +49,7 @@ export function AppSidebar() {
             <BrandMark />
           </Link>
         ) : (
-          <Brand />
+          <Brand inverse />
         )}
       </SidebarHeader>
 

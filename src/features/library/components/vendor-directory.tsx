@@ -18,6 +18,8 @@ import {
   MessageCircle,
   Phone,
   Store,
+  Trash2,
+  UserRound,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
@@ -32,7 +34,7 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import type { Vendor } from "@/lib/sample-data";
 import { cn } from "@/lib/utils";
-import { useVendors } from "../hooks/use-library";
+import { useLibraryAdmin, useVendors } from "../hooks/use-library";
 import { CategoryManagerDialog } from "./category-manager-dialog";
 import { VendorFormDialog } from "./vendor-form-dialog";
 
@@ -70,6 +72,22 @@ function PhoneRow({ phone }: { phone: string }) {
         </Button>
       </div>
     </DetailRow>
+  );
+}
+
+/** Admin: remove a vendor, with a second click to confirm. */
+function DeleteVendorButton({ vendor }: { vendor: Vendor }) {
+  const { deleteVendor } = useLibraryAdmin();
+  const [confirming, setConfirming] = useState(false);
+  return confirming ? (
+    <Button size="sm" variant="destructive" onClick={() => deleteVendor.mutate(vendor.id)} disabled={deleteVendor.isPending}>
+      Remove {vendor.name}?
+    </Button>
+  ) : (
+    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirming(true)}>
+      <Trash2 data-icon="inline-start" />
+      Delete
+    </Button>
   );
 }
 
@@ -119,6 +137,9 @@ function VendorCard({ vendor, categories }: { vendor: Vendor; categories: string
                 {vendor.city}
                 {vendor.area && <span className="block text-muted-foreground">{vendor.area}</span>}
               </DetailRow>
+              {vendor.contactName && (
+                <DetailRow icon={UserRound} label="Point of contact">{vendor.contactName}</DetailRow>
+              )}
               {vendor.phone && <PhoneRow phone={vendor.phone} />}
               {vendor.website && (
                 <DetailRow icon={Globe} label="Website">
@@ -145,7 +166,8 @@ function VendorCard({ vendor, categories }: { vendor: Vendor; categories: string
                 <p className="rounded-lg bg-background px-3 py-2 text-xs text-muted-foreground">{vendor.note}</p>
               )}
               <RoleGuard allow={["admin"]}>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                  <DeleteVendorButton vendor={vendor} />
                   <VendorFormDialog categories={categories} vendor={vendor} />
                 </div>
               </RoleGuard>
@@ -179,6 +201,7 @@ export function VendorDirectory() {
         <div className="flex gap-2">
           <RoleGuard allow={["admin"]}>
             <CategoryManagerDialog categories={data.categories} />
+            <VendorFormDialog categories={data.categories} direct />
           </RoleGuard>
           <VendorFormDialog categories={data.categories} />
         </div>

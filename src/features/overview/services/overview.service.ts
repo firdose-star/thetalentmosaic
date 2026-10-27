@@ -1,20 +1,15 @@
 /**
  * Overview API calls.
  *
- * Today the summary is computed from the SAMPLE dataset. When the MongoDB-backed
+ * Today the summary is computed from the community store (the Mastersheet). When the MongoDB-backed
  * Route Handler exists, replace the body of `summary` with
  *   api.get<OverviewSummary>(ENDPOINTS.overview.summary)
  * and nothing else changes — the hook and every component read the same shape.
  */
 import {
-  CONTACT_REQUESTS,
-  DATA_ISSUES,
-  DUPLICATES,
+  communityStore,
   currentMembers,
-  PROFILE_CHANGES,
-  REGISTRATIONS,
   SAMPLE_AS_OF,
-  SUBMISSIONS,
   addDays,
   daysFrom,
   daysUntilBirthday,
@@ -50,7 +45,7 @@ function countBy<T>(items: T[], key: (item: T) => string) {
 }
 
 function buildSummary(asOf: Date): OverviewSummary {
-  // PRD §9: only approved members count — every sample member is approved.
+  // PRD §9: only approved members count — everyone in the Community Form is approved.
   const members = currentMembers();
 
   const monthlyJoins = Array.from({ length: MONTHS_SHOWN }, (_, k) => {
@@ -106,11 +101,14 @@ function buildSummary(asOf: Date): OverviewSummary {
       .sort((a, b) => parseIsoDate(b.joinedOn).getTime() - parseIsoDate(a.joinedOn).getTime())
       .map(toCard),
     attention: {
-      registrations: REGISTRATIONS.length,
-      memberRequests: PROFILE_CHANGES.length + CONTACT_REQUESTS.length,
-      submissions: SUBMISSIONS.length,
-      duplicates: DUPLICATES.length,
-      dataIssues: DATA_ISSUES.length,
+      registrations: communityStore.admin.registrations.length,
+      memberRequests: communityStore.admin.profileChanges.length + communityStore.admin.contactRequests.length,
+      submissions:
+        communityStore.vendorSuggestions.filter((v) => v.status === "pending").length +
+        communityStore.library.recommendations.filter((r) => r.status === "Under review").length +
+        communityStore.hostedSubmissions.filter((s) => s.status === "pending").length,
+      duplicates: communityStore.admin.duplicates.length,
+      dataIssues: communityStore.admin.issues.length,
     },
   };
 }

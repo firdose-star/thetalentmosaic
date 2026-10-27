@@ -1,7 +1,8 @@
 /**
- * "Have questions?" — the community contact (PRD §1, §6.1).
+ * "Have questions?" — the community contact (PRD §1, §6.1). Email always;
+ * WhatsApp and LinkedIn appear once they're set in `site.ts`.
  */
-import { ExternalLink, MessageCircle } from "lucide-react";
+import { ExternalLink, Mail, MessageCircle } from "lucide-react";
 
 import { MemberAvatar } from "@/components/shared/member-avatar";
 import { Button } from "@/components/ui/button";
@@ -22,19 +23,23 @@ export function HaveQuestions() {
           </p>
         </div>
       </div>
-      <div className="flex gap-2">
-        <Button nativeButton={false} render={<a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" />}>
-          <MessageCircle data-icon="inline-start" />
-          WhatsApp
+      <div className="flex flex-wrap gap-2">
+        <Button nativeButton={false} render={<a href={`mailto:${contact.email}`} />}>
+          <Mail data-icon="inline-start" />
+          Email {contact.name}
         </Button>
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<a href={contact.linkedinUrl} target="_blank" rel="noopener noreferrer" />}
-        >
-          <ExternalLink data-icon="inline-start" />
-          LinkedIn
-        </Button>
+        {contact.whatsappUrl && (
+          <Button variant="outline" nativeButton={false} render={<a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" />}>
+            <MessageCircle data-icon="inline-start" />
+            WhatsApp
+          </Button>
+        )}
+        {contact.linkedinUrl && (
+          <Button variant="outline" nativeButton={false} render={<a href={contact.linkedinUrl} target="_blank" rel="noopener noreferrer" />}>
+            <ExternalLink data-icon="inline-start" />
+            LinkedIn
+          </Button>
+        )}
       </div>
     </Card>
   );

@@ -199,9 +199,8 @@ export function ownerRows(data: HealthData) {
 }
 
 /** Data-quality checks (PRD §7) — each opens the members behind it. */
-export const DATA_CHECKS: { key: string; label: string; test: (m: HealthMember) => boolean; field?: "linkedin" | "interests" | "hobbies" | "whatsapp" | "owner" }[] = [
+export const DATA_CHECKS: { key: string; label: string; test: (m: HealthMember) => boolean; field?: "linkedin" | "hobbies" | "whatsapp" | "owner" }[] = [
   { key: "linkedin", label: "Missing LinkedIn", test: (m) => !m.linkedin, field: "linkedin" },
-  { key: "interests", label: "Missing interests", test: (m) => m.interests.length === 0, field: "interests" },
   { key: "hobbies", label: "Missing hobbies", test: (m) => m.hobbies.length === 0, field: "hobbies" },
   { key: "whatsapp", label: "Missing WhatsApp number", test: (m) => !m.whatsapp, field: "whatsapp" },
   { key: "birthday", label: "Missing or invalid birthday", test: (m) => !m.birthday },

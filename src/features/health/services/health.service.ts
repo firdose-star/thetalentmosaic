@@ -10,10 +10,9 @@
  * Every mutation is an admin action: log or edit interactions, assign
  * owners, snooze, fix member data, tag events and tags, and manage the
  * lists behind the dashboard (owners, interaction types, outcomes,
- * thresholds). Backed by the SAMPLE session store until the API exists.
+ * thresholds). Backed by the community store until the API exists.
  */
 import {
-  REGISTRATIONS,
   SAMPLE_AS_OF,
   communityStore,
   isoDate,
@@ -117,7 +116,7 @@ export const healthService = {
       city: e.city,
       attended: communityStore.members.filter((m) => m.eventsAttended.includes(e.id)).length,
     })),
-    awaitingApproval: REGISTRATIONS.length,
+    awaitingApproval: communityStore.admin.registrations.length,
   }),
 
   // ── Interactions ──────────────────────────────────────────────────────────

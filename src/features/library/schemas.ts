@@ -39,3 +39,14 @@ export const UPLOAD_ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt";
 export const UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 
 export const categorySchema = z.string().trim().min(2, "At least 2 characters").max(40);
+
+/** Admin: a resource added or edited directly. */
+export const resourceSchema = z.object({
+  title: z.string().trim().min(3, "Give it a title"),
+  category: z.string().min(1, "Pick a category"),
+  description: z.string().trim().min(5, "A line on what it is"),
+  source: optional,
+  link: z.url("Full link, starting with https://").optional().or(z.literal("")),
+  access: z.enum(["All members", "Verified members", "Admins"]),
+});
+export type ResourceInput = z.infer<typeof resourceSchema>;

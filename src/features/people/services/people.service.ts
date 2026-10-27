@@ -1,7 +1,7 @@
 /**
  * People directory API calls (spec §6).
  *
- * Computed from the SAMPLE dataset for now; each method maps to one future
+ * Computed from the community store (the Mastersheet) for now; each method maps to one future
  * endpoint (`GET /members`, `GET /members/:id`, `POST /members/:id/contact-requests`).
  * The API must apply the same rule as here: contact details and admin fields
  * are only ever sent to admins.
@@ -23,7 +23,6 @@ const unique = (values: string[]) => [...new Set(values)].sort((a, b) => a.local
 function missingData(m: Member) {
   const missing: string[] = [];
   if (!m.linkedin) missing.push("LinkedIn");
-  if (m.interests.length === 0) missing.push("Interests");
   if (m.hobbies.length === 0) missing.push("Hobbies");
   if (!m.owner) missing.push("Owner");
   if (!m.lastLoginAt) missing.push("Never logged in");
@@ -74,7 +73,6 @@ export const peopleService = {
   options: async (): Promise<FilterOptions> => ({
     cities: unique(currentMembers().map((m) => m.city)),
     startups: unique(currentMembers().map((m) => m.startup)),
-    interests: unique(currentMembers().flatMap((m) => m.interests)),
     // Hobby options are the keywords members typed into their profiles.
     hobbies: unique(currentMembers().flatMap((m) => m.hobbies.map((h) => h.trim())).filter(Boolean)),
   }),
@@ -94,7 +92,6 @@ export const peopleService = {
       seniority: m.seniority,
       hrFunction: m.hrFunction,
       yearsOfExperience: m.yearsOfExperience,
-      interests: m.interests,
       hobbies: m.hobbies,
       linkedin: m.linkedin,
       joinedOn: m.joinedOn,

@@ -8,6 +8,7 @@
  */
 import { ArrowLeft, CalendarDays, Clock, MapPin, Ticket, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { FadeIn } from "@/components/shared/motion";
 import { RoleGuard } from "@/components/shared/role-guard";
@@ -19,10 +20,12 @@ import { Card } from "@/components/ui/card";
 import { ROUTES } from "@/lib/constants";
 import { useEvent } from "../hooks/use-events";
 import { CoHostsDialog, WinnersDialog } from "./event-admin-dialogs";
-import { DateTile, HostLine, PhotoStrip, Winners, longDate, venueText } from "./event-parts";
+import { AttendeesDialog, DeleteEventButton, EventFormDialog } from "./event-editor";
+import { DateTile, EventMedia, HostLine, Winners, longDate, venueText } from "./event-parts";
 
 export function EventDetail({ id }: { id: string }) {
   const { data, isPending, isError, error, refetch } = useEvent(id);
+  const router = useRouter();
 
   const back = (
     <Button variant="ghost" size="sm" className="w-fit" nativeButton={false} render={<Link href={ROUTES.events} />}>
@@ -67,6 +70,9 @@ export function EventDetail({ id }: { id: string }) {
             <div className="mt-3 flex flex-wrap gap-2">
               {!isUpcoming && <WinnersDialog event={event} />}
               <CoHostsDialog event={event} />
+              <AttendeesDialog event={event} />
+              <EventFormDialog event={event} />
+              <DeleteEventButton event={event} onDeleted={() => router.push(ROUTES.events)} />
             </div>
           </RoleGuard>
         </div>
@@ -83,9 +89,9 @@ export function EventDetail({ id }: { id: string }) {
           <Section title="About this catchup">
             <p className="text-sm leading-relaxed">{event.description}</p>
           </Section>
-          {!isUpcoming && event.photos ? (
-            <Section title="Photographs">
-              <PhotoStrip count={event.photos} max={8} />
+          {event.momentsUrl || event.photosUrl ? (
+            <Section title="Moments and photos">
+              <EventMedia event={event} />
             </Section>
           ) : null}
         </div>

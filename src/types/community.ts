@@ -61,7 +61,6 @@ export interface Member {
   hrFunction: HrFunction;
   /** Total years in HR; null when not shared. */
   yearsOfExperience: number | null;
-  interests: string[];
   hobbies: string[];
   /** Empty when the member has not shared it. */
   linkedin: string;
@@ -119,6 +118,10 @@ export interface CommunityEvent {
   registrationUrl?: string;
   cost?: string;
   winners?: { prize: string; winner: string }[];
+  /** Highlight photo or video from the catchup (Google Drive). */
+  momentsUrl?: string;
+  /** The full photo folder (Google Drive). */
+  photosUrl?: string;
   /** Member ids an admin tagged as co-hosts. */
   coHostIds?: string[];
 }

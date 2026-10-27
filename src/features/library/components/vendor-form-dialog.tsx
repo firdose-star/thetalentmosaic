@@ -26,7 +26,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import type { Vendor } from "@/lib/sample-data";
-import { useSuggestVendor, useUpdateVendor } from "../hooks/use-library";
+import { useLibraryAdmin, useSuggestVendor, useUpdateVendor } from "../hooks/use-library";
 import { vendorSchema, type VendorInput } from "../schemas";
 
 const EMPTY: VendorInput = {
@@ -44,16 +44,20 @@ const EMPTY: VendorInput = {
 export function VendorFormDialog({
   categories,
   vendor,
+  direct = false,
 }: {
   categories: string[];
   /** Present → admin edit mode. */
   vendor?: Vendor;
+  /** Admin: publish straight to the directory instead of suggesting. */
+  direct?: boolean;
 }) {
   const { user } = useAuth();
   const isEdit = Boolean(vendor);
   const [open, setOpen] = useState(false);
   const suggest = useSuggestVendor();
   const update = useUpdateVendor();
+  const { createVendor } = useLibraryAdmin();
   const form = useForm<VendorInput>({
     resolver: zodResolver(vendorSchema),
     defaultValues: vendor
@@ -72,13 +76,14 @@ export function VendorFormDialog({
   });
   const errors = form.formState.errors;
   const id = vendor?.id ?? "new";
-  const pending = suggest.isPending || update.isPending;
+  const pending = suggest.isPending || update.isPending || createVendor.isPending;
 
   async function onSubmit(values: VendorInput) {
     if (vendor) {
       await update.mutateAsync({ id: vendor.id, input: values });
     } else {
-      await suggest.mutateAsync({ input: values, submittedBy: user?.name ?? "A member" });
+      if (direct) await createVendor.mutateAsync(values);
+      else await suggest.mutateAsync({ input: values, submittedBy: user?.name ?? "A member" });
       form.reset(EMPTY);
     }
     setOpen(false);
@@ -105,16 +110,16 @@ export function VendorFormDialog({
           Edit
         </DialogTrigger>
       ) : (
-        <DialogTrigger render={<Button />}>
+        <DialogTrigger render={<Button variant={direct ? "outline" : "default"} />}>
           <Plus data-icon="inline-start" />
-          Recommend a Vendor
+          {direct ? "Add vendor" : "Recommend a Vendor"}
         </DialogTrigger>
       )}
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? `Edit ${vendor?.name}` : "Recommend a Vendor"}</DialogTitle>
+          <DialogTitle>{isEdit ? `Edit ${vendor?.name}` : direct ? "Add a vendor" : "Recommend a Vendor"}</DialogTitle>
           <DialogDescription>
-            {isEdit
+            {isEdit || direct
               ? "Changes publish straight to the directory."
               : "Know a vendor you’d vouch for, fill in their details! The admins review every suggestion first."}
           </DialogDescription>
@@ -154,7 +159,7 @@ export function VendorFormDialog({
 
         <DialogFooter>
           <Button type="submit" form={`vendor-form-${id}`} disabled={pending}>
-            {isEdit ? "Save changes" : "Send for review"}
+            {isEdit ? "Save changes" : direct ? "Add to directory" : "Send for review"}
           </Button>
         </DialogFooter>
       </DialogContent>

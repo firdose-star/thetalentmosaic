@@ -35,7 +35,7 @@ export function ListingManagement() {
         <Kpi label="Active listings" value={data.counts.active} hint="Published to members" />
         <Kpi label="Expired" value={data.counts.expired} hint="Closed at the source" />
         <Kpi label="Awaiting review" value={data.counts.review} hint="Not yet published" />
-        <Kpi label="Last successful run" value={data.lastSuccessfulRun} />
+        <Kpi label="Last successful run" value={data.lastSuccessfulRun ?? "Not connected"} />
       </div>
 
       <div className="grid items-start gap-4 @4xl/main:grid-cols-2">

@@ -2,7 +2,7 @@
 
 /**
  * A member's profile (spec §6.3, §6.5). Everyone sees designation, LinkedIn,
- * city, photo and interests. Contact and email are admin only — members get a
+ * city, photo and hobbies. Contact and email are admin only — members get a
  * "Request contact details" action instead. Admins also see the record panel
  * (status, owner, data gaps, change history — spec §6.6).
  */
@@ -29,7 +29,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { shortDate } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
-import { MemberEngagementButton, MemberOwnerSelect } from "@/features/health";
+import { EditMemberButton } from "@/features/admin";
+import { MemberOwnerSelect } from "@/features/health";
 import { useMemberProfile, useRequestContact } from "../hooks/use-people";
 import type { MemberProfile as Profile } from "../types";
 
@@ -163,7 +164,6 @@ export function MemberProfile({ id }: { id: string }) {
                 <span className="text-muted-foreground">Not shared</span>
               )}
             </Detail>
-            <Detail label="Interests"><Chips items={profile.interests} empty="Not shared yet" /></Detail>
             <Detail label="Hobbies"><Chips items={profile.hobbies} empty="Not shared yet" /></Detail>
             {profile.tags.length > 0 && (
               <Detail label="Tags"><Chips items={profile.tags} empty="" /></Detail>
@@ -178,7 +178,7 @@ export function MemberProfile({ id }: { id: string }) {
             <Section
               title="Member record"
               description="Admin only."
-              actions={<Badge variant="secondary">Admin</Badge>}
+              actions={<EditMemberButton memberId={profile.id} label="Edit member" size="sm" />}
             >
               <dl className="flex flex-col gap-3">
                 <Detail label="Status">
@@ -190,7 +190,6 @@ export function MemberProfile({ id }: { id: string }) {
                 <Detail label="Events attended">
                   <span className="flex flex-wrap items-center gap-2">
                     {profile.eventsAttended}
-                    <MemberEngagementButton memberId={profile.id} />
                   </span>
                 </Detail>
                 <Detail label="Tags"><Chips items={profile.tags} empty="None yet" /></Detail>

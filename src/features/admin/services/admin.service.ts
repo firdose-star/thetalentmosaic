@@ -8,8 +8,6 @@
  * Library. Every admin action is written to the append-only activity log.
  */
 import {
-  DUPLICATE_RECORDS,
-  JOBS,
   SAMPLE_AS_OF,
   communityStore,
   communitySource,
@@ -34,9 +32,11 @@ const DAY = 86_400_000;
 function missingFields(m: Member) {
   const out: string[] = [];
   if (!m.linkedin) out.push("LinkedIn");
-  if (m.interests.length === 0) out.push("Interests");
   if (m.hobbies.length === 0) out.push("Hobbies");
   if (!m.owner) out.push("Owner");
+  if (!m.birthday) out.push("Birthday");
+  if (m.yearsOfExperience === null) out.push("Years in HR");
+  if (!m.photoUrl) out.push("Photo");
   if (!m.lastLoginAt) out.push("Never logged in");
   return out;
 }
@@ -68,13 +68,14 @@ function users(): AccessUser[] {
       .sort()
       .at(-1);
   const base: AccessUser[] = [
-    { id: "admin-aarav", name: "Aarav Shah", email: "aarav@talentmosaic.example", role: "Admin", status: "Active", lastActiveAt: new Date().toISOString() },
+    { id: "admin-firdose", name: "Firdose", email: "firdose@mesaschool.co", role: "Admin", status: "Active", lastActiveAt: new Date().toISOString() },
     ...communityStore.settings.owners.map<AccessUser>((owner) => {
       const last = lastLogged(owner);
       return {
         id: `owner-${owner}`,
         name: owner,
-        email: `${owner.toLowerCase().replace(/\s+/g, ".")}@talentmosaic.example`,
+        // Owners' work emails aren't on file yet.
+        email: "",
         role: "Relationship owner",
         status: "Active",
         lastActiveAt: last ? at(last, "11:00") : null,
@@ -209,10 +210,16 @@ export const adminService = {
         birthdaysToApprove: birthdaysToApprove(),
         automationsOn: s.automations.filter((a) => a.enabled).length,
         automationsTotal: s.automations.length,
-        activeRoles: JOBS.filter((j) => j.status === "active").length,
+        activeRoles: communityStore.jobs.filter((j) => j.status === "active").length,
         importUpdates: s.importUpdates.length,
       },
       members: members.map((m) => ({ ...m, missing: missingFields(m) })),
+      /** Every event, newest first — for tagging attendees. */
+      events: [...communityStore.events]
+        .sort((x, y) => y.date.localeCompare(x.date))
+        .map((e) => ({ id: e.id, title: e.title, date: e.date, city: e.city })),
+      /** Every tag in use, plus the usual ones. */
+      tags: [...new Set(["Speaker", "Volunteer", "Community champion", "Resource contributor", "Vendor contributor", ...members.flatMap((m) => m.tags)])],
       owners: [...communityStore.settings.owners],
       registrations: s.registrations,
       profileChanges: s.profileChanges.map((c) => {
@@ -226,7 +233,7 @@ export const adminService = {
         return {
           ...d,
           a: m ? { name: m.name, email: m.email, startup: m.startup, city: m.city } : null,
-          b: DUPLICATE_RECORDS[d.id],
+          b: d.other,
         };
       }),
       vendorSuggestions: communityStore.vendorSuggestions,
@@ -244,8 +251,8 @@ export const adminService = {
             : src.id === "vendors"
               ? `${communityStore.library.vendors.length} vendors`
               : src.id === "jobs"
-                ? `${JOBS.filter((j) => j.status === "active").length} active listings`
-                : `${s.registrations.length} new registrations`,
+                ? `${communityStore.jobs.filter((j) => j.status === "active").length} active listings`
+                : `${communityStore.events.length} catchups`,
       })),
       issues: s.issues,
       automations: s.automations.map((a) => ({ ...a, ...automationTimes(a) })),
@@ -273,7 +280,6 @@ export const adminService = {
       seniority: /chro|chief|cxo/i.test(r.designation) ? "SVP / CXO" : /head|vp|director/i.test(r.designation) ? "Head / Director / VP" : /lead/i.test(r.designation) ? "Senior Manager / Lead" : /manager/i.test(r.designation) ? "Manager" : "Associate",
       hrFunction: /talent|recruit/i.test(r.designation) ? "Talent Acquisition" : "Generalist HR",
       yearsOfExperience: null,
-      interests: [],
       hobbies: [],
       linkedin: "",
       email: r.email,
@@ -426,7 +432,6 @@ export const adminService = {
       seniority: "Associate",
       hrFunction: "Generalist HR",
       yearsOfExperience: null,
-      interests: [],
       hobbies: [],
       linkedin: "",
       email: r.email,

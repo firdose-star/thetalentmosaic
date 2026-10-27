@@ -237,6 +237,12 @@ export interface ImportReport {
   directoryConsentNo: string[];
   addedToCommunity: Record<string, number>;
   events: string[];
+  /** Catchups loaded from the Community Catchups tab. */
+  catchups?: number;
+  /** Events named in the form that matched no catchup. */
+  unmatchedEvents?: string[];
+  /** Vendors loaded from the Vendor Form tab. */
+  vendors?: number;
 }
 
 export interface CommunityImport {
@@ -329,7 +335,7 @@ export function importCommunityForm(csv: string, now = new Date()): CommunityImp
       seniority: parseSeniority(cell(row, col.seniority)),
       hrFunction: inferHrFunction(designation),
       yearsOfExperience: parseYears(cell(row, col.yoe)),
-      interests: [],
+
       hobbies: hobbyKeywords(cell(row, col.hobbies)),
       linkedin,
       email,

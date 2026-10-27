@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Allura, DM_Sans, JetBrains_Mono, Playfair_Display } from "next/font/google";
 
 import { Providers } from "@/providers";
 import { siteConfig } from "@/lib/config/site";
@@ -23,6 +23,25 @@ const dmSans = DM_Sans({
   fallback: ["system-ui", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
 });
 
+/**
+ * Brand-only faces for the "The Talent Mosaic" wordmark, matching the logo:
+ * a script "The" and serif-italic "Talent Mosaic". Used nowhere else.
+ */
+const brandSerif = Playfair_Display({
+  variable: "--font-brand-serif",
+  subsets: ["latin"],
+  style: ["italic"],
+  weight: ["700"],
+  display: "swap",
+});
+
+const brandScript = Allura({
+  variable: "--font-brand-script",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
@@ -32,7 +51,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — Mentor Platform`,
+    default: `${siteConfig.name} — A peer led community of HRs across startups`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -46,6 +65,7 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
     siteName: siteConfig.name,
+    images: [{ url: "/brand/talent-mosaic-banner.png", width: 1600, height: 800, alt: "The Talent Mosaic, by Mesa School of Business" }],
   },
   robots: { index: true, follow: true },
 };
@@ -64,7 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // next-themes writes the theme class before hydration; without this React
       // reports a mismatch on every load.
       suppressHydrationWarning
-      className={`${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${brandSerif.variable} ${brandScript.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <Providers>{children}</Providers>

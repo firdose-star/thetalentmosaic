@@ -41,5 +41,7 @@ export const adminEventSchema = z.object({
   description: z.string().trim().min(10, "A line or two about it"),
   registrationUrl: z.url("Full link, starting with https://").optional().or(z.literal("")),
   cost: z.string().trim().optional(),
+  momentsUrl: z.url("Full link, starting with https://").optional().or(z.literal("")),
+  photosUrl: z.url("Full link, starting with https://").optional().or(z.literal("")),
 });
 export type AdminEventInput = z.infer<typeof adminEventSchema>;

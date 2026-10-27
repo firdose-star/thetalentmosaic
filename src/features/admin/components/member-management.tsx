@@ -6,7 +6,7 @@
  * fix missing data. Changes land in the shared records — People, Health and
  * Overview update at once — and in the activity log.
  */
-import { Check, Pencil, Search, UserCheck } from "lucide-react";
+import { Check, Search, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -17,89 +17,18 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataQualityPanel, MemberEngagementButton, MemberOwnerSelect } from "@/features/health";
+import { DataQualityPanel, MemberOwnerSelect } from "@/features/health";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { shortDate } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
 import { MEMBER_STATUSES, type MemberStatus } from "@/types/community";
 import { useAdminActions, useAdminData } from "../hooks/use-admin";
-import type { AdminData, AdminMember } from "../services/admin.service";
+import type { AdminData } from "../services/admin.service";
 import { DeclineDialog, TabCount } from "./admin-parts";
-
-const EDITABLE = [
-  { key: "name", label: "Name" },
-  { key: "designation", label: "Designation" },
-  { key: "startup", label: "Startup" },
-  { key: "city", label: "City" },
-  { key: "email", label: "Email" },
-  { key: "whatsapp", label: "WhatsApp" },
-  { key: "linkedin", label: "LinkedIn" },
-  { key: "interests", label: "Interests (comma separated)" },
-  { key: "hobbies", label: "Hobbies (comma separated)" },
-] as const;
-
-function EditMemberDialog({ member }: { member: AdminMember }) {
-  const { editMember } = useAdminActions();
-  const [open, setOpen] = useState(false);
-  const initial = () =>
-    Object.fromEntries(
-      EDITABLE.map(({ key }) => [key, Array.isArray(member[key]) ? (member[key] as string[]).join(", ") : String(member[key] ?? "")]),
-    ) as Record<(typeof EDITABLE)[number]["key"], string>;
-  const [form, setForm] = useState(initial);
-
-  function save() {
-    const list = (v: string) => v.split(",").map((x) => x.trim()).filter(Boolean);
-    editMember.mutate(
-      {
-        id: member.id,
-        patch: { ...form, interests: list(form.interests), hobbies: list(form.hobbies) },
-      },
-      { onSuccess: () => setOpen(false) },
-    );
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={(next) => { setOpen(next); if (next) setForm(initial()); }}>
-      <DialogTrigger render={<Button size="xs" variant="ghost" />}>
-        <Pencil data-icon="inline-start" />
-        Edit
-      </DialogTrigger>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit {member.name}</DialogTitle>
-          <DialogDescription>Corrections publish straight away and are recorded in the activity log.</DialogDescription>
-        </DialogHeader>
-        <FieldGroup>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {EDITABLE.map(({ key, label }) => (
-              <Field key={key} className={key === "interests" || key === "hobbies" ? "sm:col-span-2" : undefined}>
-                <FieldLabel htmlFor={`em-${key}`}>{label}</FieldLabel>
-                <Input id={`em-${key}`} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
-              </Field>
-            ))}
-          </div>
-        </FieldGroup>
-        <DialogFooter>
-          <Button onClick={save} disabled={editMember.isPending || !form.name.trim()}>Save record</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+import { EditMemberButton } from "./member-editor";
 
 function AllRecords({ data }: { data: AdminData }) {
   const { setMemberStatus } = useAdminActions();
@@ -179,8 +108,7 @@ function AllRecords({ data }: { data: AdminData }) {
                 </TableCell>
                 <TableCell>
                   <div className="flex justify-end gap-1">
-                    <EditMemberDialog member={m} />
-                    <MemberEngagementButton memberId={m.id} />
+                    <EditMemberButton memberId={m.id} />
                   </div>
                 </TableCell>
               </TableRow>

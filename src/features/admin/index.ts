@@ -4,6 +4,7 @@
 export { ActivityLogs } from "./components/activity-logs";
 export { AdminGate } from "./components/admin-gate";
 export { AdminOverview } from "./components/admin-overview";
+export { EditMemberButton } from "./components/member-editor";
 export { Automations } from "./components/automations";
 export { DataIntegrations } from "./components/data-integrations";
 export { MemberManagement } from "./components/member-management";

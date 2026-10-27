@@ -177,12 +177,12 @@ function FixField({ member, field, owners }: { member: HealthMember; field: (typ
   if (!field) return <span className="text-xs text-muted-foreground">Ask the member — they can share it from their profile</span>;
   if (field === "owner") return <OwnerSelect member={member} owners={owners} />;
 
-  const placeholder = { linkedin: "linkedin.com/in/…", whatsapp: "10-digit mobile", interests: "Comma separated", hobbies: "Comma separated" }[field];
+  const placeholder = { linkedin: "linkedin.com/in/…", whatsapp: "10-digit mobile", hobbies: "Comma separated" }[field];
   const save = () => {
     const v = value.trim();
     if (!v) return;
     const patch =
-      field === "interests" || field === "hobbies"
+      field === "hobbies"
         ? { [field]: v.split(",").map((x) => x.trim()).filter(Boolean) }
         : { [field]: v.replace(/^https?:\/\//, "") };
     updateMember.mutate({ memberId: member.id, patch });

@@ -1,38 +1,41 @@
 /**
- * The SAMPLE session store — one mutable copy of member records, recorded
- * interactions and admin settings, shared by every service.
+ * The community data store — one copy of every record the dashboard shows,
+ * shared by every service.
  *
- * An admin edit (owner, tags, events attended, a fixed LinkedIn) shows up on
- * People, Overview and Community Health at once, exactly as it will when all
- * of them read from MongoDB. Changes last until the page reloads.
+ * It starts empty and is filled from the Mastersheet (Community Form,
+ * Community Catchups, Vendor Form) when the dashboard opens. Everything else
+ * — interactions, owners, tags, approvals, resources, job listings — is
+ * created by admins and members as they use it. There is no sample data.
+ *
+ * Edits last until the page reloads; MongoDB makes them permanent.
  */
-import type { CommunityEvent, Member } from "@/types/community";
+import type { CommunityEvent, JobListing, Member } from "@/types/community";
 
-import { SAMPLE_AS_OF, addDays, isoDate } from "./dates";
-import { PAST_EVENTS, UPCOMING_EVENTS } from "./events";
-import { MEMBERS, RELATIONSHIP_OWNERS } from "./members";
-import {
-  CONTACT_REQUESTS,
-  DATA_ISSUES,
-  DUPLICATES,
-  PROFILE_CHANGES,
-  REGISTRATIONS,
-  SUBMISSIONS,
-} from "./admin-queues";
+import type { ImportReport } from "@/lib/community-import/parse";
 import {
   AUTOMATIONS,
   DATA_SOURCES,
-  IMPORT_UPDATES,
   PERMISSIONS,
   type AccessRole,
+  type ImportUpdate,
 } from "./admin-config";
+import type {
+  ContactRequest,
+  DataIssue,
+  DuplicateCandidate,
+  ProfileChangeRequest,
+  Registration,
+} from "./admin-queues";
+import { SAMPLE_AS_OF, isoDate } from "./dates";
 import {
-  RECOMMENDATIONS,
-  RESOURCES,
   VENDOR_CATEGORIES,
-  VENDORS,
+  type Recommendation,
+  type Resource,
   type Vendor,
 } from "./library";
+
+/** The community team's relationship owners. */
+export const RELATIONSHIP_OWNERS = ["Shubham", "Ritushree", "Bhuvana"];
 
 // ── Interactions (PRD §8: recorded relationship touchpoints) ────────────────
 
@@ -68,7 +71,6 @@ export interface HealthSettings {
   outcomes: Outcome[];
   owners: string[];
 }
-
 
 // ── Shared queues every section and the admin area read ─────────────────────
 
@@ -123,103 +125,25 @@ export interface ActivityLogEntry {
   change?: string;
 }
 
-const NOTES = [
-  "Checked in on current priorities and community needs.",
-  "Discussed a hiring challenge.",
-  "Talked about an upcoming offsite and vendors.",
-  "Caught up on what the community could do better.",
-  "Shared a few useful resources.",
-  "Commented on their LinkedIn post about hiring.",
-];
-
-const TYPES = ["Phone call", "WhatsApp", "In-person meeting", "Email", "Event conversation", "LinkedIn comment"];
-
-/** Ported from the prototype: a realistic spread of recent, stale and missing contact. */
-function seedInteractions(): Interaction[] {
-  const out: Interaction[] = [];
-  const pattern = ["n", "r2", "r10", "m45", "m75", "o120", "r20", "n", "r6", "m35", "r14", "o140"];
-  const days: Record<string, number> = { r2: 2, r10: 10, r20: 20, r6: 6, r14: 14, m35: 35, m45: 45, m75: 75, o120: 120, o140: 140 };
-
-  MEMBERS.forEach((m, i) => {
-    const joinedAgo = Math.round((SAMPLE_AS_OF.getTime() - new Date(`${m.joinedOn}T00:00`).getTime()) / 86_400_000);
-    const key = pattern[(i * 5 + 2) % 12];
-    let d: number | null = key === "n" || (i < 6 && i % 2 === 0) ? null : days[key];
-    if (d !== null && d > joinedAgo) d = Math.max(0, joinedAgo - 1);
-    const by = m.owner ?? RELATIONSHIP_OWNERS[0];
-
-    if (d !== null) {
-      const followUp = i % 7 === 3;
-      out.push({
-        id: `int${out.length + 1}`,
-        memberId: m.id,
-        type: TYPES[i % TYPES.length],
-        outcome: followUp ? "followup" : "meaningful",
-        date: isoDate(addDays(SAMPLE_AS_OF, -d)),
-        notes: NOTES[i % NOTES.length],
-        nextFollowUp: followUp ? isoDate(addDays(SAMPLE_AS_OF, i % 2 ? -6 : 12)) : "",
-        loggedBy: by,
-      });
-      if (joinedAgo > d + 35) {
-        out.push({
-          id: `int${out.length + 1}`,
-          memberId: m.id,
-          type: TYPES[(i + 2) % TYPES.length],
-          outcome: "meaningful",
-          date: isoDate(addDays(SAMPLE_AS_OF, -(d + 35))),
-          notes: NOTES[(i + 1) % NOTES.length],
-          nextFollowUp: "",
-          loggedBy: by,
-        });
-      }
-    }
-    if (i % 3 === 0 && joinedAgo > 3 && (d !== null || i % 2 === 0)) {
-      out.push({
-        id: `int${out.length + 1}`,
-        memberId: m.id,
-        type: "Phone call",
-        outcome: "attempt",
-        date: isoDate(addDays(SAMPLE_AS_OF, -((i % 3) + 1))),
-        notes: "No answer",
-        nextFollowUp: "",
-        loggedBy: by,
-      });
-    }
-  });
-  return out;
-}
+const INTERACTION_TYPES = ["Phone call", "WhatsApp", "In-person meeting", "Email", "Event conversation", "LinkedIn comment"];
 
 export const communityStore = {
-  members: MEMBERS.map((m) => ({ ...m })),
-  interactions: seedInteractions(),
+  members: [] as Member[],
+  interactions: [] as Interaction[],
   /** Every event, upcoming and past, including ones admins add. */
-  events: [...UPCOMING_EVENTS, ...PAST_EVENTS] as CommunityEvent[],
+  events: [] as CommunityEvent[],
+  /** Job listings — from the feed once connected, or added by admins. */
+  jobs: [] as JobListing[],
   /** memberId → snoozed until (ISO date). */
   snoozes: new Map<string, string>(),
   library: {
-    vendors: [...VENDORS],
+    vendors: [] as Vendor[],
     categories: [...VENDOR_CATEGORIES],
-    resources: [...RESOURCES],
-    recommendations: [...RECOMMENDATIONS],
+    resources: [] as Resource[],
+    recommendations: [] as Recommendation[],
   },
   /** Member vendor suggestions awaiting review (approved ones move to library.vendors). */
-  vendorSuggestions: SUBMISSIONS.filter((s) => s.kind === "Vendor").map<VendorSuggestion>((s) => ({
-    id: s.id,
-    vendor: {
-      name: s.name,
-      category: s.category,
-      description: s.description,
-      city: s.id === "s1" ? "Bangalore" : "Goa",
-      area: "",
-      phone: "",
-      website: s.id === "s1" ? "brewhouse.example" : "heritagegoa.example",
-      instagram: "",
-      email: "",
-      note: "",
-    },
-    submittedBy: s.submittedBy,
-    submittedOn: isoDate(addDays(SAMPLE_AS_OF, s.submittedAt === "Today" ? 0 : -1)),
-    status: "pending",
-  })),
+  vendorSuggestions: [] as VendorSuggestion[],
   /** Member-hosted sessions awaiting review (approved ones move to events). */
   hostedSubmissions: [] as HostedSessionRecord[],
   birthday: {
@@ -227,12 +151,12 @@ export const communityStore = {
     defaults: { offsetDays: 0, time: "09:00" },
   },
   admin: {
-    registrations: [...REGISTRATIONS],
-    profileChanges: [...PROFILE_CHANGES],
-    contactRequests: [...CONTACT_REQUESTS],
-    duplicates: [...DUPLICATES],
-    importUpdates: [...IMPORT_UPDATES],
-    issues: [...DATA_ISSUES],
+    registrations: [] as Registration[],
+    profileChanges: [] as ProfileChangeRequest[],
+    contactRequests: [] as ContactRequest[],
+    duplicates: [] as DuplicateCandidate[],
+    importUpdates: [] as ImportUpdate[],
+    issues: [] as DataIssue[],
     sources: DATA_SOURCES.map((s) => ({ ...s })),
     automations: AUTOMATIONS.map((a) => ({ ...a })),
     permissions: PERMISSIONS.map((p) => ({ ...p, roles: { ...p.roles } })),
@@ -246,7 +170,7 @@ export const communityStore = {
     windows: [15, 30, 60, 90],
     thresholds: { t1: 30, t2: 60, t3: 90 },
     newMemberDays: 30,
-    interactionTypes: [...TYPES],
+    interactionTypes: [...INTERACTION_TYPES],
     outcomes: [
       { key: "meaningful", label: "Connected / meaningful interaction", meaningful: true },
       { key: "attempt", label: "Attempted contact, no response", meaningful: false },
@@ -273,46 +197,49 @@ export function logAdminAction(entry: Omit<ActivityLogEntry, "id" | "at" | "acto
   ];
 }
 
-// ── Real community data ─────────────────────────────────────────────────────
+// ── Loading the Mastersheet ─────────────────────────────────────────────────
 
-export interface CommunitySource {
-  kind: "sample" | "community-form";
-  importedAt?: string;
-  report?: import("@/lib/community-import/parse").ImportReport;
+export interface CommunityImportPayload {
+  importedAt: string;
+  members: Member[];
+  events: CommunityEvent[];
+  vendors: Vendor[];
+  vendorCategories: string[];
+  report: ImportReport;
+  /** Which Mastersheet tabs were found. */
+  loaded: { members: boolean; events: boolean; vendors: boolean };
 }
 
-export let communitySource: CommunitySource = { kind: "sample" };
+export interface CommunitySource {
+  kind: "empty" | "mastersheet";
+  importedAt?: string;
+  report?: ImportReport;
+  loaded?: CommunityImportPayload["loaded"];
+}
 
-/**
- * Replace the sample community with the real one from the Community Form.
- *
- * Only what the form actually says is kept. Everything the sample data had
- * invented about these people — interactions, owners, logins, event
- * attendance, review queues — starts empty, and fills up as admins work.
- * Library, job listings and the admin configuration stay as they are.
- */
-export function applyCommunityImport(data: import("@/lib/community-import/parse").CommunityImport) {
+export let communitySource: CommunitySource = { kind: "empty" };
+
+/** Fill the store from the Mastersheet export. */
+export function applyCommunityImport(data: CommunityImportPayload) {
   communityStore.members = data.members.map((m) => ({ ...m }));
   communityStore.events = [...data.events];
-  communityStore.interactions = [];
-  communityStore.snoozes = new Map();
-  communityStore.hostedSubmissions = [];
-  communityStore.birthday.overrides = new Map();
-  const admin = communityStore.admin;
-  admin.registrations = [];
-  admin.profileChanges = [];
-  admin.contactRequests = [];
-  admin.duplicates = [];
-  admin.importUpdates = [];
-  admin.issues = [
+  communityStore.library.vendors = [...data.vendors];
+  communityStore.library.categories = [...new Set([...VENDOR_CATEGORIES, ...data.vendorCategories])];
+
+  communityStore.admin.issues = [
     ...data.report.invalid.linkedin.map((name, i) => ({ id: `imp-li-${i}`, severity: "warning" as const, at: "On import", source: "Community Form", message: `${name}: LinkedIn isn't a profile link` })),
     ...data.report.invalid.whatsapp.map((name, i) => ({ id: `imp-wa-${i}`, severity: "warning" as const, at: "On import", source: "Community Form", message: `${name}: WhatsApp number isn't a valid mobile` })),
   ];
-  admin.sources = admin.sources.map((s) => (s.id === "members" ? { ...s, name: "Community Form (Google Sheets)", minutesSinceSync: 0, status: "ok" as const } : s));
-  communitySource = { kind: "community-form", importedAt: data.importedAt, report: data.report };
+  communityStore.admin.sources = communityStore.admin.sources.map((s) =>
+    s.id === "jobs" || !data.loaded[s.id] ? s : { ...s, minutesSinceSync: 0, status: "ok" as const },
+  );
+  communitySource = { kind: "mastersheet", importedAt: data.importedAt, report: data.report, loaded: data.loaded };
 }
 
 /** A member's real photo, looked up by name for avatars that only know the name. */
 export function memberPhoto(name: string) {
   return communityStore.members.find((m) => m.name === name)?.photoUrl ?? null;
 }
+
+/** Today, for records created now. */
+export const todayIso = () => isoDate(SAMPLE_AS_OF);

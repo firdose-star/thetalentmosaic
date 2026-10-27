@@ -24,15 +24,15 @@ export const PREVIEW_USERS: Record<PreviewRole, CurrentUser> = {
   admin: {
     ...base,
     id: "preview-admin",
-    name: "Aarav Shah",
-    email: "aarav@talentmosaic.example",
+    name: "Firdose",
+    email: "firdose@mesaschool.co",
     role: "admin",
   },
   member: {
     ...base,
     id: "preview-member",
-    name: "Rohan Mehta",
-    email: "rohan.mehta@nimbuslabs.example",
+    name: "Member preview",
+    email: "member.preview@talentmosaic.local",
     role: "member",
   },
 };

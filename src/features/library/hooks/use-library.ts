@@ -81,3 +81,16 @@ export function useCategoryMutations() {
     remove: useMutation({ mutationFn: libraryService.removeCategory, onSuccess: refresh, onError }),
   };
 }
+
+/** Admin: add and remove vendors, add, edit and remove resources. */
+export function useLibraryAdmin() {
+  const queryClient = useQueryClient();
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: queryKeys.library.all });
+  const onError = (error: unknown) => notify.fromError(error, "Could not save");
+  return {
+    createVendor: useMutation({ mutationFn: libraryService.createVendor, onSuccess: (v) => { refresh(); notify.success(`${v.name} added`); }, onError }),
+    deleteVendor: useMutation({ mutationFn: libraryService.deleteVendor, onSuccess: () => { refresh(); notify.success("Vendor removed"); }, onError }),
+    saveResource: useMutation({ mutationFn: libraryService.saveResource, onSuccess: (r) => { refresh(); notify.success(`${r.title} saved`); }, onError }),
+    deleteResource: useMutation({ mutationFn: libraryService.deleteResource, onSuccess: () => { refresh(); notify.success("Resource removed"); }, onError }),
+  };
+}

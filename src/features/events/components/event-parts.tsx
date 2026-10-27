@@ -1,10 +1,11 @@
 /**
  * Small pieces shared by the events views and the detail page.
  */
-import { ImageIcon, ShieldCheck, Trophy, UserRound } from "lucide-react";
+import { Images, ShieldCheck, Sparkles, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { parseDay } from "@/lib/community";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -83,21 +84,23 @@ export function HostLine({ event, className }: { event: EventView; className?: s
   );
 }
 
-const PHOTO_TONES = ["from-chart-2/60 to-accent", "from-chart-3/60 to-accent", "from-chart-4/50 to-accent", "from-chart-5/70 to-accent"];
-
-/** Photo strip placeholder until real photographs are uploaded. */
-export function PhotoStrip({ count, max = 4 }: { count: number; max?: number }) {
+/** Links to the catchup's highlight ("Moments") and full photo folder on Drive. */
+export function EventMedia({ event }: { event: CommunityEvent }) {
+  if (!event.momentsUrl && !event.photosUrl) return null;
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {Array.from({ length: Math.min(max, count) }).map((_, i) => (
-        <span
-          key={i}
-          className={cn("flex h-12 w-16 items-center justify-center rounded-lg bg-linear-to-br", PHOTO_TONES[i % PHOTO_TONES.length])}
-        >
-          <ImageIcon className="size-4 text-foreground/40" aria-hidden />
-        </span>
-      ))}
-      <span className="ml-1 text-xs text-muted-foreground">{count} photos</span>
+    <div className="flex flex-wrap gap-2">
+      {event.momentsUrl && (
+        <Button size="sm" variant="outline" nativeButton={false} render={<a href={event.momentsUrl} target="_blank" rel="noopener noreferrer" />}>
+          <Sparkles data-icon="inline-start" />
+          Moments
+        </Button>
+      )}
+      {event.photosUrl && event.photosUrl !== event.momentsUrl && (
+        <Button size="sm" variant="outline" nativeButton={false} render={<a href={event.photosUrl} target="_blank" rel="noopener noreferrer" />}>
+          <Images data-icon="inline-start" />
+          All photos
+        </Button>
+      )}
     </div>
   );
 }

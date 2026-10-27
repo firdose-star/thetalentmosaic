@@ -26,9 +26,11 @@ const STATUS = {
   ok: { label: "Healthy", tone: "bg-accent text-primary", icon: CheckCircle2 },
   warn: { label: "Needs attention", tone: "bg-chart-3/20 text-foreground", icon: AlertTriangle },
   bad: { label: "Failing", tone: "bg-destructive/10 text-destructive", icon: CircleAlert },
+  off: { label: "Not connected", tone: "bg-muted text-muted-foreground", icon: CircleAlert },
 };
 
-function syncedText(minutes: number) {
+function syncedText(minutes: number | null) {
+  if (minutes === null) return "Never loaded";
   if (minutes < 1) return "Synced just now";
   if (minutes < 60) return `Synced ${minutes} min ago`;
   return `Synced ${Math.round(minutes / 60)} h ago`;
@@ -249,11 +251,11 @@ function ErrorMonitor({ data }: { data: AdminData }) {
 /** What the Community Form import did, and what still needs fixing. */
 function CommunityFormReport({ data }: { data: AdminData }) {
   const r = data.source.report;
-  if (data.source.kind !== "community-form" || !r) {
+  if (data.source.kind !== "mastersheet" || !r) {
     return (
-      <Section title="Community Form" description="Not connected — the dashboard is showing sample members.">
+      <Section title="Mastersheet" description="Not connected — the dashboard has no community data yet.">
         <p className="text-sm text-muted-foreground">
-          Put the form export at <code className="rounded bg-muted px-1">data/community-form.csv</code> and reload to see the real community.
+          Export the Mastersheet tabs to <code className="rounded bg-muted px-1">data/community-form.csv</code>, <code className="rounded bg-muted px-1">data/community-catchups.csv</code> and <code className="rounded bg-muted px-1">data/vendor-form.csv</code>, then reload.
         </p>
       </Section>
     );
@@ -268,12 +270,14 @@ function CommunityFormReport({ data }: { data: AdminData }) {
     ["WhatsApp missing", r.missingWhatsapp, `${r.invalid.whatsapp.length} more not a valid mobile: ${list(r.invalid.whatsapp)}`],
     ["Years in HR missing", r.missingYoe, "The form column is empty for everyone"],
     ["Opted out of the directory", r.directoryConsentNo.length, `Hidden from members, visible to admins: ${list(r.directoryConsentNo)}`],
-    ["Events named in the form", r.events.length, list(r.events)],
+    ["Catchups loaded", r.catchups ?? 0, "From the Community Catchups tab"],
+    ["Vendors loaded", r.vendors ?? 0, "From the Vendor Form tab"],
+    ["Form events with no matching catchup", r.unmatchedEvents?.length ?? 0, list(r.unmatchedEvents ?? [])],
   ];
 
   return (
     <Section
-      title="Community Form"
+      title="Mastersheet"
       description={`Live source for members · imported ${new Date(data.source.importedAt ?? "").toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}`}
       actions={<Badge className="bg-accent text-primary">Connected</Badge>}
     >

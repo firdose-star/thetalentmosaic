@@ -1,20 +1,16 @@
 /**
  * Global search (spec §5, PRD §6.6): name, startup, designation, location, HR
- * function, expertise, interest, vendor, job title or event — grouped by
+ * function, hobby, vendor, job title or event — grouped by
  * category and filtered by what the viewer may see.
  *
- * Computed from the SAMPLE dataset for now. Swap the body of `search` for
+ * Computed from the community store (the Mastersheet) for now. Swap the body of `search` for
  *   api.get<SearchGroup[]>(`${ENDPOINTS.search}?q=...`)
  * once the API exists; the server must apply the same permission rules.
  */
 import { ROUTES } from "@/lib/constants";
 import {
-  JOBS,
+  communityStore,
   currentMembers,
-  PAST_EVENTS,
-  RESOURCES,
-  UPCOMING_EVENTS,
-  VENDORS,
 } from "@/lib/sample-data";
 import { shortDate } from "@/lib/community";
 import type { Role } from "@/types/enums";
@@ -42,7 +38,6 @@ export const searchService = {
             m.city,
             m.hrFunction,
             m.seniority,
-            ...m.interests,
             ...m.hobbies,
             // Contact details are admin only (spec §6.3).
             isAdmin ? m.email : undefined,
@@ -56,7 +51,7 @@ export const searchService = {
       },
       {
         category: "Vendors",
-        results: VENDORS.filter((v) => has(v.name, v.category, v.description, v.city, v.area)).map(
+        results: communityStore.library.vendors.filter((v) => has(v.name, v.category, v.description, v.city, v.area)).map(
           (v) => ({
             id: v.id,
             title: v.name,
@@ -67,7 +62,7 @@ export const searchService = {
       },
       {
         category: "Resources",
-        results: RESOURCES.filter(
+        results: communityStore.library.resources.filter(
           (r) => (isAdmin || r.access !== "Admins") && has(r.title, r.category, r.description),
         ).map((r) => ({
           id: r.id,
@@ -78,7 +73,7 @@ export const searchService = {
       },
       {
         category: "Roles",
-        results: JOBS.filter(
+        results: communityStore.jobs.filter(
           (j) => j.status === "active" && has(j.title, j.company, j.location, j.hrFunction),
         ).map((j) => ({
           id: j.id,
@@ -89,7 +84,7 @@ export const searchService = {
       },
       {
         category: "Events",
-        results: [...UPCOMING_EVENTS, ...PAST_EVENTS]
+        results: communityStore.events
           .filter((e) => has(e.title, e.city, e.category))
           .map((e) => ({
             id: e.id,

@@ -16,6 +16,7 @@ import {
   ResultCount,
 } from "@/components/shared/filter-bar";
 import { Stagger, StaggerItem } from "@/components/shared/motion";
+import { RoleGuard } from "@/components/shared/role-guard";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/state-views";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -34,6 +35,7 @@ import {
   type JobFilterKey,
 } from "../filters";
 import { useOpportunities } from "../hooks/use-opportunities";
+import { DeleteJobButton, JobFormDialog } from "./job-form-dialog";
 import { ListingManagement } from "./listing-management";
 
 const LABELS: Record<JobFilterKey, string> = {
@@ -79,6 +81,12 @@ function JobCard({ job }: { job: JobListing }) {
           </div>
         </Card>
       </Link>
+      <RoleGuard allow={["admin"]}>
+        <div className="mt-1 flex justify-end gap-1">
+          <JobFormDialog job={job} />
+          <DeleteJobButton job={job} />
+        </div>
+      </RoleGuard>
     </motion.div>
   );
 }
@@ -102,6 +110,12 @@ export function JobBoard() {
 
   const board = (
     <div className="flex flex-col gap-4">
+      <RoleGuard allow={["admin"]}>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-accent/60 p-3 text-sm">
+          <span>The job feed isn&apos;t connected yet — add roles by hand and they appear here straight away.</span>
+          <JobFormDialog />
+        </div>
+      </RoleGuard>
       <FilterPanel>
         <div className="grid grid-cols-2 gap-2 @3xl/main:grid-cols-4">
           <FilterSelect label="Role" allLabel="All roles" value={values.role} options={HR_FUNCTIONS} onChange={(v) => set("role", v)} />
@@ -117,7 +131,7 @@ export function JobBoard() {
       </FilterPanel>
 
       {jobs.length === 0 ? (
-        <EmptyState icon={Briefcase} title="No roles match these filters" description="Try removing a filter." />
+        <EmptyState icon={Briefcase} title={active.length === 0 ? "No roles posted yet" : "No roles match these filters"} description={active.length === 0 ? "Roles will appear here once the job feed is connected or the team adds them." : "Try removing a filter."} />
       ) : (
         <>
           <ResultCount count={jobs.length} noun={["role", "roles"]} />
