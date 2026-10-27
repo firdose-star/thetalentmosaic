@@ -20,14 +20,14 @@ export const siteConfig = {
     support: "mailto:firdose@mesaschool.co",
   },
   /**
-   * "Have questions?" contact on Overview (PRD §1). Add the WhatsApp number
-   * (wa.me link) and LinkedIn URL here and their buttons appear.
+   * "Have questions?" contact on Overview (PRD §1). Set either link to null
+   * to hide its button.
    */
   communityContact: {
     name: "Firdose",
     email: "firdose@mesaschool.co",
-    whatsappUrl: null as string | null,
-    linkedinUrl: null as string | null,
+    whatsappUrl: "https://wa.me/919916577315" as string | null,
+    linkedinUrl: "https://www.linkedin.com/in/firdose-fathima" as string | null,
   },
 } as const;
 
