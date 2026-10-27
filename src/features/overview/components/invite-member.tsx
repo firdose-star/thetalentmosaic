@@ -1,20 +1,19 @@
 "use client";
 
 /**
- * "Know an HR professional?" — members invite someone they know by sharing
- * the registration form. Open it, copy the link, or send it on WhatsApp.
+ * "Know someone?" — members invite someone they know. One button: it copies
+ * the registration form link (to send on) and opens the form in a new tab.
  */
-import { Check, Copy, ExternalLink, MessageCircle, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCopyToClipboard } from "@/hooks";
 import { siteConfig } from "@/lib/config/site";
-
-const INVITE_MESSAGE = `I think you'd be a great fit for The Talent Mosaic — a peer-led community of HR professionals across startups. Register here: ${siteConfig.inviteFormUrl}`;
+import { notify } from "@/lib/toast";
 
 export function InviteMember() {
-  const { copied, copy } = useCopyToClipboard();
+  const { copy } = useCopyToClipboard();
   const url = siteConfig.inviteFormUrl;
 
   return (
@@ -26,28 +25,22 @@ export function InviteMember() {
         <div>
           <h2 className="text-base font-semibold">Invite an HR professional</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Know an HR professional who&apos;d be a great fit for our community? Invite them to register and become a part of The Talent Mosaic.
+            Know someone who&apos;d be a great fit for our community? Invite them to register and become a part of The Talent Mosaic.
           </p>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Button nativeButton={false} render={<a href={url} target="_blank" rel="noopener noreferrer" />}>
-          <ExternalLink data-icon="inline-start" />
-          Open invite form
-        </Button>
-        <Button variant="outline" onClick={() => void copy(url)}>
-          {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
-          {copied ? "Link copied" : "Copy link"}
-        </Button>
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<a href={`https://wa.me/?text=${encodeURIComponent(INVITE_MESSAGE)}`} target="_blank" rel="noopener noreferrer" />}
-        >
-          <MessageCircle data-icon="inline-start" />
-          Share on WhatsApp
-        </Button>
-      </div>
+      <Button
+        size="lg"
+        nativeButton={false}
+        // A real link, so the new tab is never blocked; the click also copies it.
+        render={<a href={url} target="_blank" rel="noopener noreferrer" />}
+        onClick={() => {
+          void copy(url).then((ok) => ok && notify.success("Invite link copied — share it with them"));
+        }}
+      >
+        <UserPlus data-icon="inline-start" />
+        Invite
+      </Button>
     </Card>
   );
 }
