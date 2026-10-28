@@ -31,6 +31,7 @@ import type { CommunityEvent } from "@/types/community";
 import { useEventAdminActions, useEventAttendees, useEventMemberOptions } from "../hooks/use-events";
 import { adminEventSchema, type AdminEventInput } from "../schemas";
 import type { PersonRef } from "../services/events.service";
+import { EventPhotoUploader } from "./event-photos";
 
 const EMPTY: AdminEventInput = {
   title: "",
@@ -168,6 +169,17 @@ export function EventFormDialog({ event, size = "default" }: { event?: Community
               {text("momentsUrl", "Moments (Drive link)", { placeholder: "https://drive.google.com/…" })}
               {text("photosUrl", "Photos folder (Drive link)", { placeholder: "https://drive.google.com/…" })}
             </div>
+            <Field>
+              <FieldLabel>Event photos</FieldLabel>
+              {event ? (
+                <>
+                  <EventPhotoUploader event={event} />
+                  <FieldDescription>Uploads appear on the event straight away. Pick or remove photos on the event page.</FieldDescription>
+                </>
+              ) : (
+                <FieldDescription>Save the event first, then upload its photos here or on the event page.</FieldDescription>
+              )}
+            </Field>
           </FieldGroup>
         </form>
         <DialogFooter>

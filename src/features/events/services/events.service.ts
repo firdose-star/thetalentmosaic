@@ -245,8 +245,8 @@ export const eventsService = {
     currentMembers().map((m) => ({ id: m.id, name: m.name })).sort((a, b) => a.name.localeCompare(b.name)),
 
   /** The event's photos from its Drive links: the Moments hero and the hand-picked best. */
-  album: (event: Pick<CommunityEvent, "momentsUrl" | "photosUrl">) =>
-    loadEventAlbum({ moments: event.momentsUrl, photos: event.photosUrl }),
+  album: (event: Pick<CommunityEvent, "id" | "momentsUrl" | "photosUrl">) =>
+    loadEventAlbum({ moments: event.momentsUrl, photos: event.photosUrl, event: event.id }),
 
   /** Admin: save the photos members see for an event (up to 30). */
   saveHighlights: async ({ albumKey, ids, hidden, title }: { albumKey: string; ids: string[]; hidden?: string[]; title: string }) => {

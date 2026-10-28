@@ -26,6 +26,8 @@ export const BEST_MAX = 30;
 export interface EventAlbum {
   hero: string | null;
   best: string[];
+  /** True when the cover is one of the picks (no Moments picture), so saves must keep it. */
+  heroIsPick: boolean;
   /** Admin picking only. */
   candidates: string[];
   /** Removed by an admin; kept so they can be restored. */
@@ -132,7 +134,7 @@ function bestFirst(ids: string[], known: Record<string, Scored>) {
   return [...kept, ...ids.filter((id) => !known[id])];
 }
 
-export async function buildAlbum(links: { moments?: string | null; photos?: string | null }): Promise<EventAlbum> {
+export async function buildAlbum(links: { moments?: string | null; photos?: string | null; event?: string | null }): Promise<EventAlbum> {
   const moments = parseDriveUrl(links.moments);
   const folder = parseDriveUrl(links.photos);
 
@@ -144,7 +146,8 @@ export async function buildAlbum(links: { moments?: string | null; photos?: stri
 
   // Picks are saved per album: the Photos [All] folder, or the Moments link
   // when an event has no folder. They may include photos added by link.
-  const albumKey = folderId ?? folder?.id ?? moments?.id ?? null;
+  // An event with no Drive links keeps its uploads under its own id.
+  const albumKey = folderId ?? folder?.id ?? moments?.id ?? links.event ?? null;
   const hidden = new Set(albumKey ? (await readHidden())[albumKey] ?? [] : []);
   const best = (albumKey ? (await readPicks())[albumKey] ?? [] : []).filter((id) => !hidden.has(id));
   // The Moments picture leads unless an admin removed it; then the first pick does.
@@ -157,6 +160,7 @@ export async function buildAlbum(links: { moments?: string | null; photos?: stri
   return {
     hero,
     best: best.filter((id) => id !== hero).slice(0, BEST_MAX),
+    heroIsPick: hero !== null && best.includes(hero),
     hidden: [...hidden],
     // Removed Moments pictures stay pickable, so an admin can bring them back.
     candidates: [...momentIds.filter((id) => hidden.has(id)), ...bestFirst(folderIds.filter((id) => id !== hero), known)],

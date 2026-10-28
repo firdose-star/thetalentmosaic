@@ -138,11 +138,10 @@ export function useEventAttendees(eventId: string, enabled: boolean) {
  * An event's photos. While the folder is still being ranked for admins, checks back
  * every 20 seconds so the picker shows the best first.
  */
-export function useEventAlbum(event: { momentsUrl?: string; photosUrl?: string }) {
+export function useEventAlbum(event: { id: string; momentsUrl?: string; photosUrl?: string }) {
   return useQuery({
-    queryKey: queryKeys.events.album(event.momentsUrl, event.photosUrl),
+    queryKey: queryKeys.events.album(event.id, event.momentsUrl, event.photosUrl),
     queryFn: () => eventsService.album(event),
-    enabled: Boolean(event.momentsUrl || event.photosUrl),
     staleTime: 5 * 60_000,
     refetchInterval: (query) => (query.state.data?.ranking === "scoring" ? 20_000 : false),
   });

@@ -6,6 +6,8 @@ export interface EventAlbum {
   hero: string | null;
   /** The hand-picked photos members see (up to 30). */
   best: string[];
+  /** True when the cover is one of the picks (no Moments picture), so saves must keep it. */
+  heroIsPick: boolean;
   /** Admin picking only: the whole folder, best-scored first, burst shots left out. */
   candidates: string[];
   /** Removed by an admin (e.g. the Moments picture); kept so they can be restored. */
@@ -22,10 +24,11 @@ export type PhotoSize = "thumb" | "large";
 
 export const photoUrl = (id: string, size: PhotoSize = "thumb") => `/api/drive/image/${id}?size=${size}`;
 
-export async function loadEventAlbum(links: { moments?: string; photos?: string }): Promise<EventAlbum> {
+export async function loadEventAlbum(links: { moments?: string; photos?: string; event: string }): Promise<EventAlbum> {
   const query = new URLSearchParams();
   if (links.moments) query.set("moments", links.moments);
   if (links.photos) query.set("photos", links.photos);
+  query.set("event", links.event);
   const response = await fetch(`/api/drive/album?${query}`, { cache: "no-store" });
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;

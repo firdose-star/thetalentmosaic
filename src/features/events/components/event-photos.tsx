@@ -24,10 +24,13 @@ import { cn } from "@/lib/utils";
 import type { CommunityEvent } from "@/types/community";
 import { useEventAlbum, useSaveHighlights, useUploadPhotos } from "../hooks/use-events";
 
-type PhotoEvent = Pick<CommunityEvent, "title" | "momentsUrl" | "photosUrl">;
+type PhotoEvent = Pick<CommunityEvent, "id" | "title" | "momentsUrl" | "photosUrl">;
 
 /** What the gallery shows: every photo as a grid, one photo full size, or the admin picker. */
 type GalleryView = { mode: "grid" } | { mode: "photo"; index: number } | { mode: "pick" } | null;
+
+/** Every picked photo, the cover included when it is a pick — what saves write back. */
+const allPicks = (album: EventAlbum) => (album.heroIsPick && album.hero ? [album.hero, ...album.best] : album.best);
 
 /** The photos members see, in order: the Moments picture, then the picks. */
 const shown = (album: EventAlbum) => [...(album.hero ? [album.hero] : []), ...album.best];
@@ -99,7 +102,7 @@ function PhotoGallery({
 }) {
   const isAdmin = useAuth().user?.role === "admin";
   const save = useSavePhotos(event);
-  const [picks, setPicks] = useState<string[]>(album.best);
+  const [picks, setPicks] = useState<string[]>(allPicks(album));
   const [link, setLink] = useState("");
   const linkId = driveFileId(link);
   const photos = shown(album);
@@ -133,14 +136,14 @@ function PhotoGallery({
   /** The current photo, removed straight away — the Moments picture included. */
   function removeShown() {
     const id = photos[index];
-    const rest = album.best.filter((x) => x !== id);
+    const rest = allPicks(album).filter((x) => x !== id);
     const left = photos.length - 1;
     setPicks(rest);
     save.save(
       album,
       rest,
       () => onViewChange(left ? { mode: "photo", index: Math.min(index, left - 1) } : null),
-      id === album.hero ? [...album.hidden, id] : undefined,
+      id === album.hero && !album.heroIsPick ? [...album.hidden, id] : undefined,
     );
   }
 
@@ -236,7 +239,7 @@ function PhotoGallery({
                 Pick 20–30: not repeated, sharp, two or three clear faces, easy to understand.
                 {album.ranking === "scoring" && " Still ranking this folder — the order improves in a minute."}
               </span>
-              <Button variant="ghost" size="sm" onClick={() => { setPicks(album.best); onViewChange({ mode: "grid" }); }}>Cancel</Button>
+              <Button variant="ghost" size="sm" onClick={() => { setPicks(allPicks(album)); onViewChange({ mode: "grid" }); }}>Cancel</Button>
               <Button size="sm" onClick={savePicks} disabled={save.isPending}>
                 Save {picks.length} photos
               </Button>
@@ -297,7 +300,6 @@ export function EventHero({ event }: { event: PhotoEvent }) {
   const photos = useSavePhotos(event);
   const isAdmin = useAuth().user?.role === "admin";
   const [view, setView] = useState<GalleryView>(null);
-  if (!event.momentsUrl && !event.photosUrl) return null;
   if (isError) return <PhotosUnavailable />;
   if (isPending) return <Skeleton className="aspect-21/9 w-full rounded-xl" />;
   if (!album.hero) return null;
@@ -312,7 +314,11 @@ export function EventHero({ event }: { event: PhotoEvent }) {
             variant="destructive"
             className="absolute top-3 right-3 opacity-90 shadow hover:opacity-100"
             // Removing the cover hides it; the next photo becomes the cover.
-            onClick={() => photos.save(album, album.best.filter((id) => id !== hero), undefined, [...album.hidden, hero])}
+            onClick={() =>
+              album.heroIsPick
+                ? photos.save(album, allPicks(album).filter((id) => id !== hero))
+                : photos.save(album, album.best, undefined, [...album.hidden, hero])
+            }
             disabled={photos.isPending}
           >
             <Trash2 data-icon="inline-start" />
@@ -367,7 +373,7 @@ export function EventPhotos({ event }: { event: PhotoEvent }) {
                   size="icon-xs"
                   variant="destructive"
                   className="absolute top-1.5 right-1.5 rounded-full opacity-90 shadow hover:opacity-100"
-                  onClick={() => photos.save(album, album.best.filter((x) => x !== id))}
+                  onClick={() => photos.save(album, allPicks(album).filter((x) => x !== id))}
                   disabled={photos.isPending}
                   aria-label={`Remove photo ${i + 1} from this event`}
                 >
@@ -382,29 +388,31 @@ export function EventPhotos({ event }: { event: PhotoEvent }) {
         <div className="flex flex-wrap justify-end gap-2">
           <UploadPhotosButton
             event={event}
-            room={BEST_MAX - album.best.length}
-            onUploaded={(ids) => photos.save(album, [...album.best, ...ids].slice(0, BEST_MAX))}
+            room={BEST_MAX - allPicks(album).length}
+            onUploaded={(ids) => photos.save(album, [...allPicks(album), ...ids].slice(0, BEST_MAX))}
           />
           {pickButton}
         </div>
       )}
-      <PhotoGallery key={album.best.join()} event={event} album={album} view={view} onViewChange={setView} />
+      <PhotoGallery key={[album.hero, ...album.best].join()} event={event} album={album} view={view} onViewChange={setView} />
     </div>
   );
 }
 
-/** Timeline card: the Moments picture plus a strip of the picked photos. */
+/** Timeline card: the Moments picture plus a strip of the picked photos; admins also get the photo controls. */
 export function EventCover({ event }: { event: PhotoEvent }) {
   const { data: album, isPending, isError } = useEventAlbum(event);
+  const photos = useSavePhotos(event);
+  const isAdmin = useAuth().user?.role === "admin";
   const [view, setView] = useState<GalleryView>(null);
-  if (!event.momentsUrl && !event.photosUrl) return null;
   if (isError) return <PhotosUnavailable />;
   if (isPending) return <Skeleton className="aspect-video max-h-72 w-full rounded-xl" />;
-  if (!album.hero) return null;
   const strip = album.best.slice(0, 5);
+  const canEdit = isAdmin && album.albumKey !== null;
+  if (!album.hero && !canEdit) return null;
   return (
     <div className="flex flex-col gap-2">
-      <HeroImage album={album} title={event.title} onOpen={() => setView({ mode: "grid" })} className="aspect-video max-h-72" />
+      {album.hero && <HeroImage album={album} title={event.title} onOpen={() => setView({ mode: "grid" })} className="aspect-video max-h-72" />}
       {strip.length > 0 && (
         <ul className="grid grid-cols-5 gap-2">
           {strip.map((id, i) => (
@@ -416,7 +424,47 @@ export function EventCover({ event }: { event: PhotoEvent }) {
           ))}
         </ul>
       )}
-      <PhotoGallery event={event} album={album} view={view} onViewChange={setView} />
+      {canEdit && (
+        <div className="flex flex-wrap items-center gap-2">
+          <UploadPhotosButton
+            event={event}
+            room={BEST_MAX - allPicks(album).length}
+            onUploaded={(ids) => photos.save(album, [...allPicks(album), ...ids].slice(0, BEST_MAX))}
+          />
+          <Button size="sm" variant="outline" onClick={() => setView({ mode: "pick" })}>
+            <Star data-icon="inline-start" />
+            Add or remove photos
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            {allPicks(album).length} of {BEST_MAX} photos{album.hero && !album.heroIsPick ? " + cover" : ""}
+          </span>
+        </div>
+      )}
+      <PhotoGallery key={[album.hero, ...album.best].join()} event={event} album={album} view={view} onViewChange={setView} />
+    </div>
+  );
+}
+
+/**
+ * Edit event form: upload photos straight onto the event, and see how many it
+ * has. Picking and removing happen on the event page.
+ */
+export function EventPhotoUploader({ event }: { event: PhotoEvent }) {
+  const { data: album, isPending } = useEventAlbum(event);
+  const photos = useSavePhotos(event);
+  if (isPending || !album) return <Skeleton className="h-9 w-48 rounded-md" />;
+  const count = allPicks(album).length;
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <UploadPhotosButton
+        event={event}
+        room={BEST_MAX - count}
+        onUploaded={(ids) => photos.save(album, [...allPicks(album), ...ids].slice(0, BEST_MAX))}
+      />
+      <span className="text-sm text-muted-foreground">
+        {count} of {BEST_MAX} photos{album.hero && !album.heroIsPick ? " plus the cover" : ""}
+        {count >= BEST_MAX && " — remove some on the event page to add more"}
+      </span>
     </div>
   );
 }

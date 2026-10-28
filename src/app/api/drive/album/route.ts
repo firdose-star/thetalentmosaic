@@ -1,12 +1,13 @@
 /**
  * GET /api/drive/album?moments=<Drive link>&photos=<Drive link> — an event's
  * photos: the hero (Moments), the hand-picked best, and (for admins) the rest. See
- * src/lib/drive/album.ts. Only Google Drive links are accepted.
+ * src/lib/drive/album.ts. Only Google Drive links are accepted; `event` (the
+ * event id) holds uploaded photos for an event with no Drive links.
  */
 import { NextResponse, type NextRequest } from "next/server";
 
 import { badRequest, serverError } from "@/app/api/_lib/api-response";
-import { parseDriveUrl } from "@/lib/drive";
+import { isDriveId, parseDriveUrl } from "@/lib/drive";
 import { buildAlbum } from "@/lib/drive/album";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +19,12 @@ export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams;
   const moments = driveLink(query.get("moments"));
   const photos = driveLink(query.get("photos"));
-  if (!moments && !photos) return badRequest("Pass a Google Drive link as moments or photos");
+  const eventId = query.get("event");
+  const event = eventId && isDriveId(eventId) ? eventId : null;
+  if (!moments && !photos && !event) return badRequest("Pass a Google Drive link as moments or photos, or an event id");
 
   try {
-    return NextResponse.json(await buildAlbum({ moments, photos }), { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(await buildAlbum({ moments, photos, event }), { headers: { "Cache-Control": "no-store" } });
   } catch {
     return serverError("Couldn't read the Drive folder — is it shared as 'Anyone with the link'?");
   }
