@@ -19,6 +19,7 @@ import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppTopbar } from "@/components/layout/app-topbar";
 import { BuiltByMesa } from "@/components/layout/brand";
+import { NoDataBanner } from "@/components/layout/data-source-badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
@@ -33,6 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               reflow when the SIDEBAR collapses, not just when the viewport
               resizes. Viewport breakpoints are wrong inside a shell. */}
           <main className="@container/main mx-auto flex w-full max-w-[110rem] flex-col gap-5 p-4 md:p-6">
+            <NoDataBanner />
             {children}
           </main>
           <footer className="border-t px-4 py-5">
