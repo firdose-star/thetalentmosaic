@@ -248,7 +248,7 @@ export const eventsService = {
   album: (event: Pick<CommunityEvent, "id" | "momentsUrl" | "photosUrl">) =>
     loadEventAlbum({ moments: event.momentsUrl, photos: event.photosUrl, event: event.id }),
 
-  /** Admin: save the photos members see for an event (up to 30). */
+  /** Admin: save the photos members see for an event. */
   saveHighlights: async ({ albumKey, ids, hidden, title }: { albumKey: string; ids: string[]; hidden?: string[]; title: string }) => {
     await saveEventHighlights(albumKey, ids, hidden);
     logAdminAction({ actor: "Admin", action: ids.length ? "Picked event photos" : "Cleared event photos", object: `${title} · ${ids.length} photos` });

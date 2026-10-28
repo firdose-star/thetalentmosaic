@@ -102,7 +102,7 @@ export function EventDetail({ id }: { id: string }) {
           </Section>
           {/* Admins always get the section, so they can upload to any past event. */}
           {!isUpcoming && (event.momentsUrl || event.photosUrl || isAdmin) ? (
-            <Section title="Photos" description="The best of the day. Tap a photo to see it full size.">
+            <Section title="Photos" description="Photos from the day, best first. Tap one to see it full size.">
               <EventPhotos event={event} />
             </Section>
           ) : null}

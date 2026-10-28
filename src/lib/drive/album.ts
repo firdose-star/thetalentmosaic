@@ -2,17 +2,15 @@
  * An event's photo album, built from its two Drive links:
  *
  *  - hero        — the Moments picture (the first one, if Moments is a folder);
- *  - best        — the photos members see: hand-picked by admins, up to 30 —
- *                  not repeated, sharp, two or three clear faces, easy to read;
- *  - candidates  — the whole Photos [All] folder for admins to pick from,
- *                  best-scored first with burst shots left out (see score.ts).
+ *  - best        — the photos members see: every photo in Photos [All],
+ *                  best-scored first (see score.ts), until an admin saves
+ *                  their own list — then exactly that list;
+ *  - candidates  — the whole folder for the admin picker, best-scored first
+ *                  with burst shots left out.
  *
- * Nothing from the folder is shown until an admin picks it: the automatic
- * score catches dark and blurry shots, but can't judge faces or whether a
- * photo is easy to understand. Scoring runs in the background, once.
- * Admins can also upload photos (see uploads.ts) and remove any photo,
- * including the Moments picture. Picks, removals, uploads and scores live in
- * git-ignored data/ — they are private photos.
+ * Admins upload photos (see uploads.ts) and remove any photo, the Moments
+ * picture included. Scoring runs in the background, once. Picks, removals,
+ * uploads and scores live in git-ignored data/ — they are private photos.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,8 +18,8 @@ import path from "node:path";
 import { driveImage, listFolderImages, parseDriveUrl, type DriveImage } from "./index";
 import { hashDistance, photoHash, scorePhoto } from "./score";
 
-/** At most this many photos are shown per event. */
-export const BEST_MAX = 30;
+/** At most this many photos are shown per event — in practice all of them. */
+export const BEST_MAX = 500;
 
 export interface EventAlbum {
   hero: string | null;
@@ -134,6 +132,11 @@ function bestFirst(ids: string[], known: Record<string, Scored>) {
   return [...kept, ...ids.filter((id) => !known[id])];
 }
 
+/** Best-scored first; unscored photos last, in camera order. Repeats are kept. */
+export function byScore(ids: string[], known: Record<string, Scored>) {
+  return [...ids.filter((id) => known[id]).sort((a, b) => known[b].s - known[a].s), ...ids.filter((id) => !known[id])];
+}
+
 export async function buildAlbum(links: { moments?: string | null; photos?: string | null; event?: string | null }): Promise<EventAlbum> {
   const moments = parseDriveUrl(links.moments);
   const folder = parseDriveUrl(links.photos);
@@ -149,13 +152,15 @@ export async function buildAlbum(links: { moments?: string | null; photos?: stri
   // An event with no Drive links keeps its uploads under its own id.
   const albumKey = folderId ?? folder?.id ?? moments?.id ?? links.event ?? null;
   const hidden = new Set(albumKey ? (await readHidden())[albumKey] ?? [] : []);
-  const best = (albumKey ? (await readPicks())[albumKey] ?? [] : []).filter((id) => !hidden.has(id));
-  // The Moments picture leads unless an admin removed it; then the first pick does.
-  const hero = momentIds.find((id) => !hidden.has(id)) ?? best[0] ?? null;
-
   const known = await loadScores();
   const scored = folderIds.every((id) => known[id]);
   if (!scored && folderId) void scoreFolder(folderId, folderImages);
+
+  // Until an admin saves a list, every folder photo shows, best-scored first.
+  const saved = albumKey ? (await readPicks())[albumKey] : undefined;
+  const best = (saved ?? byScore(folderIds, known)).filter((id) => !hidden.has(id));
+  // The Moments picture leads unless an admin removed it; then the first photo does.
+  const hero = momentIds.find((id) => !hidden.has(id)) ?? best[0] ?? null;
 
   return {
     hero,
@@ -164,7 +169,7 @@ export async function buildAlbum(links: { moments?: string | null; photos?: stri
     hidden: [...hidden],
     // Removed Moments pictures stay pickable, so an admin can bring them back.
     candidates: [...momentIds.filter((id) => hidden.has(id)), ...bestFirst(folderIds.filter((id) => id !== hero), known)],
-    ranking: best.length ? "curated" : scored ? "unpicked" : "scoring",
+    ranking: saved ? "curated" : scored ? "unpicked" : "scoring",
     albumKey,
   };
 }

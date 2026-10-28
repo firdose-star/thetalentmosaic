@@ -4,7 +4,7 @@
  */
 export interface EventAlbum {
   hero: string | null;
-  /** The hand-picked photos members see (up to 30). */
+  /** The photos members see: all of the event's, best first, or the admin's own list. */
   best: string[];
   /** True when the cover is one of the picks (no Moments picture), so saves must keep it. */
   heroIsPick: boolean;
@@ -17,8 +17,8 @@ export interface EventAlbum {
   albumKey: string | null;
 }
 
-/** Most photos an event shows. */
-export const BEST_MAX = 30;
+/** Most photos an event shows (every photo, in practice; admins remove what they don't want). */
+export const BEST_MAX = 500;
 
 export type PhotoSize = "thumb" | "large";
 

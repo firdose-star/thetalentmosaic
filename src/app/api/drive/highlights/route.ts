@@ -1,6 +1,6 @@
 /**
  * PUT /api/drive/highlights { albumKey, ids, hidden? } — save the photos
- * members see for an event (up to 30, picked or uploaded by an admin; an empty
+ * members see for an event (picked or uploaded by an admin; an empty
  * list shows none), and optionally the photos an admin removed that would
  * otherwise show, such as the Moments picture. Stored in git-ignored
  * data/event-highlights.json and data/event-hidden.json.

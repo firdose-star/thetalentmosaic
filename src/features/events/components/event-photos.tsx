@@ -4,12 +4,11 @@
  * Event photos, shown in the app (never a link out to Drive):
  *  - EventHero: the Moments picture, large; tap it to browse the photos.
  *    Admins can upload photos and remove any of them, the cover included.
- *  - EventPhotos: the hand-picked best of the day (up to 30); tap to view.
+ *  - EventPhotos: all the event's photos, best first; tap to view.
  *  - EventCover: the compact version for timeline cards.
  *
- * Members only ever see the Moments picture and the photos an admin picked —
- * not repeated, sharp, two or three clear faces, easy to read. Admins pick
- * them from the whole folder, best-scored first with burst shots left out.
+ * Members see the Moments picture and the event's photos, best-scored first.
+ * Admins upload more and remove any they don't want.
  */
 import { Check, ChevronLeft, ChevronRight, ImageOff, Images, LayoutGrid, Plus, Star, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -154,7 +153,7 @@ function PhotoGallery({
     view?.mode === "photo"
       ? `Photo ${index + 1} of ${photos.length}`
       : view?.mode === "pick"
-        ? `${picks.length} of ${BEST_MAX} picked · best-scored first, repeats left out`
+        ? `${picks.length} photos shown · best-scored first`
         : `${photos.length} photos`;
 
   return (
@@ -236,7 +235,7 @@ function PhotoGallery({
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-3">
               <span className="mr-auto text-xs text-muted-foreground">
-                Pick 20–30: not repeated, sharp, two or three clear faces, easy to understand.
+                Ticked photos are shown to members. Untick blurry, dark or repeated shots.
                 {album.ranking === "scoring" && " Still ranking this folder — the order improves in a minute."}
               </span>
               <Button variant="ghost" size="sm" onClick={() => { setPicks(allPicks(album)); onViewChange({ mode: "grid" }); }}>Cancel</Button>
@@ -359,7 +358,7 @@ export function EventPhotos({ event }: { event: PhotoEvent }) {
     <div className="flex flex-col gap-3">
       {album.best.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          {canPick ? "No photos added yet — members only see the Moments picture until you add the best 20–30." : "More photos from this catchup are coming soon."}
+          {canPick ? "No photos added yet — members only see the Moments picture until you add some." : "More photos from this catchup are coming soon."}
         </p>
       ) : (
         <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 @4xl/main:grid-cols-4">
@@ -436,7 +435,7 @@ export function EventCover({ event }: { event: PhotoEvent }) {
             Add or remove photos
           </Button>
           <span className="text-xs text-muted-foreground">
-            {allPicks(album).length} of {BEST_MAX} photos{album.hero && !album.heroIsPick ? " + cover" : ""}
+            {allPicks(album).length} photos{album.hero && !album.heroIsPick ? " + cover" : ""}
           </span>
         </div>
       )}
@@ -462,8 +461,7 @@ export function EventPhotoUploader({ event }: { event: PhotoEvent }) {
         onUploaded={(ids) => photos.save(album, [...allPicks(album), ...ids].slice(0, BEST_MAX))}
       />
       <span className="text-sm text-muted-foreground">
-        {count} of {BEST_MAX} photos{album.hero && !album.heroIsPick ? " plus the cover" : ""}
-        {count >= BEST_MAX && " — remove some on the event page to add more"}
+        {count} photos{album.hero && !album.heroIsPick ? " plus the cover" : ""}
       </span>
     </div>
   );
