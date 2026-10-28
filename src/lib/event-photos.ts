@@ -8,6 +8,8 @@ export interface EventAlbum {
   best: string[];
   /** Admin picking only: the whole folder, best-scored first, burst shots left out. */
   candidates: string[];
+  /** Removed by an admin (e.g. the Moments picture); kept so they can be restored. */
+  hidden: string[];
   ranking: "curated" | "unpicked" | "scoring";
   /** Where an admin's picks are saved. */
   albumKey: string | null;
@@ -32,11 +34,21 @@ export async function loadEventAlbum(links: { moments?: string; photos?: string 
   return (await response.json()) as EventAlbum;
 }
 
-export async function saveEventHighlights(albumKey: string, ids: string[]) {
+export async function saveEventHighlights(albumKey: string, ids: string[], hidden?: string[]) {
   const response = await fetch("/api/drive/highlights", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ albumKey, ids }),
+    body: JSON.stringify({ albumKey, ids, hidden }),
   });
   if (!response.ok) throw new Error("Couldn't save the photos");
+}
+
+/** Admin: upload photos from this computer; returns the new photo ids. */
+export async function uploadEventPhotos(files: File[]): Promise<{ ids: string[]; rejected: string[] }> {
+  const form = new FormData();
+  for (const file of files) form.append("photos", file);
+  const response = await fetch("/api/drive/upload", { method: "POST", body: form });
+  const body = (await response.json().catch(() => null)) as { data?: { ids: string[]; rejected: string[] }; error?: { message?: string } } | null;
+  if (!response.ok || !body?.data) throw new Error(body?.error?.message ?? "Couldn't upload the photos");
+  return body.data;
 }

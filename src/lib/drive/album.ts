@@ -10,7 +10,9 @@
  * Nothing from the folder is shown until an admin picks it: the automatic
  * score catches dark and blurry shots, but can't judge faces or whether a
  * photo is easy to understand. Scoring runs in the background, once.
- * Picks and scores live in git-ignored data/ — they reference private photos.
+ * Admins can also upload photos (see uploads.ts) and remove any photo,
+ * including the Moments picture. Picks, removals, uploads and scores live in
+ * git-ignored data/ — they are private photos.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -26,6 +28,8 @@ export interface EventAlbum {
   best: string[];
   /** Admin picking only. */
   candidates: string[];
+  /** Removed by an admin; kept so they can be restored. */
+  hidden: string[];
   /** curated: picks saved · unpicked: ready to pick · scoring: still ranking the folder. */
   ranking: "curated" | "unpicked" | "scoring";
   /** Where the picks are saved: the Photos [All] folder, else the Moments link. */
@@ -34,6 +38,7 @@ export interface EventAlbum {
 
 const DATA = path.join(process.cwd(), "data");
 const PICKS_FILE = path.join(DATA, "event-highlights.json");
+const HIDDEN_FILE = path.join(DATA, "event-hidden.json");
 const SCORES_FILE = path.join(DATA, ".drive-cache", "photo-scores.json");
 
 /** A photo's quality score (0–1) and visual fingerprint. */
@@ -57,6 +62,16 @@ async function writeJson(file: string, value: unknown) {
 
 /** Admin-picked photos (the ones members see), keyed by album (see buildAlbum). */
 export const readPicks = () => readJson<Record<string, string[]>>(PICKS_FILE, {});
+
+/** Photos an admin removed that would otherwise show (e.g. the Moments picture), keyed by album. */
+export const readHidden = () => readJson<Record<string, string[]>>(HIDDEN_FILE, {});
+
+export async function saveHidden(albumKey: string, ids: string[]) {
+  const hidden = await readHidden();
+  if (ids.length) hidden[albumKey] = ids;
+  else delete hidden[albumKey];
+  await writeJson(HIDDEN_FILE, hidden);
+}
 
 export async function savePicks(albumKey: string, ids: string[]) {
   const picks = await readPicks();
@@ -130,8 +145,10 @@ export async function buildAlbum(links: { moments?: string | null; photos?: stri
   // Picks are saved per album: the Photos [All] folder, or the Moments link
   // when an event has no folder. They may include photos added by link.
   const albumKey = folderId ?? folder?.id ?? moments?.id ?? null;
-  const best = albumKey ? (await readPicks())[albumKey] ?? [] : [];
-  const hero = momentIds[0] ?? best[0] ?? null;
+  const hidden = new Set(albumKey ? (await readHidden())[albumKey] ?? [] : []);
+  const best = (albumKey ? (await readPicks())[albumKey] ?? [] : []).filter((id) => !hidden.has(id));
+  // The Moments picture leads unless an admin removed it; then the first pick does.
+  const hero = momentIds.find((id) => !hidden.has(id)) ?? best[0] ?? null;
 
   const known = await loadScores();
   const scored = folderIds.every((id) => known[id]);
@@ -140,7 +157,9 @@ export async function buildAlbum(links: { moments?: string | null; photos?: stri
   return {
     hero,
     best: best.filter((id) => id !== hero).slice(0, BEST_MAX),
-    candidates: bestFirst(folderIds.filter((id) => id !== hero), known),
+    hidden: [...hidden],
+    // Removed Moments pictures stay pickable, so an admin can bring them back.
+    candidates: [...momentIds.filter((id) => hidden.has(id)), ...bestFirst(folderIds.filter((id) => id !== hero), known)],
     ranking: best.length ? "curated" : scored ? "unpicked" : "scoring",
     albumKey,
   };

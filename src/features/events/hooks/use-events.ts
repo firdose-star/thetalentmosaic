@@ -160,3 +160,15 @@ export function useSaveHighlights() {
     onError: (error) => notify.fromError(error, "Could not save the photos"),
   });
 }
+
+/** Admin: upload photos for an event. */
+export function useUploadPhotos() {
+  return useMutation({
+    mutationFn: eventsService.uploadPhotos,
+    onSuccess: ({ ids, rejected }) => {
+      if (rejected.length) notify.error(`Skipped ${rejected.length} file${rejected.length > 1 ? "s" : ""} that aren't photos: ${rejected.join(", ")}`);
+      if (ids.length) notify.success(`${ids.length} photo${ids.length > 1 ? "s" : ""} uploaded`);
+    },
+    onError: (error) => notify.fromError(error, "Could not upload the photos"),
+  });
+}

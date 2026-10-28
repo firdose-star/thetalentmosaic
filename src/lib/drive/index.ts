@@ -11,6 +11,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { isUploadId, uploadImage } from "./uploads";
+
 /** A Drive file or folder id. */
 const ID = /^[A-Za-z0-9_-]{10,}$/;
 
@@ -77,6 +79,8 @@ const CACHE_DIR = path.join(process.cwd(), "data", ".drive-cache");
 
 /** One Drive image as JPEG bytes, fetched once and then served from disk. */
 export async function driveImage(id: string, size: ImageSize): Promise<Buffer | null> {
+  // Photos admins uploaded live on this machine, not in Drive.
+  if (isUploadId(id)) return uploadImage(id, IMAGE_SIZES[size]);
   const file = path.join(CACHE_DIR, `${id}-${size}.jpg`);
   const cached = await readFile(file).catch(() => null);
   if (cached) return cached;

@@ -18,7 +18,7 @@ import {
   logAdminAction,
   type HostedSessionRecord,
 } from "@/lib/sample-data";
-import { loadEventAlbum, saveEventHighlights } from "@/lib/event-photos";
+import { loadEventAlbum, saveEventHighlights, uploadEventPhotos } from "@/lib/event-photos";
 import type { CommunityEvent } from "@/types/community";
 import type { Role } from "@/types/enums";
 
@@ -249,8 +249,15 @@ export const eventsService = {
     loadEventAlbum({ moments: event.momentsUrl, photos: event.photosUrl }),
 
   /** Admin: save the photos members see for an event (up to 30). */
-  saveHighlights: async ({ albumKey, ids, title }: { albumKey: string; ids: string[]; title: string }) => {
-    await saveEventHighlights(albumKey, ids);
+  saveHighlights: async ({ albumKey, ids, hidden, title }: { albumKey: string; ids: string[]; hidden?: string[]; title: string }) => {
+    await saveEventHighlights(albumKey, ids, hidden);
     logAdminAction({ actor: "Admin", action: ids.length ? "Picked event photos" : "Cleared event photos", object: `${title} · ${ids.length} photos` });
+  },
+
+  /** Admin: upload photos from this computer (they're added to the event separately). */
+  uploadPhotos: async ({ files, title }: { files: File[]; title: string }) => {
+    const result = await uploadEventPhotos(files);
+    if (result.ids.length) logAdminAction({ actor: "Admin", action: "Uploaded event photos", object: `${title} · ${result.ids.length} photos` });
+    return result;
   },
 };
