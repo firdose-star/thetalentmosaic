@@ -96,6 +96,7 @@ function RoleCard({ role }: { role: RoleListing }) {
             </div>
             {role.salary.text && <Badge variant="outline" className="max-w-40 shrink-0 truncate">{role.salary.text}</Badge>}
           </div>
+          {role.description && <p className="line-clamp-2 text-sm text-muted-foreground">{role.description}</p>}
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary">{ROLE_FAMILY_LABELS[role.roleFamily]}</Badge>
             {role.location.remoteMode === "remote" && <Badge variant="secondary">Remote</Badge>}

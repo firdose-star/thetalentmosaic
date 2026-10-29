@@ -71,6 +71,7 @@ export async function collectYc(): Promise<RawRecord[]> {
         salary: j.salaryRange || undefined,
         companyUrl: j.companyUrl ? `${YC}${j.companyUrl}` : undefined,
         ycBatch: j.companyBatchName,
+        about: j.companyOneLiner || undefined,
         logoUrl: j.companyLogoUrl,
       },
     };

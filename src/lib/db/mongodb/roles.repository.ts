@@ -111,16 +111,20 @@ async function page(filter: Filter<RoleDoc>, { sort = "newest", page, pageSize }
 }
 
 /** Members: approved roles only — the status is in the filter, never checked afterwards. */
-export const listApproved = (q: RoleQuery) => page(filterFor("approved", q), q);
+/** Members see roles posted in the last 60 days only — older ones vanish the day they turn 60. */
+const MAX_AGE_DAYS = 60;
+const recent = (): Filter<RoleDoc> => ({ "sources.0.postedAt": { $gte: new Date(Date.now() - MAX_AGE_DAYS * 864e5) } });
+
+export const listApproved = (q: RoleQuery) => page({ ...filterFor("approved", q), ...recent() }, q);
 
 export async function getApproved(id: string) {
   if (!isValidObjectId(id)) return null;
-  return (await roles()).findOne({ _id: toObjectId(id), status: "approved" });
+  return (await roles()).findOne({ _id: toObjectId(id), status: "approved", ...recent() });
 }
 
 /** Cities that approved roles are in, for the Location filter. */
 export async function approvedCities(): Promise<string[]> {
-  const cities = (await (await roles()).distinct("location.city", { status: "approved" })) as unknown[];
+  const cities = (await (await roles()).distinct("location.city", { status: "approved", ...recent() })) as unknown[];
   return cities.filter((c): c is string => typeof c === "string" && c.length > 0).sort((a, b) => a.localeCompare(b));
 }
 
@@ -209,6 +213,15 @@ export async function expireManualPastDate(now: Date) {
 /** Live roles whose primary link is worth re-checking, least recently updated first. */
 export async function liveForLinkCheck(limit: number) {
   return (await roles()).find({ status: { $in: LIVE } }, { projection: { "sources.url": 1 } }).sort({ updatedAt: 1 }).limit(limit).toArray();
+}
+
+/** Live roles first posted more than 60 days ago. */
+export async function expireOldPostings(now: Date) {
+  const result = await (await roles()).updateMany(
+    { status: { $in: LIVE }, "sources.0.postedAt": { $lt: new Date(now.getTime() - MAX_AGE_DAYS * 864e5) } },
+    { $set: { status: "expired", updatedAt: now } },
+  );
+  return result.modifiedCount;
 }
 
 export async function markExpired(ids: ObjectId[], now: Date) {

@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Role detail: the full description, how to apply, the contact block (only
+ * Role detail: 1–2 lines on the startup (the full job description stays at
+ * the source, linked), how to apply, the contact block (only
  * when the API sent contact details — signed-in members), and "Apply at
  * source", which opens the original posting.
  */
@@ -119,8 +120,14 @@ export function JobDetail({ id }: { id: string }) {
 
       <div className="grid items-start gap-4 @4xl/main:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex flex-col gap-4">
-          <Section title="About the role">
-            <p className="whitespace-pre-line text-sm leading-relaxed">{role.description || "The source gave no description — open it at the source."}</p>
+          <Section title={`About ${role.company.name}`}>
+            <p className="text-sm leading-relaxed">{role.description || "The posting doesn't say much about the company."}</p>
+            {primary && (
+              <a href={primary.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                Read the full job description at {sourceLabel(role)}
+                <ArrowUpRight className="size-3.5" />
+              </a>
+            )}
           </Section>
           {role.howToApply && (
             <Section title="How to apply">

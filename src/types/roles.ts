@@ -26,7 +26,7 @@ export type RoleFamily = (typeof ROLE_FAMILIES)[number];
 export const ROLE_FAMILY_LABELS: Record<RoleFamily, string> = {
   talent_acquisition: "Talent Acquisition",
   hrbp: "HR Business Partner",
-  people_ops: "People Operations",
+  people_ops: "People Ops & Culture",
   l_and_d: "Learning & Development",
   comp_and_ben: "Compensation & Benefits",
   hr_generalist: "HR Generalist",
@@ -69,7 +69,7 @@ export const REMOTE_MODE_LABELS: Record<RemoteMode, string> = {
   unknown: "Work mode not stated",
 };
 
-export const ROLE_SOURCES = ["greenhouse", "lever", "ashby", "yc", "hn", "manual_url", "manual"] as const;
+export const ROLE_SOURCES = ["greenhouse", "lever", "ashby", "yc", "hn", "linkedin", "manual_url", "manual"] as const;
 export type RoleSourceKind = (typeof ROLE_SOURCES)[number];
 
 export const ROLE_SOURCE_LABELS: Record<RoleSourceKind, string> = {
@@ -78,12 +78,13 @@ export const ROLE_SOURCE_LABELS: Record<RoleSourceKind, string> = {
   ashby: "Ashby",
   yc: "YC",
   hn: "HN",
+  linkedin: "LinkedIn",
   manual_url: "LinkedIn post",
   manual: "Added by team",
 };
 
 /** Collectors that poll on a schedule (everything but the team's own additions). */
-export const COLLECTOR_KINDS = ["greenhouse", "lever", "ashby", "yc", "hn"] as const;
+export const COLLECTOR_KINDS = ["greenhouse", "lever", "ashby", "yc", "hn", "linkedin"] as const;
 export type CollectorKind = (typeof COLLECTOR_KINDS)[number];
 
 export interface RoleContact {
@@ -118,6 +119,7 @@ export interface RoleListing {
   company: { name: string; url?: string; stage?: string; ycBatch?: string; logoUrl?: string };
   location: { city?: string; state?: string; country?: string; remoteMode: RemoteMode; raw?: string };
   salary: { text?: string; minInr?: number; maxInr?: number; currency?: string };
+  /** 1–2 lines on the startup — not the job description, which stays at the source. */
   description: string;
   howToApply?: string;
   /** Only when the caller may see contact details. */

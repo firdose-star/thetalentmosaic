@@ -192,8 +192,8 @@ export function RoleFormDialog({
               {text("salaryText", "Salary (optional)", "₹20–25 LPA")}
             </div>
             <Field>
-              <FieldLabel htmlFor={`role-${id}-description`}>Description</FieldLabel>
-              <Textarea id={`role-${id}-description`} rows={6} {...form.register("description")} />
+              <FieldLabel htmlFor={`role-${id}-description`}>About the startup (1–2 lines)</FieldLabel>
+              <Textarea id={`role-${id}-description`} rows={2} placeholder="What the company does, in a sentence or two. The full job description stays at the apply link." {...form.register("description")} />
               <FieldError errors={[errors.description]} />
             </Field>
             <Field>

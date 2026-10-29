@@ -23,7 +23,8 @@ export const roleInputSchema = z.object({
   country: optional(100),
   remoteMode: z.enum(REMOTE_MODES),
   salaryText: optional(200),
-  description: z.string().trim().max(50_000),
+  /** 1–2 lines on the startup. */
+  description: z.string().trim().max(400, "Keep it to a line or two"),
   howToApply: optional(),
   applyUrl: z.url("The original link, starting with https://"),
   contactName: optional(200),
@@ -48,10 +49,11 @@ export const ingestUrlSchema = z.object({
 });
 export type IngestUrlInput = z.infer<typeof ingestUrlSchema>;
 
-/** Admin: another company board for the feed to poll. */
+/** Admin: another company board (or LinkedIn search) for the feed to poll. */
 export const ingestSourceSchema = z.object({
-  kind: z.enum(["greenhouse", "lever", "ashby"]),
-  slug: z.string().trim().min(1, "The board's slug").max(100).regex(/^[A-Za-z0-9_.-]+$/, "Letters, numbers, - and _ only"),
+  kind: z.enum(["greenhouse", "lever", "ashby", "linkedin"]),
+  // A board slug, or for LinkedIn the search keywords.
+  slug: z.string().trim().min(1, "The board's slug, or LinkedIn search words").max(100).regex(/^[A-Za-z0-9_.& -]+$/, "Letters, numbers, spaces, & - and _ only"),
   companyName: z.string().trim().max(200).optional(),
 });
 export type IngestSourceInput = z.infer<typeof ingestSourceSchema>;

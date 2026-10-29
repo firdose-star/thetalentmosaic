@@ -33,13 +33,14 @@ import {
 } from "@/lib/db/mongodb/roles.repository";
 import type { CollectorKind } from "@/types/roles";
 
-import { COLLECTORS, type RawRecord } from "./collectors";
+import { COLLECTORS, ENRICH, type RawRecord } from "./collectors";
 import { extractRole, type ExtractedRole } from "./extract";
-import { passesGate } from "./gate";
+import { isFresh, isIndiaOrRemote, passesGate } from "./gate";
 import { DESKTOP_UA, fetchWithRetry, mapLimit } from "./http";
 import { compact, dedupeKey, fillEmpty, htmlToText } from "./text";
 
 export const NEW_PER_RUN = 60;
+const LINKEDIN_NEW_PER_RUN = 25;
 const DAY = 864e5;
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -149,17 +150,34 @@ async function collectKind(kind: CollectorKind, targets: WithId<IngestSourceDoc>
 
     const dropped = await rejectedUrls(matched.filter((r) => !known.has(r.url)).map((r) => r.url));
     const fresh = matched.filter((r) => !known.has(r.url) && !dropped.has(r.url));
-    const batch = fresh.slice(0, Math.max(0, budget.left));
+    // LinkedIn postings are fetched one by one with a pause, so fewer fit in a run.
+    const cap = Math.min(budget.left, kind === "linkedin" ? LINKEDIN_NEW_PER_RUN : NEW_PER_RUN);
+    const batch = fresh.slice(0, Math.max(0, cap));
     budget.left -= batch.length;
     run.deferred = fresh.length - batch.length;
 
-    await mapLimit(batch, 4, async (record) => {
+    // Sources that list summaries (LinkedIn): fetch the full posting now — one at a
+    // time with a pause, because LinkedIn answers bursts with 429.
+    const enrich = ENRICH[kind];
+    const full = enrich
+      ? (await mapLimit(batch, 1, async (record) => {
+          try {
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+            return await enrich(record);
+          } catch (error) {
+            run.errors.push(`${record.url}: ${message(error)}`);
+            throw error;
+          }
+        })).filter((r): r is RawRecord => r !== null)
+      : batch;
+
+    await mapLimit(full, 4, async (record) => {
       try {
         const role = await extractRole(record);
-        // Collected postings that turn out not to be HR roles are dropped. Claude's
-        // verdict is remembered so it isn't paid for again; the rules' isn't, so
-        // Claude gets a look once ANTHROPIC_API_KEY is set.
-        if (!role.isHrRole) return role.extraction.model ? rememberRejected(record.url, new Date()) : undefined;
+        // Collected postings that aren't HR roles in India / remote are dropped.
+        // Claude's verdict is remembered so it isn't paid for again; the rules'
+        // isn't, so Claude gets a look once ANTHROPIC_API_KEY is set.
+        if (!keep(role, record)) return role.extraction.model ? rememberRejected(record.url, new Date()) : undefined;
         const { outcome } = await upsertRole(record, role);
         run[outcome]++;
       } catch (error) {
@@ -177,6 +195,19 @@ async function collectKind(kind: CollectorKind, targets: WithId<IngestSourceDoc>
     `[ingest] source=${kind} fetched=${run.fetched} matched=${run.matched} inserted=${run.inserted} updated=${run.updated} errors=${run.errors.length}`,
   );
   return { source: kind, fetched: run.fetched, matched: run.matched, inserted: run.inserted, updated: run.updated, deferred: run.deferred ?? 0, errors: run.errors };
+}
+
+/** After extraction: an HR role, in India or remote, posted in the last 60 days. */
+function keep(role: ExtractedRole, record?: RawRecord) {
+  const { city, state, country, raw, remoteMode } = role.location;
+  const where = isIndiaOrRemote(
+    city, state, country, raw,
+    remoteMode === "remote" ? "Remote" : undefined,
+    record?.meta?.location,
+    // HN posts say where on their first line.
+    record?.source === "hn" ? record.rawText.split("\n")[0] : undefined,
+  );
+  return role.isHrRole && where && isFresh(record?.postedAt);
 }
 
 /** Run every enabled collector (or one kind, or one board). A failing source never stops the others. */
@@ -219,9 +250,12 @@ export async function ingestUrl(url: string, pastedText?: string) {
   if (!text) return null;
   const record: RawRecord = { source: "manual_url", url, rawText: text, postedAt: new Date() };
   const role = await extractRole(record);
-  if (!role.isHrRole) {
-    // The team asked for this one, so keep it — but say so.
-    role.extraction.warnings = [...role.extraction.warnings, "This doesn't read like an HR / People / Talent role — check before approving."];
+  // The team asked for this one, so keep it — but say what doesn't fit.
+  const { city, state, country, raw, remoteMode } = role.location;
+  const warn = (w: string) => (role.extraction.warnings = [...role.extraction.warnings, w]);
+  if (!role.isHrRole) warn("This doesn't read like an HR / People / Talent role — check before approving.");
+  if (remoteMode !== "unknown" || city || country || raw) {
+    if (!isIndiaOrRemote(city, state, country, raw, remoteMode === "remote" ? "Remote" : undefined)) warn("This role isn't in India or remote.");
   }
   return upsertRole(record, role);
 }

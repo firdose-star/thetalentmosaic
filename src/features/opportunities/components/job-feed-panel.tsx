@@ -40,9 +40,10 @@ function AddBoardForm() {
         <NativeSelectOption value="greenhouse">Greenhouse</NativeSelectOption>
         <NativeSelectOption value="lever">Lever</NativeSelectOption>
         <NativeSelectOption value="ashby">Ashby</NativeSelectOption>
+        <NativeSelectOption value="linkedin">LinkedIn search</NativeSelectOption>
       </NativeSelect>
       <div>
-        <Input aria-label="Board slug" placeholder="slug, e.g. razorpay" className="w-44" aria-invalid={!!error} {...form.register("slug")} />
+        <Input aria-label="Board slug" placeholder="slug, or LinkedIn search words" className="w-44" aria-invalid={!!error} {...form.register("slug")} />
         {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
       </div>
       <Input aria-label="Company name" placeholder="Company name" className="w-44" {...form.register("companyName")} />
@@ -94,7 +95,7 @@ export function JobFeedPanel() {
   return (
     <Section
       title="Job feed"
-      description="HR roles collected from these boards every morning at 08:00 IST. New roles wait in Opportunities → Listing management until you approve them."
+      description="HR roles in India or remote, posted in the last 60 days, collected every morning at 08:00 IST. New roles wait in Opportunities → Listing management until you approve them."
       actions={
         <Button size="sm" disabled={runNow.isPending} onClick={() => runNow.mutate({ source: "all" })}>
           <RefreshCw data-icon="inline-start" className={runNow.isPending ? "animate-spin" : undefined} />

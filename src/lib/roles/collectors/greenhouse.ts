@@ -9,6 +9,8 @@ interface GreenhouseJob {
   content?: string;
   absolute_url: string;
   updated_at?: string;
+  /** When the posting first went live — `updated_at` moves on every edit. */
+  first_published?: string;
   company_name?: string;
 }
 
@@ -25,7 +27,7 @@ export async function collectGreenhouse({ slug, companyName }: CollectorTarget):
     companyName: companyName ?? job.company_name ?? slug,
     title: job.title,
     rawText: `${job.title}\nLocation: ${job.location?.name ?? "not stated"}\n\n${htmlToText(job.content ?? "")}`,
-    postedAt: job.updated_at ? new Date(job.updated_at) : undefined,
+    postedAt: job.first_published || job.updated_at ? new Date((job.first_published ?? job.updated_at)!) : undefined,
     meta: { location: job.location?.name },
   }));
 }

@@ -1,5 +1,5 @@
 {
-  "//": "Boards the job feed polls. Seeded into the ingest_sources collection the first time it is empty; admins add more under Admin → Data & Integrations. Every slug here was checked to have a live public board.",
+  "//": "Boards the job feed polls. Any entry missing from the ingest_sources collection is added on the next run (entries already there keep the admin's on/off choice). LinkedIn entries are keyword searches in India, last 60 days.",
   "sources": [
     {
       "kind": "greenhouse",
@@ -217,6 +217,66 @@
     },
     {
       "kind": "hn",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "talent acquisition",
+      "companyName": "LinkedIn: talent acquisition",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "recruiter",
+      "companyName": "LinkedIn: recruiter",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "hr business partner",
+      "companyName": "LinkedIn: hr business partner",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "human resources",
+      "companyName": "LinkedIn: human resources",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "people operations",
+      "companyName": "LinkedIn: people operations",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "people and culture",
+      "companyName": "LinkedIn: people and culture",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "learning and development",
+      "companyName": "LinkedIn: learning and development",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "compensation and benefits",
+      "companyName": "LinkedIn: compensation and benefits",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "hr generalist",
+      "companyName": "LinkedIn: hr generalist",
+      "enabled": true
+    },
+    {
+      "kind": "linkedin",
+      "slug": "head of people",
+      "companyName": "LinkedIn: head of people",
       "enabled": true
     }
   ]

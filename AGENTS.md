@@ -76,10 +76,13 @@ server — a value that "isn't picked up" is almost always this.
 /api/ingest/{run,expire}  cron (vercel.json), Bearer CRON_SECRET
 ```
 
-The **Opportunities job feed** collects HR roles from Greenhouse / Lever / Ashby
-boards (`config/ingest-sources.json`), YC and HN every morning, reads them with
-Claude (`ANTHROPIC_API_KEY`; simple rules without it), and holds them as
-Unverified until an admin approves them. Server code: `src/lib/roles/`,
+The **Opportunities job feed** collects HR roles (HR, TA, People & Culture and
+other HR functions only — decided by title) in India or remote, posted in the
+last 60 days, from LinkedIn job search, Greenhouse / Lever / Ashby boards
+(`config/ingest-sources.json`), YC and HN every morning. Claude reads them
+(`ANTHROPIC_API_KEY`; simple rules without it) into a 1–2 line company summary
+plus contact details; they wait as Unverified until an admin approves them.
+Rules: `src/lib/roles/gate.ts`. Server code: `src/lib/roles/`,
 `src/lib/db/mongodb/{roles,ingest}.repository.ts`.
 
 The product spec is **`docs/plan.md`** (the PRD). Sections not built yet render a

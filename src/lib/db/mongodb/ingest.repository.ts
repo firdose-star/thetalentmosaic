@@ -45,13 +45,21 @@ async function runs() {
 }
 
 let seeded: Promise<unknown> | null = null;
-/** Fill ingest_sources from config/ingest-sources.json the first time it is empty. */
+/** Bring ingest_sources up to date with config/ingest-sources.json, once per server process. */
 function ensureSeeded() {
   seeded ??= (async () => {
     const c = await sources();
     await c.createIndex({ kind: 1, slug: 1 }, { unique: true, name: "kind_slug" });
-    if ((await c.estimatedDocumentCount()) > 0) return;
-    await c.insertMany(seed.sources.map((s) => ({ ...s, kind: s.kind as CollectorKind })) as IngestSourceDoc[]);
+    // Add what the config has and the collection doesn't; never touch the admin's on/off choice.
+    await c.bulkWrite(
+      seed.sources.map((s) => ({
+        updateOne: {
+          filter: { kind: s.kind as CollectorKind, slug: "slug" in s ? s.slug : undefined },
+          update: { $setOnInsert: { ...s, kind: s.kind as CollectorKind } },
+          upsert: true,
+        },
+      })),
+    );
   })().catch((error) => {
     seeded = null;
     throw error;

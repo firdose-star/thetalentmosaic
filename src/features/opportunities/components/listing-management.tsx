@@ -85,10 +85,7 @@ function QueueRow({ role }: { role: RoleListing }) {
         </ul>
       )}
 
-      <details className="text-sm">
-        <summary className="cursor-pointer text-xs text-muted-foreground">Description</summary>
-        <p className="mt-2 max-h-72 overflow-y-auto whitespace-pre-line rounded-lg bg-muted p-3 text-sm leading-relaxed">{role.description || "No description."}</p>
-      </details>
+      <p className="text-sm text-muted-foreground">{role.description || "No line on the startup yet — add one with Edit."}</p>
     </Card>
   );
 }

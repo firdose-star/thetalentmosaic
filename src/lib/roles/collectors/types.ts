@@ -20,6 +20,8 @@ export interface RawRecord {
     companyUrl?: string;
     ycBatch?: string;
     logoUrl?: string;
+    /** The company's own short description, when the source has one. */
+    about?: string;
   };
 }
 

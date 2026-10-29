@@ -2,6 +2,7 @@
  * Nightly expiry (spec §7). A live role expires when:
  *  - every source is a collector and none has listed it for 14 days, or
  *  - the team added it and its `expiresAt` has passed, or
+ *  - it was first posted more than 60 days ago, or
  *  - its primary link now answers 404 / 410 (best effort, HEAD request).
  * Expired roles never reach members.
  */
@@ -10,6 +11,7 @@ import "server-only";
 import {
   ensureRoleIndexes,
   expireManualPastDate,
+  expireOldPostings,
   expireUnseen,
   liveForLinkCheck,
   markExpired,
@@ -23,6 +25,7 @@ export async function runExpiry(now = new Date()) {
   await ensureRoleIndexes();
   const unseen = await expireUnseen(new Date(now.getTime() - 14 * 864e5), now);
   const pastDate = await expireManualPastDate(now);
+  const tooOld = await expireOldPostings(now);
 
   const live = await liveForLinkCheck(LINK_CHECKS_PER_RUN);
   const gone = await mapLimit(live, 4, async (role) => {
@@ -33,6 +36,6 @@ export async function runExpiry(now = new Date()) {
   });
   const deadLinks = await markExpired(gone.filter((id) => id !== null), now);
 
-  console.info(`[ingest] expiry unseen=${unseen} pastDate=${pastDate} deadLinks=${deadLinks} checked=${live.length}`);
-  return { unseen, pastDate, deadLinks, checked: live.length };
+  console.info(`[ingest] expiry unseen=${unseen} pastDate=${pastDate} tooOld=${tooOld} deadLinks=${deadLinks} checked=${live.length}`);
+  return { unseen, pastDate, tooOld, deadLinks, checked: live.length };
 }
