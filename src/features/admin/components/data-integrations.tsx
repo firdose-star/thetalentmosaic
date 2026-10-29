@@ -17,6 +17,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { JobFeedPanel } from "@/features/opportunities";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useAdminActions, useAdminData } from "../hooks/use-admin";
@@ -226,7 +227,7 @@ function ErrorMonitor({ data }: { data: AdminData }) {
     <Section
       title="Error monitor"
       description="Sync failures and warnings from every source."
-      actions={<Button size="sm" variant="ghost" nativeButton={false} render={<Link href={ROUTES.opportunities} />}>Job feed details</Button>}
+      actions={<Button size="sm" variant="ghost" nativeButton={false} render={<Link href={ROUTES.opportunities} />}>Listing management</Button>}
     >
       {data.issues.length === 0 ? (
         <p className="text-sm text-muted-foreground">No open issues. ✨</p>
@@ -308,6 +309,7 @@ export function DataIntegrations() {
     <div className="flex flex-col gap-4">
       <CommunityFormReport data={data} />
       <Sources data={data} />
+      <JobFeedPanel />
       <div className="grid items-start gap-4 @5xl/main:grid-cols-2">
         <SheetUpdates data={data} />
         <ErrorMonitor data={data} />

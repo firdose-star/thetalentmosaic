@@ -71,7 +71,16 @@ server — a value that "isn't picked up" is almost always this.
 /api/health          liveness + backend reachability
 /api/auth/session    login → first-party refresh cookie
 /api/proxy/[...path] opt-in transparent passthrough
+/api/roles[/id]      Opportunities job feed — approved roles (MongoDB)
+/api/admin/roles     Listing management queue; /api/admin/ingest/{url,sources,run}
+/api/ingest/{run,expire}  cron (vercel.json), Bearer CRON_SECRET
 ```
+
+The **Opportunities job feed** collects HR roles from Greenhouse / Lever / Ashby
+boards (`config/ingest-sources.json`), YC and HN every morning, reads them with
+Claude (`ANTHROPIC_API_KEY`; simple rules without it), and holds them as
+Unverified until an admin approves them. Server code: `src/lib/roles/`,
+`src/lib/db/mongodb/{roles,ingest}.repository.ts`.
 
 The product spec is **`docs/plan.md`** (the PRD). Sections not built yet render a
 `<PlaceholderPanel>` listing what building them means.

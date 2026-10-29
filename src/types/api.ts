@@ -30,6 +30,10 @@ export interface ResponseMeta {
   page?: number;
   pageSize?: number;
   total?: number;
+  /** Job feed: cities approved roles are in (Location filter). */
+  cities?: string[];
+  /** Job feed, admin: roles per status. */
+  counts?: Record<string, number>;
 }
 
 /** A list response after the client has unwrapped the envelope. */

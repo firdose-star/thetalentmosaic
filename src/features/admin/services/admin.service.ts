@@ -212,7 +212,6 @@ export const adminService = {
         birthdaysToApprove: birthdaysToApprove(),
         automationsOn: s.automations.filter((a) => a.enabled).length,
         automationsTotal: s.automations.length,
-        activeRoles: communityStore.jobs.filter((j) => j.status === "active").length,
         importUpdates: s.importUpdates.length,
       },
       members: members.map((m) => ({ ...m, missing: missingFields(m) })),
@@ -252,9 +251,7 @@ export const adminService = {
             ? `${members.length} members`
             : src.id === "vendors"
               ? `${communityStore.library.vendors.length} vendors`
-              : src.id === "jobs"
-                ? `${communityStore.jobs.filter((j) => j.status === "active").length} active listings`
-                : `${communityStore.events.length} catchups`,
+              : `${communityStore.events.length} catchups`,
       })),
       issues: s.issues,
       automations: s.automations.map((a) => ({ ...a, ...automationTimes(a) })),

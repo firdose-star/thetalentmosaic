@@ -32,7 +32,7 @@ export const AUTOMATIONS: Automation[] = [
 export type SourceStatus = "ok" | "warn" | "bad" | "off";
 
 export interface DataSource {
-  id: "members" | "vendors" | "events" | "jobs";
+  id: "members" | "vendors" | "events";
   name: string;
   type: string;
   schedule: string;
@@ -46,7 +46,6 @@ export const DATA_SOURCES: DataSource[] = [
   { id: "members", name: "Mastersheet › Community Form", type: "Google Sheets export", schedule: "Loaded when the dashboard opens", minutesSinceSync: null, status: "off" },
   { id: "events", name: "Mastersheet › Community Catchups", type: "Google Sheets export", schedule: "Loaded when the dashboard opens", minutesSinceSync: null, status: "off" },
   { id: "vendors", name: "Mastersheet › Vendor Form", type: "Google Sheets export", schedule: "Loaded when the dashboard opens", minutesSinceSync: null, status: "off" },
-  { id: "jobs", name: "Job feed", type: "Scraper API", schedule: "Not connected yet", minutesSinceSync: null, status: "off" },
 ];
 
 export interface ImportUpdate {

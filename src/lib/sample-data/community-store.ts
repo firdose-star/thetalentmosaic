@@ -9,7 +9,7 @@
  *
  * Edits last until the page reloads; MongoDB makes them permanent.
  */
-import type { CommunityEvent, JobListing, Member } from "@/types/community";
+import type { CommunityEvent, Member } from "@/types/community";
 
 import type { ImportReport } from "@/lib/community-import/parse";
 import {
@@ -140,8 +140,6 @@ export const communityStore = {
   interactions: [] as Interaction[],
   /** Every event, upcoming and past, including ones admins add. */
   events: [] as CommunityEvent[],
-  /** Job listings — from the feed once connected, or added by admins. */
-  jobs: [] as JobListing[],
   /** memberId → snoozed until (ISO date). */
   snoozes: new Map<string, string>(),
   library: {
@@ -239,7 +237,7 @@ export function applyCommunityImport(data: CommunityImportPayload) {
     ...data.report.invalid.whatsapp.map((name, i) => ({ id: `imp-wa-${i}`, severity: "warning" as const, at: "On import", source: "Community Form", message: `${name}: WhatsApp number isn't a valid mobile` })),
   ];
   communityStore.admin.sources = communityStore.admin.sources.map((s) =>
-    s.id === "jobs" || !data.loaded[s.id] ? s : { ...s, minutesSinceSync: 0, status: "ok" as const },
+    !data.loaded[s.id] ? s : { ...s, minutesSinceSync: 0, status: "ok" as const },
   );
   communitySource = { kind: "mastersheet", importedAt: data.importedAt, report: data.report, loaded: data.loaded };
 }

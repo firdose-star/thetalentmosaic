@@ -69,9 +69,12 @@ export const queryKeys = {
 
   opportunities: {
     all: ["opportunities"] as const,
-    list: (role: string) => [...queryKeys.opportunities.all, "list", role] as const,
-    detail: (id: string) => [...queryKeys.opportunities.all, "detail", id] as const,
-    scraper: () => [...queryKeys.opportunities.all, "scraper"] as const,
+    list: (role: string, filters: object) => [...queryKeys.opportunities.all, "list", role, filters] as const,
+    detail: (id: string, role: string) => [...queryKeys.opportunities.all, "detail", id, role] as const,
+    /** Admin: the Listing management queue. */
+    admin: (status: string, page: number) => [...queryKeys.opportunities.all, "admin", status, page] as const,
+    /** Admin: boards polled and recent runs. */
+    feed: () => [...queryKeys.opportunities.all, "feed"] as const,
   },
 
   events: {

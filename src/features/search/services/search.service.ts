@@ -7,6 +7,7 @@
  *   api.get<SearchGroup[]>(`${ENDPOINTS.search}?q=...`)
  * once the API exists; the server must apply the same permission rules.
  */
+import { opportunitiesService } from "@/features/opportunities";
 import { ROUTES } from "@/lib/constants";
 import {
   communityStore,
@@ -73,13 +74,12 @@ export const searchService = {
       },
       {
         category: "Roles",
-        results: communityStore.jobs.filter(
-          (j) => j.status === "active" && has(j.title, j.company, j.location, j.hrFunction),
-        ).map((j) => ({
-          id: j.id,
-          title: j.title,
-          subtitle: `${j.company} · ${j.location}`,
-          href: `${ROUTES.opportunities}/${j.id}`,
+        // Approved roles from the job feed, searched on the server.
+        results: (await opportunitiesService.list(role, { q: query.trim() }).catch(() => ({ roles: [] }))).roles.map((r) => ({
+          id: r.id,
+          title: r.title,
+          subtitle: `${r.company.name} · ${r.location.city ?? r.location.raw ?? "Location not stated"}`,
+          href: `${ROUTES.opportunities}/${r.id}`,
         })),
       },
       {

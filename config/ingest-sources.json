@@ -1,0 +1,223 @@
+{
+  "//": "Boards the job feed polls. Seeded into the ingest_sources collection the first time it is empty; admins add more under Admin → Data & Integrations. Every slug here was checked to have a live public board.",
+  "sources": [
+    {
+      "kind": "greenhouse",
+      "slug": "anthropic",
+      "companyName": "Anthropic",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "stripe",
+      "companyName": "Stripe",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "databricks",
+      "companyName": "Databricks",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "gitlab",
+      "companyName": "GitLab",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "okta",
+      "companyName": "Okta",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "rubrik",
+      "companyName": "Rubrik",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "coinbase",
+      "companyName": "Coinbase",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "figma",
+      "companyName": "Figma",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "gusto",
+      "companyName": "Gusto",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "asana",
+      "companyName": "Asana",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "cultureamp",
+      "companyName": "Culture Amp",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "groww",
+      "companyName": "Groww",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "slice",
+      "companyName": "slice",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "druva",
+      "companyName": "Druva",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "netskope",
+      "companyName": "Netskope",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "elastic",
+      "companyName": "Elastic",
+      "enabled": true
+    },
+    {
+      "kind": "greenhouse",
+      "slug": "twilio",
+      "companyName": "Twilio",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "paytm",
+      "companyName": "Paytm",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "meesho",
+      "companyName": "Meesho",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "zeta",
+      "companyName": "Zeta",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "fampay",
+      "companyName": "FamPay",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "cred",
+      "companyName": "CRED",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "palantir",
+      "companyName": "Palantir",
+      "enabled": true
+    },
+    {
+      "kind": "lever",
+      "slug": "pocketfm",
+      "companyName": "Pocket FM",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "harvey",
+      "companyName": "Harvey",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "notion",
+      "companyName": "Notion",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "openai",
+      "companyName": "OpenAI",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "ramp",
+      "companyName": "Ramp",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "perplexity",
+      "companyName": "Perplexity",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "elevenlabs",
+      "companyName": "ElevenLabs",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "multiverse",
+      "companyName": "Multiverse",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "cursor",
+      "companyName": "Cursor",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "replit",
+      "companyName": "Replit",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "sarvam",
+      "companyName": "Sarvam AI",
+      "enabled": true
+    },
+    {
+      "kind": "ashby",
+      "slug": "atlan",
+      "companyName": "Atlan",
+      "enabled": true
+    },
+    {
+      "kind": "yc",
+      "enabled": true
+    },
+    {
+      "kind": "hn",
+      "enabled": true
+    }
+  ]
+}

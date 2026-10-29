@@ -24,6 +24,27 @@ export const ENDPOINTS = {
   },
 } as const;
 
+/**
+ * This app's own Route Handlers (same origin — NOT under NEXT_PUBLIC_API_BASE_URL).
+ * The Opportunities job feed lives here: MongoDB, collectors and the cron jobs.
+ */
+export const APP_ENDPOINTS = {
+  roles: {
+    list: "/api/roles",
+    detail: (id: string) => `/api/roles/${id}`,
+  },
+  adminRoles: {
+    list: "/api/admin/roles",
+    detail: (id: string) => `/api/admin/roles/${id}`,
+    fromUrl: "/api/admin/ingest/url",
+  },
+  ingest: {
+    sources: "/api/admin/ingest/sources",
+    source: (id: string) => `/api/admin/ingest/sources/${id}`,
+    run: "/api/admin/ingest/run",
+  },
+} as const;
+
 /** Serialize list params to a query string, dropping empty values. `''` when none. */
 export function toQueryString<T extends object>(
   params?: T | undefined,

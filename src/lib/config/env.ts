@@ -81,6 +81,19 @@ const serverSchema = z.object({
   MONGODB_URI: z.string().min(1).optional(),
   MONGODB_DB: z.string().min(1).optional(),
   MONGODB_POOL_MAX: z.coerce.number().default(10),
+
+  /* ── Opportunities job feed ──────────────────────────────────────────────
+   * ANTHROPIC_API_KEY and CRON_SECRET are secrets. Without the key, roles are
+   * still collected but read by simple rules (flagged for the admin to check).
+   */
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  ROLES_EXTRACT_MODEL: z.string().min(1).default("claude-sonnet-5-5"),
+  /** Vercel Cron sends it as "Authorization: Bearer …"; unset → cron routes always 401. */
+  CRON_SECRET: z.string().min(16).optional(),
+  /** true → contact details only reach signed-in members and admins (nobody, until login ships). */
+  ROLES_CONTACTS_REQUIRE_AUTH: z.enum(["true", "false"]).default("true").transform((v) => v === "true"),
+  /** true → anyone may list approved roles (still without contact details). */
+  ROLES_PUBLIC_LIST: z.enum(["true", "false"]).default("false").transform((v) => v === "true"),
 });
 
 let cachedServerEnv: z.infer<typeof serverSchema> | null = null;
@@ -102,6 +115,11 @@ export function getServerEnv() {
     MONGODB_URI: process.env.MONGODB_URI,
     MONGODB_DB: process.env.MONGODB_DB,
     MONGODB_POOL_MAX: process.env.MONGODB_POOL_MAX,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    ROLES_EXTRACT_MODEL: process.env.ROLES_EXTRACT_MODEL,
+    CRON_SECRET: process.env.CRON_SECRET,
+    ROLES_CONTACTS_REQUIRE_AUTH: process.env.ROLES_CONTACTS_REQUIRE_AUTH,
+    ROLES_PUBLIC_LIST: process.env.ROLES_PUBLIC_LIST,
   });
 
   if (!parsed.success) {

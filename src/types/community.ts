@@ -125,27 +125,4 @@ export interface CommunityEvent {
   coHostIds?: string[];
 }
 
-export type JobStatus = "active" | "expired" | "review";
 
-export interface JobListing {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  hrFunction: HrFunction;
-  seniority: Seniority;
-  arrangement: "Hybrid" | "On-site" | "Remote";
-  type: "Full-time" | "Contract" | "Internship";
-  /** Days since posting; null when the source gave no date. */
-  postedDaysAgo: number | null;
-  source: string;
-  salary: string;
-  status: JobStatus;
-  experience: string;
-  /** Original application link at the source. */
-  url: string;
-  /** Days since the scraper last confirmed the listing is live. */
-  lastCheckedDaysAgo: number;
-  description: string;
-  skills: string[];
-}

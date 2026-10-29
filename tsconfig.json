@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@config/*": ["./config/*"]
     }
   },
   "include": [
@@ -37,5 +38,5 @@
     "remove its line from `exclude` below.",
     "If you have a separate backend, delete src/lib/db entirely and leave this."
   ],
-  "exclude": ["node_modules", "src/lib/db"]
+  "exclude": ["node_modules"]
 }

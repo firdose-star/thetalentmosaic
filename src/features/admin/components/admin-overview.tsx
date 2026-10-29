@@ -24,6 +24,7 @@ import { Section } from "@/components/shared/section";
 import { ErrorState, LoadingState } from "@/components/shared/state-views";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAdminRoles } from "@/features/opportunities";
 import { ROUTES } from "@/lib/constants";
 import { useAdminData } from "../hooks/use-admin";
 import { QueueCard, whenText } from "./admin-parts";
@@ -33,6 +34,8 @@ const ACTOR_TONE = { Admin: "bg-accent text-primary", Member: "bg-chart-2/20 tex
 
 export function AdminOverview() {
   const { data, isPending, isError, error, refetch } = useAdminData();
+  // Approved roles live in the job feed (MongoDB), not the admin store.
+  const approvedRoles = useAdminRoles("approved", 1).data?.counts.approved;
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />;
   if (isPending) return <LoadingState className="min-h-64" />;
 
@@ -48,7 +51,7 @@ export function AdminOverview() {
     { href: ROUTES.health, label: "Relationship coverage", value: `${coverage}%`, hint: `${o.coverage.covered}/${o.coverage.total} with a meaningful contact in 90 days`, icon: <HeartHandshake /> },
     { href: `${ROUTES.adminApprovals}?tab=birthdays`, label: "Birthday messages to approve", value: o.birthdaysToApprove, hint: "Next 10 days, waiting on an admin", icon: <Cake />, tone: "bg-chart-3/20 text-chart-3", urgent: o.birthdaysToApprove > 0 },
     { href: ROUTES.adminAutomations, label: "Automations running", value: `${o.automationsOn} of ${o.automationsTotal}`, hint: "Birthdays, digests and reminders", icon: <Bell /> },
-    { href: ROUTES.opportunities, label: "Active roles", value: o.activeRoles, hint: "Live on the job board", icon: <Briefcase />, tone: "bg-chart-4/20 text-chart-4" },
+    { href: ROUTES.opportunities, label: "Active roles", value: approvedRoles ?? "–", hint: "Approved and live on the job board", icon: <Briefcase />, tone: "bg-chart-4/20 text-chart-4" },
   ];
 
   return (
