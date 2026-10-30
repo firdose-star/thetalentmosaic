@@ -21,6 +21,8 @@ export interface RoleFilters {
   city?: string;
   remote?: string;
   type?: string;
+  industry?: string;
+  exp?: string;
   q?: string;
   sort?: string;
   page?: number;

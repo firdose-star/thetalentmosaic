@@ -20,6 +20,10 @@ import { getServerEnv } from "@/lib/config/env";
 import { logger } from "@/lib/logger";
 import {
   EMPLOYMENT_TYPES,
+  INDUSTRIES,
+  experienceBand,
+  type ExperienceBand,
+  type Industry,
   REMOTE_MODES,
   ROLE_FAMILIES,
   ROLE_SENIORITIES,
@@ -32,6 +36,7 @@ import {
 
 import type { RawRecord } from "./collectors";
 import { INDIA, isHrTitle } from "./gate";
+import { employmentTypeFrom, experienceFrom, industryFrom } from "./classify";
 import { companySummary, firstSentences } from "./summary";
 import { compact, fillEmpty, findContacts, toE164 } from "./text";
 
@@ -45,6 +50,9 @@ const SYSTEM = `You extract structured job data for an HR community. Read ONE jo
 - roleFamily: pick the closest; "other_hr" only if clearly HR but none fit.
 - location: where the role is based. For remote roles, put any region restriction ("US only", "EMEA") in location.raw.
 - companySummary: one or two plain sentences on what the company does, from the text only (its "About us" or similar). Not about the role. null if the text says nothing about the company.
+- industry: what kind of company is hiring (D2C brand, FinTech, HealthTech…), from how the company describes itself — not from the HR duties. "other" when the text doesn't make it clear.
+- experience: the years of experience asked for (minYears, maxYears; "5+ years" → 5 and null; interns/freshers → 0). null when not stated.
+- employmentType: "unknown" unless the text says (full-time, part-time, contract, internship).
 - confidence 0–1: how complete and unambiguous the posting is.`;
 
 const text = z.string().nullable();
@@ -59,6 +67,8 @@ const ExtractionSchema = z.object({
   location: z.object({ city: text, state: text, country: text, remoteMode: z.enum(REMOTE_MODES), raw: text }),
   salary: z.object({ text, minInr: z.number().nullable(), maxInr: z.number().nullable(), currency: text }),
   companySummary: text,
+  industry: z.enum(INDUSTRIES),
+  experience: z.object({ minYears: z.number().nullable(), maxYears: z.number().nullable(), text }),
   howToApply: text,
   contact: z.object({ name: text, roleAtCompany: text, email: text, whatsapp: text, phone: text, linkedinUrl: text, other: text }),
   confidence: z.number(),
@@ -71,6 +81,9 @@ export interface ExtractedRole {
   roleFamily: RoleFamily;
   seniority: RoleSeniority;
   employmentType: EmploymentType;
+  industry: Industry;
+  experience: { minYears?: number; maxYears?: number; text?: string };
+  experienceBand: ExperienceBand;
   company: { name: string; url?: string; stage?: string; ycBatch?: string; logoUrl?: string };
   location: { city?: string; state?: string; country?: string; remoteMode: RemoteMode; raw?: string };
   salary: { text?: string; minInr?: number; maxInr?: number; currency?: string };
@@ -144,6 +157,9 @@ async function withClaude(record: RawRecord, apiKey: string, model: string): Pro
     roleFamily: out.roleFamily,
     seniority: out.seniority,
     employmentType: out.employmentType,
+    industry: out.industry,
+    experience: compact(out.experience) as ExtractedRole["experience"],
+    experienceBand: experienceBand(out.experience.minYears),
     company: compact({ ...out.company, name: out.company.name.trim() || record.companyName || "Company not stated" }) as ExtractedRole["company"],
     location: compact(out.location) as ExtractedRole["location"],
     salary: compact(out.salary) as ExtractedRole["salary"],
@@ -178,14 +194,6 @@ function seniorityFromTitle(t: string): RoleSeniority {
   return "unknown";
 }
 
-function typeFrom(t: string): EmploymentType {
-  if (/intern/.test(t)) return "internship";
-  if (/contract|freelance|consultant/.test(t)) return "contract";
-  if (/part[- ]time/.test(t)) return "part_time";
-  if (/full[- ]time|permanent/.test(t)) return "full_time";
-  return "unknown";
-}
-
 function locationFrom(raw?: string, remote?: boolean): ExtractedRole["location"] {
   const r = (raw ?? "").toLowerCase();
   const remoteMode: RemoteMode = remote || /remote/.test(r) ? "remote" : /hybrid/.test(r) ? "hybrid" : raw ? "onsite" : "unknown";
@@ -206,7 +214,10 @@ function withRules(record: RawRecord, reason: string): ExtractedRole {
     title,
     roleFamily: familyFromTitle(t),
     seniority: seniorityFromTitle(t),
-    employmentType: typeFrom(`${meta.commitment ?? ""} ${t}`.toLowerCase()),
+    employmentType: employmentTypeFrom({ commitment: meta.commitment, title, rawText: record.rawText }),
+    industry: "other",
+    experience: {},
+    experienceBand: "other",
     company: compact({ name: record.companyName ?? "Company not stated", url: meta.companyUrl, ycBatch: meta.ycBatch, logoUrl: meta.logoUrl }),
     location: locationFrom(meta.location, meta.remote),
     salary: compact({ text: meta.salary }),
@@ -250,5 +261,14 @@ export async function extractRole(record: RawRecord): Promise<ExtractedRole> {
     role.salary = fillEmpty(role.salary, compact({ text: record.meta.salary }));
   }
   role.location = compact({ ...role.location, city: normaliseCity(role.location.city) });
+
+  // Company type, years and employment type: rules fill what the model (or the
+  // rules above) couldn't tell; still unclear → "Other" in the filters.
+  if (role.industry === "other") role.industry = industryFrom({ rawText: record.rawText, summary: role.description, companyName: role.company.name });
+  if (role.experience.minYears === undefined) role.experience = experienceFrom({ rawText: record.rawText, title: role.title });
+  role.experienceBand = experienceBand(role.experience.minYears);
+  if (role.employmentType === "unknown") {
+    role.employmentType = employmentTypeFrom({ commitment: record.meta?.commitment, title: role.title, rawText: record.rawText });
+  }
   return { ...role, contact: compact(contact) };
 }

@@ -56,8 +56,80 @@ export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
   part_time: "Part-time",
   contract: "Contract",
   internship: "Internship",
-  unknown: "Type not stated",
+  // The filter's "Other": the posting doesn't say.
+  unknown: "Other",
 };
+
+/** What kind of company is hiring — "other" when the posting doesn't make it clear. */
+export const INDUSTRIES = [
+  "d2c",
+  "ecommerce",
+  "fintech",
+  "healthtech",
+  "edtech",
+  "saas",
+  "ai_deeptech",
+  "foodtech",
+  "mobility_logistics",
+  "media_gaming",
+  "climate_energy",
+  "agritech",
+  "proptech",
+  "travel_hospitality",
+  "manufacturing",
+  "hr_services",
+  "it_services",
+  "other",
+] as const;
+export type Industry = (typeof INDUSTRIES)[number];
+
+export const INDUSTRY_LABELS: Record<Industry, string> = {
+  d2c: "D2C / Consumer brands",
+  ecommerce: "E-commerce / Marketplace",
+  fintech: "FinTech",
+  healthtech: "HealthTech",
+  edtech: "EdTech",
+  saas: "SaaS / B2B software",
+  ai_deeptech: "AI / Deep tech",
+  foodtech: "FoodTech",
+  mobility_logistics: "Mobility / Logistics",
+  media_gaming: "Media / Gaming",
+  climate_energy: "Climate / Energy",
+  agritech: "AgriTech",
+  proptech: "Real estate / PropTech",
+  travel_hospitality: "Travel / Hospitality",
+  manufacturing: "Manufacturing / Industrial",
+  hr_services: "HR services / Staffing",
+  it_services: "IT services / Consulting",
+  other: "Other",
+};
+
+/** Years of experience asked for, bucketed by the minimum — "other" when the posting doesn't say. */
+export const EXPERIENCE_BANDS = ["0-2", "3-5", "6-10", "10+", "other"] as const;
+export type ExperienceBand = (typeof EXPERIENCE_BANDS)[number];
+
+export const EXPERIENCE_BAND_LABELS: Record<ExperienceBand, string> = {
+  "0-2": "0–2 years",
+  "3-5": "3–5 years",
+  "6-10": "6–10 years",
+  "10+": "10+ years",
+  other: "Other",
+};
+
+export function experienceBand(minYears?: number | null): ExperienceBand {
+  if (minYears === undefined || minYears === null || Number.isNaN(minYears)) return "other";
+  if (minYears <= 2) return "0-2";
+  if (minYears <= 5) return "3-5";
+  if (minYears <= 9) return "6-10";
+  return "10+";
+}
+
+/** "3–5 years", "5+ years" — for cards. */
+export function experienceText(e?: { minYears?: number; maxYears?: number }) {
+  if (e?.minYears === undefined) return null;
+  if (e.maxYears !== undefined && e.maxYears > e.minYears) return `${e.minYears}–${e.maxYears} years`;
+  return e.minYears === 0 ? "Freshers welcome" : `${e.minYears}+ years`;
+}
 
 export const REMOTE_MODES = ["onsite", "hybrid", "remote", "unknown"] as const;
 export type RemoteMode = (typeof REMOTE_MODES)[number];
@@ -116,6 +188,10 @@ export interface RoleListing {
   roleFamily: RoleFamily;
   seniority: RoleSeniority;
   employmentType: EmploymentType;
+  /** Absent on roles collected before this field existed — read as "other". */
+  industry?: Industry;
+  experience?: { minYears?: number; maxYears?: number; text?: string };
+  experienceBand?: ExperienceBand;
   company: { name: string; url?: string; stage?: string; ycBatch?: string; logoUrl?: string };
   location: { city?: string; state?: string; country?: string; remoteMode: RemoteMode; raw?: string };
   salary: { text?: string; minInr?: number; maxInr?: number; currency?: string };

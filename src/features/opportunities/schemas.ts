@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   EMPLOYMENT_TYPES,
+  INDUSTRIES,
   REMOTE_MODES,
   ROLE_FAMILIES,
   ROLE_SENIORITIES,
@@ -19,6 +20,10 @@ export const roleInputSchema = z.object({
   roleFamily: z.enum(ROLE_FAMILIES),
   seniority: z.enum(ROLE_SENIORITIES),
   employmentType: z.enum(EMPLOYMENT_TYPES),
+  industry: z.enum(INDUSTRIES),
+  /** Years of experience asked for; blank = not stated ("Other"). */
+  minYears: z.string().trim().regex(/^\d{0,2}$/, "A number of years").optional(),
+  maxYears: z.string().trim().regex(/^\d{0,2}$/, "A number of years").optional(),
   city: optional(100),
   country: optional(100),
   remoteMode: z.enum(REMOTE_MODES),

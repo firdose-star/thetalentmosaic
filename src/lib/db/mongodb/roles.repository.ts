@@ -12,7 +12,7 @@ import "server-only";
 import type { Filter, ObjectId, Sort, UpdateFilter, WithId } from "mongodb";
 
 import type { ExtractedRole } from "@/lib/roles/extract";
-import type { EmploymentType, RoleFamily, RoleSourceKind, RoleStatus } from "@/types/roles";
+import type { EmploymentType, ExperienceBand, Industry, RoleFamily, RoleSourceKind, RoleStatus } from "@/types/roles";
 
 import { getDb } from "./connect";
 import { isValidObjectId, toObjectId } from "./ids";
@@ -79,6 +79,8 @@ export interface RoleQuery {
   city?: string;
   remote?: boolean;
   type?: EmploymentType;
+  industry?: Industry;
+  exp?: ExperienceBand;
   q?: string;
   sort?: "newest" | "closing";
   page: number;
@@ -91,6 +93,10 @@ function filterFor(status: RoleStatus | RoleStatus[], q: Omit<RoleQuery, "page" 
   const filter: Filter<RoleDoc> = { status: Array.isArray(status) ? { $in: status } : status };
   if (q.family) filter.roleFamily = q.family;
   if (q.type) filter.employmentType = q.type;
+  // "Other" also covers roles stored before these fields existed (null matches a missing field).
+  const orMissing = { $in: ["other", null] } as Record<string, unknown>;
+  if (q.industry) filter.industry = q.industry === "other" ? orMissing : q.industry;
+  if (q.exp) filter.experienceBand = q.exp === "other" ? orMissing : q.exp;
   if (q.remote) filter["location.remoteMode"] = "remote";
   if (q.city) filter["location.city"] = { $regex: `^${escapeRegex(q.city)}$`, $options: "i" };
   if (q.q) {
@@ -129,7 +135,7 @@ export async function approvedCities(): Promise<string[]> {
 }
 
 /** Admin: any status. */
-export const listForAdmin = (status: RoleStatus, q: Omit<RoleQuery, "family" | "city" | "remote" | "type">) =>
+export const listForAdmin = (status: RoleStatus, q: Omit<RoleQuery, "family" | "city" | "remote" | "type" | "industry" | "exp">) =>
   page(filterFor(status, { q: q.q }), { ...q, sort: "newest" });
 
 export async function getAny(id: string) {
@@ -222,6 +228,13 @@ export async function expireOldPostings(now: Date) {
     { $set: { status: "expired", updatedAt: now } },
   );
   return result.modifiedCount;
+}
+
+/** Every role with what classification reads — for re-reading after the rules change. */
+export async function allForReclassify() {
+  return (await roles())
+    .find({}, { projection: { title: 1, description: 1, company: 1, employmentType: 1, industry: 1, experience: 1, "sources.rawText": 1 } })
+    .toArray();
 }
 
 export async function markExpired(ids: ObjectId[], now: Date) {

@@ -16,9 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ROUTES } from "@/lib/constants";
-import { ROLE_FAMILY_LABELS, ROLE_SENIORITY_LABELS, ROLE_SOURCE_LABELS, type RoleContact } from "@/types/roles";
+import { ROLE_FAMILY_LABELS, ROLE_SENIORITY_LABELS, ROLE_SOURCE_LABELS, experienceText, type RoleContact } from "@/types/roles";
 
-import { checkedText, locationText, postedText, sourceLabel, typeText, whatsappUrl } from "../filters";
+import { checkedText, industryText, locationText, postedText, sourceLabel, typeText, whatsappUrl } from "../filters";
 import { useRole } from "../hooks/use-opportunities";
 
 function ContactBlock({ contact }: { contact?: RoleContact }) {
@@ -77,6 +77,8 @@ export function JobDetail({ id }: { id: string }) {
 
   const [primary, ...others] = role.sources;
   const type = typeText(role);
+  const industry = industryText(role);
+  const years = experienceText(role.experience);
   const checked = checkedText(role);
   const apply = primary && (
     <Button size="lg" nativeButton={false} render={<a href={primary.url} target="_blank" rel="noopener noreferrer" />}>
@@ -110,6 +112,8 @@ export function JobDetail({ id }: { id: string }) {
           <div className="mt-3 flex flex-wrap gap-1.5">
             <Badge variant="secondary">{ROLE_FAMILY_LABELS[role.roleFamily]}</Badge>
             {role.seniority !== "unknown" && <Badge variant="secondary">{ROLE_SENIORITY_LABELS[role.seniority]}</Badge>}
+            {industry && <Badge variant="outline">{industry}</Badge>}
+            {years && <Badge variant="outline">{years}</Badge>}
             {type && <Badge variant="outline">{type}</Badge>}
             {role.company.ycBatch && <Badge variant="outline">YC {role.company.ycBatch}</Badge>}
             {role.salary.text && <Badge variant="outline">{role.salary.text}</Badge>}

@@ -28,6 +28,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   EMPLOYMENT_TYPES,
   EMPLOYMENT_TYPE_LABELS,
+  INDUSTRIES,
+  INDUSTRY_LABELS,
   REMOTE_MODES,
   REMOTE_MODE_LABELS,
   ROLE_FAMILIES,
@@ -50,6 +52,9 @@ const EMPTY: RoleInput = {
   roleFamily: "talent_acquisition",
   seniority: "unknown",
   employmentType: "full_time",
+  industry: "other",
+  minYears: "",
+  maxYears: "",
   city: "",
   country: "India",
   remoteMode: "onsite",
@@ -75,6 +80,9 @@ const fromRole = (r: RoleListing): RoleInput => ({
   roleFamily: r.roleFamily,
   seniority: r.seniority,
   employmentType: r.employmentType,
+  industry: r.industry ?? "other",
+  minYears: r.experience?.minYears === undefined ? "" : String(r.experience.minYears),
+  maxYears: r.experience?.maxYears === undefined ? "" : String(r.experience.maxYears),
   city: r.location.city ?? "",
   country: r.location.country ?? "",
   remoteMode: r.location.remoteMode,
@@ -134,7 +142,7 @@ export function RoleFormDialog({
       <FieldError errors={[errors[key]]} />
     </Field>
   );
-  const select = (key: "roleFamily" | "seniority" | "employmentType" | "remoteMode" | "status", label: string, opts: { value: string; label: string }[]) => (
+  const select = (key: "roleFamily" | "seniority" | "employmentType" | "industry" | "remoteMode" | "status", label: string, opts: { value: string; label: string }[]) => (
     <Field>
       <FieldLabel htmlFor={`role-${id}-${key}`}>{label}</FieldLabel>
       <NativeSelect id={`role-${id}-${key}`} className="w-full" {...form.register(key)}>
@@ -181,6 +189,11 @@ export function RoleFormDialog({
               {select("roleFamily", "Role", options(ROLE_FAMILIES, ROLE_FAMILY_LABELS))}
               {select("seniority", "Seniority", options(ROLE_SENIORITIES, ROLE_SENIORITY_LABELS))}
               {select("employmentType", "Employment type", options(EMPLOYMENT_TYPES, EMPLOYMENT_TYPE_LABELS))}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {select("industry", "Company type", options(INDUSTRIES, INDUSTRY_LABELS))}
+              {text("minYears", "Experience: from (years)", "Blank if not stated")}
+              {text("maxYears", "to (years, optional)", "e.g. 5")}
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {text("city", "City", "Bengaluru")}

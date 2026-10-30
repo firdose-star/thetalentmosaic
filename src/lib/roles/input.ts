@@ -8,7 +8,7 @@ import type { UpdateFilter } from "mongodb";
 
 import type { RoleDoc } from "@/lib/db/mongodb/roles.repository";
 import type { RoleInput, RolePatch } from "@/features/opportunities/schemas";
-import type { RoleContact } from "@/types/roles";
+import { experienceBand, type RoleContact } from "@/types/roles";
 
 import { compact, dedupeKey, toE164 } from "./text";
 
@@ -25,6 +25,19 @@ const contactOf = (i: RolePatch): RoleContact =>
     other: i.contactOther,
   });
 
+/** "5" / "" → years; blank means not stated. */
+const years = (v?: string) => (v ? Number(v) : undefined);
+
+/** The form's two year boxes → the stored experience and its filter band. */
+function experienceOf(minYears?: string, maxYears?: string) {
+  const min = years(minYears);
+  const max = years(maxYears);
+  return {
+    experience: compact({ minYears: min, maxYears: max !== undefined && min !== undefined && max > min ? max : undefined }),
+    experienceBand: experienceBand(min),
+  };
+}
+
 /** A new role the team typed in themselves. */
 export function newManualRole(input: RoleInput, now: Date, by: string): Omit<RoleDoc, "_id"> {
   const location = compact({ city: input.city, country: input.country, remoteMode: input.remoteMode });
@@ -35,6 +48,8 @@ export function newManualRole(input: RoleInput, now: Date, by: string): Omit<Rol
     roleFamily: input.roleFamily,
     seniority: input.seniority,
     employmentType: input.employmentType,
+    industry: input.industry,
+    ...experienceOf(input.minYears, input.maxYears),
     company: compact({ name: input.company, url: input.companyUrl }),
     location,
     salary: compact({ text: input.salaryText }),
@@ -66,6 +81,9 @@ export function patchUpdate(patch: RolePatch, existing: RoleDoc, now: Date, by: 
   if (patch.roleFamily) $set.roleFamily = patch.roleFamily;
   if (patch.seniority) $set.seniority = patch.seniority;
   if (patch.employmentType) $set.employmentType = patch.employmentType;
+  if (patch.industry) $set.industry = patch.industry;
+  // The form always sends both year boxes; a status-only PATCH sends neither.
+  if (patch.minYears !== undefined || patch.maxYears !== undefined) Object.assign($set, experienceOf(patch.minYears, patch.maxYears));
   put("location.city", patch.city);
   put("location.country", patch.country);
   if (patch.remoteMode) $set["location.remoteMode"] = patch.remoteMode;

@@ -9,7 +9,7 @@ import { z } from "zod";
 import { getServerEnv } from "@/lib/config/env";
 import { logger } from "@/lib/logger";
 import { API_ERROR_CODES } from "@/types/api";
-import { EMPLOYMENT_TYPES, ROLE_FAMILIES, ROLE_STATUSES } from "@/types/roles";
+import { EMPLOYMENT_TYPES, EXPERIENCE_BANDS, INDUSTRIES, ROLE_FAMILIES, ROLE_STATUSES } from "@/types/roles";
 
 import { fail } from "./api-response";
 import { isMember, type Caller } from "./session";
@@ -28,6 +28,8 @@ export const rolesQuerySchema = z.object({
   city: z.preprocess(blankToUndefined, z.string().trim().max(100).optional()),
   remote: z.preprocess(blankToUndefined, z.enum(["true", "false"]).optional()),
   type: z.preprocess(blankToUndefined, z.enum(EMPLOYMENT_TYPES).optional()),
+  industry: z.preprocess(blankToUndefined, z.enum(INDUSTRIES).optional()),
+  exp: z.preprocess(blankToUndefined, z.enum(EXPERIENCE_BANDS).optional()),
   q: z.preprocess(blankToUndefined, z.string().trim().max(100).optional()),
   sort: z.preprocess(blankToUndefined, z.enum(["newest", "closing"]).default("newest")),
   page: z.preprocess(blankToUndefined, z.coerce.number().int().min(1).default(1)),

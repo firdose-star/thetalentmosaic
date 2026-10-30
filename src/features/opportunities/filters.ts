@@ -6,6 +6,7 @@ import { formatDistanceToNowStrict } from "date-fns";
 
 import {
   EMPLOYMENT_TYPE_LABELS,
+  INDUSTRY_LABELS,
   REMOTE_MODE_LABELS,
   ROLE_SOURCE_LABELS,
   type RoleListing,
@@ -13,7 +14,7 @@ import {
 
 import type { RoleFilters } from "./services/opportunities.service";
 
-export const JOB_FILTER_KEYS = ["role", "location", "type", "sort", "q", "page"] as const;
+export const JOB_FILTER_KEYS = ["role", "location", "industry", "exp", "type", "sort", "q", "page"] as const;
 export type JobFilterKey = (typeof JOB_FILTER_KEYS)[number];
 export type JobFilters = Record<JobFilterKey, string>;
 
@@ -31,6 +32,8 @@ export function toApiFilters(f: JobFilters): RoleFilters {
     city: f.location && f.location !== REMOTE ? f.location : undefined,
     remote: f.location === REMOTE ? "true" : undefined,
     type: f.type || undefined,
+    industry: f.industry || undefined,
+    exp: f.exp || undefined,
     q: f.q || undefined,
     sort: f.sort || undefined,
     page: Number(f.page) > 1 ? Number(f.page) : undefined,
@@ -54,6 +57,8 @@ export function locationText(role: RoleListing) {
 }
 
 export const typeText = (role: RoleListing) => (role.employmentType === "unknown" ? null : EMPLOYMENT_TYPE_LABELS[role.employmentType]);
+
+export const industryText = (role: RoleListing) => (!role.industry || role.industry === "other" ? null : INDUSTRY_LABELS[role.industry]);
 
 /** WhatsApp link for an E.164 number. */
 export const whatsappUrl = (e164: string) => `https://wa.me/${e164.replace(/\D/g, "")}`;

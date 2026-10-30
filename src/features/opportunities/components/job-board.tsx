@@ -30,6 +30,11 @@ import { ROUTES } from "@/lib/constants";
 import {
   EMPLOYMENT_TYPES,
   EMPLOYMENT_TYPE_LABELS,
+  EXPERIENCE_BANDS,
+  EXPERIENCE_BAND_LABELS,
+  INDUSTRIES,
+  INDUSTRY_LABELS,
+  experienceText,
   ROLE_FAMILIES,
   ROLE_FAMILY_LABELS,
   type RoleListing,
@@ -40,6 +45,7 @@ import {
   REMOTE,
   SORT_OPTIONS,
   checkedText,
+  industryText,
   locationText,
   postedText,
   sourceLabel,
@@ -55,6 +61,8 @@ import { ListingManagement } from "./listing-management";
 const LABELS: Record<JobFilterKey, string> = {
   role: "Role",
   location: "Location",
+  industry: "Company type",
+  exp: "Experience",
   type: "Employment type",
   sort: "Sort",
   q: "Search",
@@ -62,10 +70,15 @@ const LABELS: Record<JobFilterKey, string> = {
 };
 
 const FAMILY_OPTIONS = ROLE_FAMILIES.map((f) => ({ value: f, label: ROLE_FAMILY_LABELS[f] }));
-const TYPE_OPTIONS = EMPLOYMENT_TYPES.filter((t) => t !== "unknown").map((t) => ({ value: t, label: EMPLOYMENT_TYPE_LABELS[t] }));
+// Each list ends with "Other": roles whose posting doesn't make it clear.
+const TYPE_OPTIONS = EMPLOYMENT_TYPES.map((t) => ({ value: t, label: EMPLOYMENT_TYPE_LABELS[t] }));
+const INDUSTRY_OPTIONS = INDUSTRIES.map((i) => ({ value: i, label: INDUSTRY_LABELS[i] }));
+const EXPERIENCE_OPTIONS = EXPERIENCE_BANDS.map((b) => ({ value: b, label: EXPERIENCE_BAND_LABELS[b] }));
 
 function RoleCard({ role }: { role: RoleListing }) {
   const type = typeText(role);
+  const industry = industryText(role);
+  const years = experienceText(role.experience);
   const checked = checkedText(role);
   return (
     <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.15 }} className="h-full">
@@ -100,6 +113,8 @@ function RoleCard({ role }: { role: RoleListing }) {
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary">{ROLE_FAMILY_LABELS[role.roleFamily]}</Badge>
             {role.location.remoteMode === "remote" && <Badge variant="secondary">Remote</Badge>}
+            {industry && <Badge variant="outline">{industry}</Badge>}
+            {years && <Badge variant="outline">{years}</Badge>}
             {type && <Badge variant="outline">{type}</Badge>}
           </div>
           <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 border-t pt-3 text-xs text-muted-foreground">
@@ -126,6 +141,8 @@ export function JobBoard() {
     value:
       key === "role" ? ROLE_FAMILY_LABELS[values.role as keyof typeof ROLE_FAMILY_LABELS] ?? values.role
       : key === "type" ? EMPLOYMENT_TYPE_LABELS[values.type as keyof typeof EMPLOYMENT_TYPE_LABELS] ?? values.type
+      : key === "industry" ? INDUSTRY_LABELS[values.industry as keyof typeof INDUSTRY_LABELS] ?? values.industry
+      : key === "exp" ? EXPERIENCE_BAND_LABELS[values.exp as keyof typeof EXPERIENCE_BAND_LABELS] ?? values.exp
       : values[key],
   }));
   // Any filter change goes back to page 1.
@@ -187,9 +204,11 @@ export function JobBoard() {
       )}
       <FilterPanel>
         <SearchInput value={values.q} onChange={(v) => setFilter("q", v)} placeholder="Search by title or company" />
-        <div className="grid grid-cols-2 gap-2 @3xl/main:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 @3xl/main:grid-cols-3">
           <FilterSelect label="Role" allLabel="All roles" value={values.role} options={FAMILY_OPTIONS} onChange={(v) => setFilter("role", v)} />
           <FilterSelect label="Location" allLabel="All locations" value={values.location} options={[REMOTE, ...(data?.cities ?? [])]} onChange={(v) => setFilter("location", v)} />
+          <FilterSelect label="Company type" allLabel="All company types" value={values.industry} options={INDUSTRY_OPTIONS} onChange={(v) => setFilter("industry", v)} />
+          <FilterSelect label="Experience" allLabel="Any experience" value={values.exp} options={EXPERIENCE_OPTIONS} onChange={(v) => setFilter("exp", v)} />
           <FilterSelect label="Employment type" allLabel="All employment types" value={values.type} options={TYPE_OPTIONS} onChange={(v) => setFilter("type", v)} />
           <NativeSelect aria-label="Sort" value={values.sort || "newest"} onChange={(e) => setFilter("sort", e.target.value === "newest" ? "" : e.target.value)} className="w-full">
             {SORT_OPTIONS.map((o) => (

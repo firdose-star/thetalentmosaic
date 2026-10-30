@@ -14,7 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ROLE_FAMILY_LABELS, ROLE_SOURCE_LABELS, ROLE_STATUSES, type RoleListing, type RoleStatus } from "@/types/roles";
+import {
+  EMPLOYMENT_TYPE_LABELS,
+  INDUSTRY_LABELS,
+  ROLE_FAMILY_LABELS,
+  ROLE_SOURCE_LABELS,
+  ROLE_STATUSES,
+  experienceText,
+  type RoleListing,
+  type RoleStatus,
+} from "@/types/roles";
 
 import { locationText, postedText } from "../filters";
 import { useAdminRoles, useRoleAdmin } from "../hooks/use-opportunities";
@@ -43,6 +52,9 @@ function QueueRow({ role }: { role: RoleListing }) {
           <p className="font-semibold">{role.title}</p>
           <p className="text-sm text-muted-foreground">
             {role.company.name} · {locationText(role)} · {ROLE_FAMILY_LABELS[role.roleFamily]}
+            {" · "}{INDUSTRY_LABELS[role.industry ?? "other"]}
+            {" · "}{experienceText(role.experience) ?? "Experience: Other"}
+            {" · "}{EMPLOYMENT_TYPE_LABELS[role.employmentType]}
             {role.salary.text ? ` · ${role.salary.text}` : ""}
           </p>
         </div>
